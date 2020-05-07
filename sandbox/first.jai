@@ -5,9 +5,8 @@ build :: () {
 
     build_options : Build_Options;
 
-    // Disable executable generation for the current workspace, this workspace is for compile-time metaprogramming only
     build_options = get_build_options();
-    build_options.output_type = Build_Output_Type.NO_OUTPUT;
+    build_options.output_type = Build_Output_Type.NO_OUTPUT; // This workspace is just build code
     set_build_options(build_options);
 
     set_working_directory(#filepath);
