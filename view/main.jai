@@ -1,14 +1,170 @@
 #import "Basic";
 #import "Compiler";
 #load "vendor/imgui_sdl_gl.jai";
+#load "shaders.jai";
+#load "font.jai";
+
 //#import "Debug";
+
+WINDOW_WIDTH  :: 1280;
+WINDOW_HEIGHT :: 720;
+
+setup_stuff :: () {
+    // OGL Options
+    glDisable(GL_CULL_FACE); // LTB---will f-you up with triangles. if only 2d stuff just leave blending on
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Setup text shader
+    {
+        projection := orthographic_projection_matrix(0.0, xx WINDOW_WIDTH, 0.0, xx WINDOW_HEIGHT, -1.0, 1.0);
+
+        text_shader = get_shader_program(TEXT_SHADER_STR_VERTEX, TEXT_SHADER_STR_FRAGMENT);
+
+        glUseProgram(text_shader);
+        projection_loc := glGetUniformLocation(text_shader, "projection");
+        glUniformMatrix4fv(projection_loc, 1, GL_TRUE, *projection._11);
+    }
+
+    // Prepare VAO for text quads.
+    {
+        glGenVertexArrays(1, *text_vao);
+        glGenBuffers(1, *text_vbo);
+        glBindVertexArray(text_vao);
+        glBindBuffer(GL_ARRAY_BUFFER, text_vbo);
+        glBufferData(GL_ARRAY_BUFFER, size_of(GLfloat) * 6 * 4, null, GL_DYNAMIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * size_of(GLfloat), xx 0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+}
+
+print_errors :: (loc := #caller_location) {
+    DumpGLErrors("context %", #location());
+
+    {
+        error := glGetError();
+        if (error != GL_NO_ERROR) {
+            print("error:%:%,%: code % (%)\n", loc.fully_pathed_filename, loc.line_number, loc.character_number, error, formatInt(error, base=16));
+            print("stack trace\n");
+            for pack_stack_trace() {
+                print_stack_trace(*it);
+            }
+            exit(-1);
+        }
+    }
+}
+
+render_text_quad :: (shader_program: GLuint, text: string, position: Vector2, scale: float, color: Vector4) {
+    glUseProgram(shader_program);
+    glUniform4f(glGetUniformLocation(shader_program, "text_color"), color.x, color.y, color.z, color.w);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindVertexArray(text_vao);
+
+    pos := position;
+
+    for i : 0..text.count-1 {
+        ch, is_ascii := table_find(chars, text.data[i]);
+        assert(is_ascii);
+
+        x_pos : float = pos.x + ch.bearing.x * scale;
+        y_pos : float = pos.y - (ch.size.y - ch.bearing.y) * scale;
+
+        w : float = ch.size.x * scale;
+        h : float = ch.size.y * scale;
+
+        vertices : [24] float;
+
+        {
+            vertices[0] = x_pos;
+            vertices[1] = y_pos + h;
+            vertices[2] = 0.0;
+            vertices[3] = 0.0;
+
+            vertices[4] = x_pos;
+            vertices[5] = y_pos;
+            vertices[6] = 0.0;
+            vertices[7] = 1.0;
+
+            vertices[8]  = x_pos + w;
+            vertices[9]  = y_pos;
+            vertices[10] = 1.0;
+            vertices[11] = 1.0;
+
+            vertices[12] = x_pos;
+            vertices[13] = y_pos + h;
+            vertices[14] = 0.0;
+            vertices[15] = 0.0;
+
+            vertices[16] = x_pos + w;
+            vertices[17] = y_pos;
+            vertices[18] = 1.0;
+            vertices[19] = 1.0;
+
+            vertices[20] = x_pos + w;
+            vertices[21] = y_pos + h;
+            vertices[22] = 1.0;
+            vertices[23] = 0.0;
+        }
+
+        //
+        // Since we're wanting a different sized quad for each character (not terribly efficient!), let's update
+        // the VBO memory.
+        //
+        glBindTexture(GL_TEXTURE_2D, ch.texture_id);
+        glBindBuffer(GL_ARRAY_BUFFER, text_vbo);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, size_of(type_of(vertices)), *vertices);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        // Draw the glyph
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        // Advance to next glyph
+        pos.x += (ch.advance >> 6) * scale;
+    }
+
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+get_text_width_in_pixels :: (text: string, scale: float) -> int {
+    w : int;
+
+    for i : 0..text.count-1 {
+        ch, is_ascii := table_find(chars, text.data[i]);
+        assert(is_ascii);
+        w += (ch.advance >> 6) * xx scale;
+    }
+
+    return w;
+}
+
+debug_callback :: (source: GLenum, type: GLenum, id: GLuint, severity: GLenum, length: GLsizei, message: *u8, userParam: *void) #c_call {
+    pctx := cast(*Context) userParam;
+    ctx := <<pctx;
+    push_context ctx {
+        // #if OS_WINDOWS {
+            print("source: %\n", source);
+            print("type: %\n", type);
+            print("id: %\n", id);
+            print("severity: %\n", severity);
+            print("length: %\n", length);
+            print("message: %\n", message);
+            print("userParam: %\n", userParam);
+            // if type == GL_DEBUG_TYPE_ERROR print("GL Error:%\n", to_string(message));
+        // }
+    }
+}
+
 
 
 main :: () {
 
     SDL_Init(SDL_INIT_VIDEO);
 
-    window := SDL_CreateWindow("ImGui SDL2+OpenGL example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);
+    window := SDL_CreateWindow("ImGui SDL2+OpenGL example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, xx WINDOW_WIDTH, xx WINDOW_HEIGHT, SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);
 
     // Check that the window was successfully created
     if window == null {
@@ -17,7 +173,7 @@ main :: () {
         return;
     }
 
-    print("%\n", to_string(ImGui.GetVersion()));
+    // print("%\n", to_string(ImGui.GetVersion()));
 
     //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
@@ -27,9 +183,16 @@ main :: () {
     if !gl_context {
         print( "Could not create OpenGL context: %\n", to_string(SDL_GetError()));
         return;
-    }  
+    }
 
     gl_load(*gl, SDL_GL_GetProcAddress);
+
+    gl_enable_debug_output(break_on_error=true);
+
+    setup_stuff();
+    init_font();
+
+
 
     ImGui.CreateContext();
     // Setup ImGui binding
@@ -56,23 +219,25 @@ main :: () {
         event: SDL_Event;
         while SDL_PollEvent(*event) {
             ImGui_ImplSdl_ProcessEvent(*event);
-            if event.type == SDL_QUIT done = true;
+            if event.type == {
+                case SDL_QUIT;
+                    done = true;
+                case SDL_KEYUP;
+                    if event.key.keysym.sym == SDLK_ESCAPE done = true;
+            }
         }
         ImGui_ImplSdl_NewFrame(window);
 
-        // 1. Show a simple window
-        // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets automatically appears in a window called "Debug".
         {
-            ImGui.Text("Hello, world!");                                // Some text (you can use a format string too)
-            ImGui.SliderFloat("float", *f, 0.0, 1.0, "%.3f");                   // Edit 1 float as a slider from 0.0f to 1.0f
-            ImGui.ColorEdit3("clear color", clear_color.component);  // Edit 3 floats as a color
-            if ImGui.Button("Demo Window", size=*make_vector2(0,0)) show_demo_window ^= true;       // Use buttons to toggle our bools. We could use Checkbox() as well.
+            ImGui.Text("Hello, world!");
+            ImGui.SliderFloat("float", *f, 0.0, 1.0, "%.3f");
+            ImGui.ColorEdit3("clear color", clear_color.component);
+            if ImGui.Button("Demo Window", size=*make_vector2(0,0)) show_demo_window ^= true;
             ImGui.Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0 / io.Framerate, io.Framerate);
         }
 
-        // 3. Show the ImGui demo window. Most of the sample code is in ImGui.ShowDemoWindow().
         if show_demo_window {
-            ImGui.SetNextWindowPos(*make_vector2(650, 20), ImGui.Cond.FirstUseEver, *make_vector2(0,0)); // Normally user code doesn't need/want to call this because positions are saved in .ini file anyway. Here we just want to make the demo initial state a bit more friendly!
+            ImGui.SetNextWindowPos(*make_vector2(650, 20), ImGui.Cond.FirstUseEver, *make_vector2(0,0));
             ImGui.ShowDemoWindow(*show_demo_window);
         }
 
@@ -86,11 +251,26 @@ main :: () {
             case .ResizeNWSE;    SDL_SetCursor(cursor_resize_nwse);
         }
 
+
         // Rendering
         glViewport(0, 0, xx io.DisplaySize.x, xx io.DisplaySize.y);
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui.Render();
+
+        {
+            glEnable(GL_BLEND);
+            defer glDisable(GL_BLEND);
+            text := "HIH";
+            text_w := get_text_width_in_pixels(text, 1.0);
+            scale := 0.5;
+            render_text_quad(text_shader,
+                             text,
+                             make_vector2(25.0, WINDOW_HEIGHT - FONT_SIZE * scale),
+                             scale,
+                             make_vector4(0.5, 0.8, 0.2, 1));
+        }
+
         SDL_GL_SwapWindow(window);
     }
 
