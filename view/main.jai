@@ -40,12 +40,42 @@ debug_callback :: (source: GLenum, type: GLenum, id: GLuint, severity: GLenum, l
     }
 }
 
-Polyline2 :: [..] Vector2;
+Polyline2 :: struct {
+    Point :: Vector2;
+    points : [..] Point;
+    buffer_id : GLuint;
+    is_dirty := true;
+}
 
-render_polyline :: (shader_program: GLuint, polyline2 : Polyline2) {
-    for polyline2 print("% %\n", it_index, it);
+buffer_polyline :: (using polyline : *Polyline2) {
+    if is_dirty {
+        if !buffer_id {
+            glGenBuffers(1, *buffer_id);
+        }
+        glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
+        glBufferData(GL_ARRAY_BUFFER, size_of(type_of(points[0])) * points.count, points.data, GL_STATIC_DRAW);
+        is_dirty = false;
+    }
+}
+
+render_polyline :: (shader_program: GLuint, polyline : *Polyline2) {
+    // for polyline.points print("% %\n", it_index, it);
+
+    glUseProgram(polyline_shader);
+    // position := game.camera_position;
+    // glUniform3f(uniloc(shader, "camera.position"), position.x, position.y, position.z);
+
+    assert(polyline.is_dirty == false);
+    glBindBuffer(GL_ARRAY_BUFFER, polyline.buffer_id);
+
+    glBindVertexArray(polyline_vao);
     
-    return;
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, false, size_of(polyline.Point), null);
+    // glVertexAttrib4f(ATTRIB_COLOR, 1.0, 1.0, 1.0, 1.0);
+    glDrawArrays(GL_LINE_STRIP, 0, xx polyline.points.count);
+    
+    glDisableVertexAttribArray(0);
 }
 
 main :: () {
@@ -139,6 +169,13 @@ main :: () {
         glBindVertexArray(0);
     }
 
+    polyline : Polyline2;
+    array_add(*polyline.points, make_vector2(-100, -100));
+    array_add(*polyline.points, make_vector2( -.5, -.5));
+    array_add(*polyline.points, make_vector2(  .5,  .5));
+    array_add(*polyline.points, make_vector2( 100,  100));
+    buffer_polyline(*polyline);
+
 
     init_font();
 
@@ -152,7 +189,7 @@ main :: () {
 
     io := ImGui.GetIO();
 
-    show_demo_window := true;
+    show_demo_window := false;
     clear_color := make_vector4(0.45, 0.55, 0.60, 1.00);
 
     f :float = 0.0;
@@ -209,6 +246,9 @@ main :: () {
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui.Render();
 
+
+        render_polyline(polyline_shader, *polyline);
+
         {
             glEnable(GL_BLEND);
             defer glDisable(GL_BLEND);
@@ -225,15 +265,6 @@ main :: () {
                              make_vector2(io.MousePos.x, WINDOW_HEIGHT - io.MousePos.y),
                              scale,
                              make_vector4(0.5, 0.8, 0.2, 1));
-        }
-
-        {
-            polyline2 : Polyline2;
-            array_add(*polyline2, make_vector2(0,-1));
-            array_add(*polyline2, make_vector2(-1,0));
-            array_add(*polyline2, make_vector2(0,1));
-            array_add(*polyline2, make_vector2(1,0));
-            render_polyline(polyline_shader, polyline2);
         }
 
         SDL_GL_SwapWindow(window);
