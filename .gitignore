@@ -2,4 +2,12 @@
 .idea
 bin/
 jaidoku
+imgui.ini
 
+# static/dynamic libraries, object files
+*.so
+*.a
+*.o
+
+# jai
+output.dot
