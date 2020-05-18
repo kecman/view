@@ -1,5 +1,6 @@
 #import "Basic";
 #import "Compiler";
+#import "File";
 #load "vendor/imgui_sdl_gl.jai";
 #load "shaders.jai";
 #load "font.jai";
@@ -8,36 +9,6 @@
 
 WINDOW_WIDTH  :: 1280;
 WINDOW_HEIGHT :: 720;
-
-setup_stuff :: () {
-    // OGL Options
-    glDisable(GL_CULL_FACE); // LTB---will f-you up with triangles. if only 2d stuff just leave blending on
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    // Setup text shader
-    {
-        projection := orthographic_projection_matrix(0.0, xx WINDOW_WIDTH, 0.0, xx WINDOW_HEIGHT, -1.0, 1.0);
-
-        text_shader = get_shader_program(TEXT_SHADER_STR_VERTEX, TEXT_SHADER_STR_FRAGMENT);
-
-        glUseProgram(text_shader);
-        projection_loc := glGetUniformLocation(text_shader, "projection");
-        glUniformMatrix4fv(projection_loc, 1, GL_TRUE, *projection._11);
-    }
-
-    // Prepare VAO for text quads.
-    {
-        glGenVertexArrays(1, *text_vao);
-        glGenBuffers(1, *text_vbo);
-        glBindVertexArray(text_vao);
-        glBindBuffer(GL_ARRAY_BUFFER, text_vbo);
-        glBufferData(GL_ARRAY_BUFFER, size_of(GLfloat) * 6 * 4, null, GL_DYNAMIC_DRAW);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * size_of(GLfloat), xx 0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
-    }
-}
 
 print_errors :: (loc := #caller_location) {
     DumpGLErrors("context %", #location());
@@ -55,110 +26,27 @@ print_errors :: (loc := #caller_location) {
     }
 }
 
-render_text_quad :: (shader_program: GLuint, text: string, position: Vector2, scale: float, color: Vector4) {
-    glUseProgram(shader_program);
-    glUniform4f(glGetUniformLocation(shader_program, "text_color"), color.x, color.y, color.z, color.w);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindVertexArray(text_vao);
-
-    pos := position;
-
-    for i : 0..text.count-1 {
-        ch, is_ascii := table_find(chars, text.data[i]);
-        assert(is_ascii);
-
-        x_pos : float = pos.x + ch.bearing.x * scale;
-        y_pos : float = pos.y - (ch.size.y - ch.bearing.y) * scale;
-
-        w : float = ch.size.x * scale;
-        h : float = ch.size.y * scale;
-
-        vertices : [24] float;
-
-        {
-            vertices[0] = x_pos;
-            vertices[1] = y_pos + h;
-            vertices[2] = 0.0;
-            vertices[3] = 0.0;
-
-            vertices[4] = x_pos;
-            vertices[5] = y_pos;
-            vertices[6] = 0.0;
-            vertices[7] = 1.0;
-
-            vertices[8]  = x_pos + w;
-            vertices[9]  = y_pos;
-            vertices[10] = 1.0;
-            vertices[11] = 1.0;
-
-            vertices[12] = x_pos;
-            vertices[13] = y_pos + h;
-            vertices[14] = 0.0;
-            vertices[15] = 0.0;
-
-            vertices[16] = x_pos + w;
-            vertices[17] = y_pos;
-            vertices[18] = 1.0;
-            vertices[19] = 1.0;
-
-            vertices[20] = x_pos + w;
-            vertices[21] = y_pos + h;
-            vertices[22] = 1.0;
-            vertices[23] = 0.0;
-        }
-
-        //
-        // Since we're wanting a different sized quad for each character (not terribly efficient!), let's update
-        // the VBO memory.
-        //
-        glBindTexture(GL_TEXTURE_2D, ch.texture_id);
-        glBindBuffer(GL_ARRAY_BUFFER, text_vbo);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, size_of(type_of(vertices)), *vertices);
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        // Draw the glyph
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-
-        // Advance to next glyph
-        pos.x += (ch.advance >> 6) * scale;
-    }
-
-    glBindVertexArray(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-get_text_width_in_pixels :: (text: string, scale: float) -> int {
-    w : int;
-
-    for i : 0..text.count-1 {
-        ch, is_ascii := table_find(chars, text.data[i]);
-        assert(is_ascii);
-        w += (ch.advance >> 6) * xx scale;
-    }
-
-    return w;
-}
-
 debug_callback :: (source: GLenum, type: GLenum, id: GLuint, severity: GLenum, length: GLsizei, message: *u8, userParam: *void) #c_call {
     pctx := cast(*Context) userParam;
     ctx := <<pctx;
     push_context ctx {
-        // #if OS_WINDOWS {
-            print("source: %\n", source);
-            print("type: %\n", type);
-            print("id: %\n", id);
-            print("severity: %\n", severity);
-            print("length: %\n", length);
-            print("message: %\n", message);
-            print("userParam: %\n", userParam);
-            // if type == GL_DEBUG_TYPE_ERROR print("GL Error:%\n", to_string(message));
-        // }
+        print("source: %\n", source);
+        print("type: %\n", type);
+        print("id: %\n", id);
+        print("severity: %\n", severity);
+        print("length: %\n", length);
+        print("message: %\n", message);
+        print("userParam: %\n", userParam);
     }
 }
 
+Polyline2 :: [..] Vector2;
 
+render_polyline :: (shader_program: GLuint, polyline2 : Polyline2) {
+    for polyline2 print("% %\n", it_index, it);
+    
+    return;
+}
 
 main :: () {
 
@@ -189,10 +77,70 @@ main :: () {
 
     gl_enable_debug_output(break_on_error=true);
 
-    setup_stuff();
+    // OGL Options
+    {
+    }
+
+    // Setup text shader
+    {
+        projection := orthographic_projection_matrix(0.0, xx WINDOW_WIDTH, 0.0, xx WINDOW_HEIGHT, -1.0, 1.0);
+
+        vert := read_entire_file("data/shaders/text.vert");
+        frag := read_entire_file("data/shaders/text.frag");
+        defer free(vert);
+        defer free(frag);
+
+        text_shader = get_shader_program(vert, frag);
+
+        glUseProgram(text_shader);
+        projection_loc := glGetUniformLocation(text_shader, "projection");
+        glUniformMatrix4fv(projection_loc, 1, GL_TRUE, *projection._11);
+    }
+
+    // Prepare VAO for text quads.
+    {
+        glGenVertexArrays(1, *text_vao);
+        glGenBuffers(1, *text_vbo);
+        glBindVertexArray(text_vao);
+        glBindBuffer(GL_ARRAY_BUFFER, text_vbo);
+        glBufferData(GL_ARRAY_BUFFER, size_of(GLfloat) * 6 * 4, null, GL_DYNAMIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * size_of(GLfloat), xx 0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+    // Setup line shader
+    {
+        projection := orthographic_projection_matrix(0.0, xx WINDOW_WIDTH, 0.0, xx WINDOW_HEIGHT, -1.0, 1.0);
+
+        vert := read_entire_file("data/shaders/polyline.vert");
+        frag := read_entire_file("data/shaders/polyline.frag");
+        defer free(vert);
+        defer free(frag);
+
+        polyline_shader = get_shader_program(vert, frag);
+
+        glUseProgram(polyline_shader);
+        projection_loc := glGetUniformLocation(polyline_shader, "projection");
+        glUniformMatrix4fv(projection_loc, 1, GL_TRUE, *projection._11);
+    }
+
+    // Prepare VAO for lines
+    {
+        glGenVertexArrays(1, *polyline_vao);
+        glGenBuffers(1, *polyline_vbo);
+        glBindVertexArray(polyline_vao);
+        glBindBuffer(GL_ARRAY_BUFFER, polyline_vbo);
+        glBufferData(GL_ARRAY_BUFFER, size_of(GLfloat) * 6 * 4, null, GL_DYNAMIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * size_of(GLfloat), xx 0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+
     init_font();
-
-
 
     ImGui.CreateContext();
     // Setup ImGui binding
@@ -251,6 +199,9 @@ main :: () {
             case .ResizeNWSE;    SDL_SetCursor(cursor_resize_nwse);
         }
 
+        // io := ImGui.GetIO(); // Error: Variable 'io' is used before its declaration.
+        // print("%\n", << io);
+
 
         // Rendering
         glViewport(0, 0, xx io.DisplaySize.x, xx io.DisplaySize.y);
@@ -261,14 +212,28 @@ main :: () {
         {
             glEnable(GL_BLEND);
             defer glDisable(GL_BLEND);
+            glDisable(GL_CULL_FACE); // LTB---will f-you up with triangles. if only 2d stuff just leave blending on
+            defer glEnable(GL_CULL_FACE);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
             text := "HIH";
             text_w := get_text_width_in_pixels(text, 1.0);
             scale := 0.5;
             render_text_quad(text_shader,
                              text,
-                             make_vector2(25.0, WINDOW_HEIGHT - FONT_SIZE * scale),
+                             // make_vector2(25.0, WINDOW_HEIGHT - FONT_SIZE * scale),
+                             make_vector2(io.MousePos.x, WINDOW_HEIGHT - io.MousePos.y),
                              scale,
                              make_vector4(0.5, 0.8, 0.2, 1));
+        }
+
+        {
+            polyline2 : Polyline2;
+            array_add(*polyline2, make_vector2(0,-1));
+            array_add(*polyline2, make_vector2(-1,0));
+            array_add(*polyline2, make_vector2(0,1));
+            array_add(*polyline2, make_vector2(1,0));
+            render_polyline(polyline_shader, polyline2);
         }
 
         SDL_GL_SwapWindow(window);

@@ -1,42 +1,9 @@
-TEXT_SHADER_STR_VERTEX :: #string END_SHADER
-#version 330 core
-layout (location = 0) in vec4 vertex; // xy is pos, zw are texture coords
-
-out vec2 TextureCoords;
-
-uniform mat4 projection;
-
-void main()
-{
-    gl_Position = projection * vec4(vertex.xy, 0.0, 1.0);
-    TextureCoords = vertex.zw;
-}
-END_SHADER
-
-
-
-
-TEXT_SHADER_STR_FRAGMENT :: #string END_SHADER
-#version 330 core
-in vec2 TextureCoords;
-out vec4 color;
-
-uniform sampler2D text;
-uniform vec4 text_color;
-
-void main () {
-    vec4 sample = vec4(1.0, 1.0, 1.0, texture(text, TextureCoords).r);
-    color = text_color * sample;
-    // color = vec4(TextureCoords, 0.0, 1.0);
-    // color = vec4(texture(text, TextureCoords).rrr, 1.0);
-}
-END_SHADER
-
-
-text_shader   : GLuint;
-text_vao   : GLuint;
-text_vbo   : GLuint;
-
+text_shader : GLuint;
+text_vao : GLuint;
+text_vbo : GLuint;
+polyline_shader : GLuint;
+polyline_vao : GLuint;
+polyline_vbo : GLuint;
 
 get_shader_program :: (shader_vertex : string, shader_fragment : string) -> GLuint {
     make_shader_object :: (shader : string, shader_type : GLenum) -> GLuint {

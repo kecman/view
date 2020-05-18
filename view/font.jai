@@ -82,3 +82,89 @@ init_font :: () {
     FT_Done_Face(face);
     FT_Done_FreeType(ft);
 }
+
+get_text_width_in_pixels :: (text: string, scale: float) -> int {
+    w : int;
+
+    for i : 0..text.count-1 {
+        ch, is_ascii := table_find(chars, text.data[i]);
+        assert(is_ascii);
+        w += (ch.advance >> 6) * xx scale;
+    }
+
+    return w;
+}
+
+render_text_quad :: (shader_program: GLuint, text: string, position: Vector2, scale: float, color: Vector4) {
+    glUseProgram(shader_program);
+    glUniform4f(glGetUniformLocation(shader_program, "text_color"), color.x, color.y, color.z, color.w);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindVertexArray(text_vao);
+
+    pos := position;
+
+    for i : 0..text.count-1 {
+        ch, is_ascii := table_find(chars, text.data[i]);
+        assert(is_ascii);
+
+        x_pos : float = pos.x + ch.bearing.x * scale;
+        y_pos : float = pos.y - (ch.size.y - ch.bearing.y) * scale;
+
+        w : float = ch.size.x * scale;
+        h : float = ch.size.y * scale;
+
+        vertices : [24] float;
+
+        {
+            vertices[0] = x_pos;
+            vertices[1] = y_pos + h;
+            vertices[2] = 0.0;
+            vertices[3] = 0.0;
+
+            vertices[4] = x_pos;
+            vertices[5] = y_pos;
+            vertices[6] = 0.0;
+            vertices[7] = 1.0;
+
+            vertices[8]  = x_pos + w;
+            vertices[9]  = y_pos;
+            vertices[10] = 1.0;
+            vertices[11] = 1.0;
+
+            vertices[12] = x_pos;
+            vertices[13] = y_pos + h;
+            vertices[14] = 0.0;
+            vertices[15] = 0.0;
+
+            vertices[16] = x_pos + w;
+            vertices[17] = y_pos;
+            vertices[18] = 1.0;
+            vertices[19] = 1.0;
+
+            vertices[20] = x_pos + w;
+            vertices[21] = y_pos + h;
+            vertices[22] = 1.0;
+            vertices[23] = 0.0;
+        }
+
+        //
+        // Since we're wanting a different sized quad for each character (not terribly efficient!), let's update
+        // the VBO memory.
+        //
+        glBindTexture(GL_TEXTURE_2D, ch.texture_id);
+        glBindBuffer(GL_ARRAY_BUFFER, text_vbo);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, size_of(type_of(vertices)), *vertices);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        // Draw the glyph
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        // Advance to next glyph
+        pos.x += (ch.advance >> 6) * scale;
+    }
+
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
