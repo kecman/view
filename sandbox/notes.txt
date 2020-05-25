@@ -1,3 +1,4 @@
-
-
 Can you make aliases for types/functions? I saw a thing in Math.jai about aliasing dot_product to dot etc. I would like to make a Polyline type an alias for [..]Math.Vector3?
+
+There is no const concept/keyword? A. There is, it's to use ::, rather than :=
+

@@ -1,6 +1,9 @@
 #import "Basic";
-#import "Compiler";
 #import "File";
+#import "String";
+
+Num :: #import "Num";
+
 #load "vendor/imgui_sdl_gl.jai";
 #load "shaders.jai";
 #load "font.jai";
@@ -9,6 +12,13 @@
 
 WINDOW_WIDTH  :: 1280;
 WINDOW_HEIGHT :: 720;
+
+text_shader : GLuint;
+text_vao : GLuint;
+text_vbo : GLuint;
+polyline_shader : GLuint;
+polyline_vao : GLuint;
+polyline_vbo : GLuint;
 
 print_errors :: (loc := #caller_location) {
     DumpGLErrors("context %", #location());
@@ -69,13 +79,53 @@ render_polyline :: (shader_program: GLuint, polyline : *Polyline2) {
     glBindBuffer(GL_ARRAY_BUFFER, polyline.buffer_id);
 
     glBindVertexArray(polyline_vao);
-    
+
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, false, size_of(polyline.Point), null);
     // glVertexAttrib4f(ATTRIB_COLOR, 1.0, 1.0, 1.0, 1.0);
     glDrawArrays(GL_LINE_STRIP, 0, xx polyline.points.count);
-    
+
     glDisableVertexAttribArray(0);
+}
+
+MouseState :: struct {
+    position_px : Vector2;
+    velocity_px : Vector2;
+    wheel :       float;
+    left_down :   bool;
+    right_down :  bool;
+    middle_down : bool;
+}
+
+Camera :: struct {
+    eye_position :   Vector3; // world
+    look_direction : Vector3;
+    up_direction :   Vector3;
+}
+
+update_camera :: (camera : *Camera, delta_time : float, mouse : *MouseState) {
+    camera_old := << camera;
+
+    k_max_drag_angle_degrees : float : 20;
+
+    // Pan with middle down
+    if mouse.middle_down {
+        camera.eye_position.xy += mouse.velocity_px; // @TODO apply scale?
+    }
+
+    // Rotate about look direction with left down? Might be annoying
+    if mouse.left_down {
+        // @Incomplete
+    }
+
+    // Zoom with right down or scrolling
+    if mouse.right_down {
+        camera.eye_position.z += mouse.velocity_px.y;
+    } else {
+        camera.eye_position.z += mouse.wheel;
+    }
+
+    // print("old -> new: % -> %\n", camera_old, << camera);
 }
 
 main :: () {
@@ -114,6 +164,7 @@ main :: () {
     // Setup text shader
     {
         projection := orthographic_projection_matrix(0.0, xx WINDOW_WIDTH, 0.0, xx WINDOW_HEIGHT, -1.0, 1.0);
+        mvp := projection;
 
         vert := read_entire_file("data/shaders/text.vert");
         frag := read_entire_file("data/shaders/text.frag");
@@ -123,8 +174,8 @@ main :: () {
         text_shader = get_shader_program(vert, frag);
 
         glUseProgram(text_shader);
-        projection_loc := glGetUniformLocation(text_shader, "projection");
-        glUniformMatrix4fv(projection_loc, 1, GL_TRUE, *projection._11);
+        mvp_loc := glGetUniformLocation(text_shader, "mvp");
+        glUniformMatrix4fv(mvp_loc, 1, GL_TRUE, *mvp._11);
     }
 
     // Prepare VAO for text quads.
@@ -142,8 +193,6 @@ main :: () {
 
     // Setup line shader
     {
-        projection := orthographic_projection_matrix(0.0, xx WINDOW_WIDTH, 0.0, xx WINDOW_HEIGHT, -1.0, 1.0);
-
         vert := read_entire_file("data/shaders/polyline.vert");
         frag := read_entire_file("data/shaders/polyline.frag");
         defer free(vert);
@@ -151,9 +200,6 @@ main :: () {
 
         polyline_shader = get_shader_program(vert, frag);
 
-        glUseProgram(polyline_shader);
-        projection_loc := glGetUniformLocation(polyline_shader, "projection");
-        glUniformMatrix4fv(projection_loc, 1, GL_TRUE, *projection._11);
     }
 
     // Prepare VAO for lines
@@ -169,12 +215,47 @@ main :: () {
         glBindVertexArray(0);
     }
 
-    polyline : Polyline2;
-    array_add(*polyline.points, make_vector2(-100, -100));
-    array_add(*polyline.points, make_vector2( -.5, -.5));
-    array_add(*polyline.points, make_vector2(  .5,  .5));
-    array_add(*polyline.points, make_vector2( 100,  100));
-    buffer_polyline(*polyline);
+    polyline_make_box :: () -> Polyline2 #must {
+        polyline : Polyline2;
+        array_add(*polyline.points, make_vector2(-50, -50));
+        array_add(*polyline.points, make_vector2(-50,  50));
+        array_add(*polyline.points, make_vector2( 50,  50));
+        array_add(*polyline.points, make_vector2( 50, -50));
+        array_add(*polyline.points, make_vector2(-50, -50));
+        buffer_polyline(*polyline);
+        return polyline;
+    }
+
+    polyline := polyline_make_box();
+
+    {
+        // @focus is to setup camera in the correct place
+
+        // This should be dynamic, depending on the camera etc
+        world_from_model := matrix4_identity();
+        // view_from_world := Num.make_look_at_matrix(make_vector3(0, 0, 200), make_vector3(0, 0, 0), make_vector3(0, 1, 0));
+        view_from_world := matrix4_identity();
+        print("view_from_world = %\n", view_from_world);
+        projection_from_view := orthographic_projection_matrix(0.0, xx WINDOW_WIDTH, 0.0, xx WINDOW_HEIGHT, -1.0, 1.0);
+
+        projection_from_model := projection_from_view * view_from_world * world_from_model;
+
+        print("projection_from_model = %\n", projection_from_model);
+
+        for polyline.points {
+            if it_index != 2 continue;
+            model_point := make_vector4(it.x, it.y, 0, 1);
+            world_point := world_from_model * model_point;
+            view_point := view_from_world * world_point;
+            projection_point := projection_from_view * view_point;
+            print("model=%\nworld=%\nview=%\nprojection=%\n", model_point, world_point, view_point, projection_point);
+        }
+
+        glUseProgram(polyline_shader);
+        mvp_loc := glGetUniformLocation(polyline_shader, "mvp");
+        glUniformMatrix4fv(mvp_loc, 1, GL_TRUE, *projection_from_model._11);
+        // print("exit(0) at %:%\n", #location().fully_pathed_filename, #location().line_number); exit(0);
+    }
 
 
     init_font();
@@ -192,7 +273,7 @@ main :: () {
     show_demo_window := false;
     clear_color := make_vector4(0.45, 0.55, 0.60, 1.00);
 
-    f :float = 0.0;
+    camera : Camera;
 
     // Main loop
     done := false;
@@ -215,10 +296,14 @@ main :: () {
 
         {
             ImGui.Text("Hello, world!");
-            ImGui.SliderFloat("float", *f, 0.0, 1.0, "%.3f");
             ImGui.ColorEdit3("clear color", clear_color.component);
             if ImGui.Button("Demo Window", size=*make_vector2(0,0)) show_demo_window ^= true;
             ImGui.Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0 / io.Framerate, io.Framerate);
+
+            w, h : s32;
+            SDL_GetWindowSize(window, *w, *h);
+            ImGui.Text(sprint("Window size %1x%2", w, h));
+            if ImGui.Button("Reset Window Size", size=*make_vector2(0,0)) SDL_SetWindowSize(window, WINDOW_WIDTH, WINDOW_HEIGHT);
         }
 
         if show_demo_window {
@@ -236,18 +321,45 @@ main :: () {
             case .ResizeNWSE;    SDL_SetCursor(cursor_resize_nwse);
         }
 
-        // io := ImGui.GetIO(); // Error: Variable 'io' is used before its declaration.
-        // print("%\n", << io);
+        mouse_state : MouseState;
+        mouse_state.position_px = make_vector2(io.MousePos.x, io.MousePos.y);
+        mouse_state.velocity_px = make_vector2(io.MouseDelta.x, io.MouseDelta.y);
+        mouse_state.wheel = io.MouseWheel;
+        mouse_state.left_down = io.MouseDown[0];
+        mouse_state.right_down = io.MouseDown[1];
+        mouse_state.middle_down = io.MouseDown[2];
 
+        update_camera(*camera, 1, *mouse_state);
+
+        {
+            w : s32;
+            h : s32;
+            SDL_GetWindowSize(window, *w, *h);
+            projection := orthographic_projection_matrix(0.0, xx w, 0.0, xx h, -1.0, 1.0);
+
+
+            // @fixme: this is broken, text is in the wrong position in y after resizing
+            mvp := projection;
+            glUseProgram(text_shader);
+            mvp_loc := glGetUniformLocation(text_shader, "mvp");
+            glUniformMatrix4fv(mvp_loc, 1, GL_TRUE, *mvp._11);
+        }
+
+        #if false {
+            debug_print_active_uniforms(text_shader);
+            debug_print_active_uniforms(polyline_shader);
+
+            // glUseProgram(polyline_shader);
+            // mvp_loc := glGetUniformLocation(polyline_shader, "mvp");
+            // glUniformMatrix4fv(mvp_loc, 1, GL_TRUE, *projection_from_local._11);
+        }
 
         // Rendering
         glViewport(0, 0, xx io.DisplaySize.x, xx io.DisplaySize.y);
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
-        ImGui.Render();
-
-
         render_polyline(polyline_shader, *polyline);
+        ImGui.Render();
 
         {
             glEnable(GL_BLEND);
@@ -277,14 +389,26 @@ main :: () {
     SDL_Quit();
 }
 
+#scope_file
 
-build :: () {
+debug_print_active_uniforms :: (shader : GLuint) {
+    max_length: GLint;
+    glGetProgramiv(polyline_shader, GL_ACTIVE_UNIFORM_MAX_LENGTH, *max_length);
+    name := alloc_string(max_length);
+    defer free(name);
+    // print("GL_ACTIVE_UNIFORM_MAX_LENGTH = %\n", max_length);
 
-    build_options := get_build_options();
-    // build_options.output_type = Build_Output_Type.NO_OUTPUT;
-    build_options.lazy_foreign_function_lookups = true;
-    print("%\n\n", build_options);
+    count : s32;
+    glGetProgramiv(shader, GL_ACTIVE_UNIFORMS, *count);
+    print("[debug %] Shader % has % active uniforms:\n", #location(), shader, count);
+    for 0..count-1 {
+        size: GLint;
+        type: GLenum;
+        length: GLsizei;
 
+        glGetActiveUniform(shader, cast(GLuint) it, xx max_length, *length, *size, *type, name.data);
+        name.count = xx length;
+        print("Uniform #% Type: 0x% Size: % Name: %\n", it, formatInt(type, base=16), size, name);
+    }
 }
 
-#run build();

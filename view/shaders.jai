@@ -1,10 +1,3 @@
-text_shader : GLuint;
-text_vao : GLuint;
-text_vbo : GLuint;
-polyline_shader : GLuint;
-polyline_vao : GLuint;
-polyline_vbo : GLuint;
-
 get_shader_program :: (shader_vertex : string, shader_fragment : string) -> GLuint {
     make_shader_object :: (shader : string, shader_type : GLenum) -> GLuint {
         shader_object := glCreateShader(shader_type);

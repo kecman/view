@@ -1,9 +1,12 @@
+#scope_file
 
 #import "Basic";
 #import "ImGui";
 #import "SDL";
 #import "Math";
 #import "GL";
+
+#scope_export
 
 // Data
 g_Time: float64 = 0.0;
