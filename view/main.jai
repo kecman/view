@@ -2,6 +2,7 @@
 #import "File";
 #import "String";
 
+#import "Math";
 Num :: #import "Num";
 
 #load "vendor/imgui_sdl_gl.jai";
@@ -233,23 +234,25 @@ main :: () {
 
         // This should be dynamic, depending on the camera etc
         world_from_model := matrix4_identity();
-        // view_from_world := Num.make_look_at_matrix(make_vector3(0, 0, 200), make_vector3(0, 0, 0), make_vector3(0, 1, 0));
-        view_from_world := matrix4_identity();
-        print("view_from_world = %\n", view_from_world);
-        projection_from_view := orthographic_projection_matrix(0.0, xx WINDOW_WIDTH, 0.0, xx WINDOW_HEIGHT, -1.0, 1.0);
+        view_from_world := Num.make_look_at_matrix(make_vector3(0, 0, 200), make_vector3(0, 0, 0), make_vector3(0, 1, 0)); // @Cleanup: use Math.make_look_at_matrix here
+        projection_from_view := orthographic_projection_matrix(-70, 70, -70, 70, 199, 202.0);
 
         projection_from_model := projection_from_view * view_from_world * world_from_model;
 
-        print("projection_from_model = %\n", projection_from_model);
+        model_point := make_vector4(1, 0, 0, 1);
+        world_point := world_from_model * model_point;
+        view_point := view_from_world * world_point;
+        projection_point := projection_from_view * view_point;
+        print("model=%\nworld=%\nview=%\nprojection=%\n", model_point, world_point, view_point, projection_point);
 
-        for polyline.points {
-            if it_index != 2 continue;
-            model_point := make_vector4(it.x, it.y, 0, 1);
-            world_point := world_from_model * model_point;
-            view_point := view_from_world * world_point;
-            projection_point := projection_from_view * view_point;
-            print("model=%\nworld=%\nview=%\nprojection=%\n", model_point, world_point, view_point, projection_point);
-        }
+        //for polyline.points {
+        //    if it_index != 2 continue;
+        //    model_point := make_vector4(it.x, it.y, 0, 1);
+        //    world_point := world_from_model * model_point;
+        //    view_point := view_from_world * world_point;
+        //    projection_point := projection_from_view * view_point;
+        //    print("model=%\nworld=%\nview=%\nprojection=%\n", model_point, world_point, view_point, projection_point);
+        //}
 
         glUseProgram(polyline_shader);
         mvp_loc := glGetUniformLocation(polyline_shader, "mvp");

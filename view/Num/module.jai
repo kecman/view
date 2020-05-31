@@ -1,17 +1,16 @@
 #scope_file
 
-Math :: #import "Math";
+#import "Math";
 
 #scope_export
 
-make_look_at_matrix :: (eye : Math.Vector3, center : Math.Vector3, up : Math.Vector3) -> Math.Matrix4 #must {
+make_look_at_matrix :: (eye : Vector3, center : Vector3, up : Vector3) -> Matrix4 #must {
 
-    f := Math.normalize_or_z_axis(Math.operator-(center, eye));
-    // f := Math.normalize_or_z_axis(center - eye);
-    s := Math.normalize_or_z_axis(Math.cross(f, up));
-    u := Math.cross(s, f);
+    f := normalize_or_z_axis(center - eye);
+    s := normalize_or_z_axis(cross(f, up));
+    u := cross(s, f);
 
-    m := Math.matrix4_identity();
+    m := matrix4_identity();
 
     // See glm::lookAtRH, but using row-major
     m.coef[0][0] =  s.x;
@@ -23,9 +22,9 @@ make_look_at_matrix :: (eye : Math.Vector3, center : Math.Vector3, up : Math.Vec
     m.coef[2][0] = -f.x;
     m.coef[2][1] = -f.y;
     m.coef[2][2] = -f.z;
-    m.coef[0][3] = -Math.dot(s, eye);
-    m.coef[1][3] = -Math.dot(u, eye);
-    m.coef[2][3] =  Math.dot(f, eye);
+    m.coef[0][3] = -dot(s, eye);
+    m.coef[1][3] = -dot(u, eye);
+    m.coef[2][3] =  dot(f, eye);
 
     return m;
 }
