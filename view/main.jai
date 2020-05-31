@@ -99,9 +99,22 @@ MouseState :: struct {
 }
 
 Camera :: struct {
+    ProjectionType :: enum u8 {ORTHOGRAPHIC; PERSPECTIVE;};
+
     eye_position :   Vector3; // world
-    look_direction : Vector3;
+    look_position : Vector3;
     up_direction :   Vector3;
+    projection_type := ProjectionType.ORTHOGRAPHIC;
+}
+
+camera : Camera;
+
+init_camera :: () {
+    camera.eye_position = make_vector3(0, 0, 200);
+    camera.look_position = make_vector3(0, 0, 0);
+    camera.up_direction = make_vector3(0, 1, 0);
+
+    camera.projection_type = Camera.ProjectionType.ORTHOGRAPHIC;
 }
 
 update_camera :: (camera : *Camera, delta_time : float, mouse : *MouseState) {
@@ -111,7 +124,14 @@ update_camera :: (camera : *Camera, delta_time : float, mouse : *MouseState) {
 
     // Pan with middle down
     if mouse.middle_down {
-        camera.eye_position.xy += mouse.velocity_px; // @TODO apply scale?
+        // @TODO apply scale?
+
+        // Move the camera in such a way that it looks like we're grabbing and moving the geometry
+        // Make the point where the mouse is when you first click be the point you move from
+        camera.eye_position.x -= mouse.velocity_px.x;
+        camera.eye_position.y += mouse.velocity_px.y;
+        camera.look_position.x -= mouse.velocity_px.x;
+        camera.look_position.y += mouse.velocity_px.y;
     }
 
     // Rotate about look direction with left down? Might be annoying
@@ -120,13 +140,28 @@ update_camera :: (camera : *Camera, delta_time : float, mouse : *MouseState) {
     }
 
     // Zoom with right down or scrolling
-    if mouse.right_down {
-        camera.eye_position.z += mouse.velocity_px.y;
-    } else {
-        camera.eye_position.z += mouse.wheel;
+    if #complete camera.projection_type == {
+        case .ORTHOGRAPHIC;
+            if mouse.right_down {
+                camera.eye_position.z += mouse.velocity_px.y;
+            } else {
+                camera.eye_position.z += mouse.wheel;
+            }
+        case .PERSPECTIVE;
+            if mouse.right_down {
+                camera.eye_position.z += mouse.velocity_px.y;
+            } else {
+                camera.eye_position.z += mouse.wheel;
+            }
     }
 
-    // print("old -> new: % -> %\n", camera_old, << camera);
+    print("%\n", << mouse);
+    print("%\n", << camera);
+}
+
+make_look_at_matrix :: (camera : *Camera) -> Matrix4 {
+    // @Cleanup: use Math.make_look_at_matrix here
+    return Num.make_look_at_matrix(camera.eye_position, camera.look_position, camera.up_direction);
 }
 
 main :: () {
@@ -157,6 +192,8 @@ main :: () {
     gl_load(*gl, SDL_GL_GetProcAddress);
 
     gl_enable_debug_output(break_on_error=true);
+
+    init_camera();
 
     // OGL Options
     {
@@ -230,29 +267,13 @@ main :: () {
     polyline := polyline_make_box();
 
     {
-        // @focus is to setup camera in the correct place
-
         // This should be dynamic, depending on the camera etc
         world_from_model := matrix4_identity();
-        view_from_world := Num.make_look_at_matrix(make_vector3(0, 0, 200), make_vector3(0, 0, 0), make_vector3(0, 1, 0)); // @Cleanup: use Math.make_look_at_matrix here
+        view_from_world := make_look_at_matrix(*camera);
         projection_from_view := orthographic_projection_matrix(-70, 70, -70, 70, 199, 202.0);
 
         projection_from_model := projection_from_view * view_from_world * world_from_model;
 
-        model_point := make_vector4(1, 0, 0, 1);
-        world_point := world_from_model * model_point;
-        view_point := view_from_world * world_point;
-        projection_point := projection_from_view * view_point;
-        print("model=%\nworld=%\nview=%\nprojection=%\n", model_point, world_point, view_point, projection_point);
-
-        //for polyline.points {
-        //    if it_index != 2 continue;
-        //    model_point := make_vector4(it.x, it.y, 0, 1);
-        //    world_point := world_from_model * model_point;
-        //    view_point := view_from_world * world_point;
-        //    projection_point := projection_from_view * view_point;
-        //    print("model=%\nworld=%\nview=%\nprojection=%\n", model_point, world_point, view_point, projection_point);
-        //}
 
         glUseProgram(polyline_shader);
         mvp_loc := glGetUniformLocation(polyline_shader, "mvp");
@@ -275,8 +296,6 @@ main :: () {
 
     show_demo_window := false;
     clear_color := make_vector4(0.45, 0.55, 0.60, 1.00);
-
-    camera : Camera;
 
     // Main loop
     done := false;
@@ -335,6 +354,34 @@ main :: () {
         update_camera(*camera, 1, *mouse_state);
 
         {
+            world_from_model := matrix4_identity();
+            view_from_world := make_look_at_matrix(*camera);
+            projection_from_view := orthographic_projection_matrix(-70, 70, -70, 70, 0.1, 400.0);
+            projection_from_model := projection_from_view * view_from_world * world_from_model;
+
+            // model_point := make_vector4(1, 0, 0, 1);
+            // world_point := world_from_model * model_point;
+            // view_point := view_from_world * world_point;
+            // projection_point := projection_from_view * view_point;
+            // print("model=%\nworld=%\nview=%\nprojection=%\n", model_point, world_point, view_point, projection_point);
+
+            for polyline.points {
+                if it_index != 2 continue;
+                model_point := make_vector4(it.x, it.y, 0, 1);
+                world_point := world_from_model * model_point;
+                view_point := view_from_world * world_point;
+                projection_point := projection_from_view * view_point;
+                // print("model=%\nworld=%\nview=%\nprojection=%\n", model_point, world_point, view_point, projection_point);
+                // print("%:%\nview=%\nprojection=%\n", #location().fully_pathed_filename, #location().line_number, view_point, projection_point);
+            }
+
+
+            glUseProgram(polyline_shader);
+            mvp_loc := glGetUniformLocation(polyline_shader, "mvp");
+            glUniformMatrix4fv(mvp_loc, 1, GL_TRUE, *projection_from_model._11);
+        }
+
+        {
             w : s32;
             h : s32;
             SDL_GetWindowSize(window, *w, *h);
@@ -360,7 +407,7 @@ main :: () {
         // Rendering
         glViewport(0, 0, xx io.DisplaySize.x, xx io.DisplaySize.y);
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
         render_polyline(polyline_shader, *polyline);
         ImGui.Render();
 
@@ -371,7 +418,7 @@ main :: () {
             defer glEnable(GL_CULL_FACE);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-            text := "HIH";
+            text := "X";
             text_w := get_text_width_in_pixels(text, 1.0);
             scale := 0.5;
             render_text_quad(text_shader,

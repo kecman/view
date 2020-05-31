@@ -1,0 +1,5 @@
+Implement pan with the holding down the middle button
+Implement zoom with the scroll wheel
+Zoom to geometry
+Zoom to origin
+Show the extents of the view volume
