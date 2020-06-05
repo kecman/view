@@ -1,5 +1,10 @@
-Implement pan with the holding down the middle button
-Implement zoom with the scroll wheel
-Zoom to geometry
-Zoom to origin
-Show the extents of the view volume
+[x] Implement pan with the holding down the middle button
+[x] Implement zoom with the scroll wheel
+[ ] Sync pan with mouse cursor
+[x] Fix text positioning with resize
+[ ] Dont distort geometry in non-square viewports
+[ ] Zoom to geometry
+[ ] Zoom to origin
+[ ] Show grid lines and label
+[ ] Move polylines
+[ ] Boost polygon bindings

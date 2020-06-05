@@ -121,7 +121,7 @@ main :: () {
 
     // Setup text shader
     {
-        projection := orthographic_projection_matrix(0.0, xx INITIAL_WINDOW_WIDTH, 0.0, xx INITIAL_WINDOW_HEIGHT, -1.0, 1.0);
+        projection := orthographic_projection_matrix(0.0, xx current_window_width, 0.0, xx current_window_height, -1.0, 1.0);
         mvp := projection;
 
         vert := read_entire_file("data/shaders/text.vert");
@@ -266,7 +266,6 @@ main :: () {
             world_from_model := matrix4_identity();
             view_from_world := make_look_at_matrix(*camera);
             projection_from_view := make_orthographic_projection_matrix(*camera);
-            // projection_from_view := make_projection_matrix(45, 70, -70, 70, 0.1, 400.0);
             projection_from_model := projection_from_view * view_from_world * world_from_model;
 
             // model_point := make_vector4(1, 0, 0, 1);
@@ -278,17 +277,6 @@ main :: () {
             //                           projection_point.z / projection_point.w,
             //                           1);
             // print("model=%\nworld=%\nview=%\nprojection=%\nndc=%\n", model_point, world_point, view_point, projection_point, ndc_point);
-
-            for polyline.points {
-                if it_index != 2 continue;
-                model_point := make_vector4(it.x, it.y, 0, 1);
-                world_point := world_from_model * model_point;
-                view_point := view_from_world * world_point;
-                projection_point := projection_from_view * view_point;
-                // print("model=%\nworld=%\nview=%\nprojection=%\n", model_point, world_point, view_point, projection_point);
-                // print("%:%\nview=%\nprojection=%\n", #location().fully_pathed_filename, #location().line_number, view_point, projection_point);
-            }
-
 
             glUseProgram(polyline_shader);
             mvp_loc := glGetUniformLocation(polyline_shader, "mvp");
@@ -335,7 +323,7 @@ main :: () {
             render_text_quad(text_shader,
                              text,
                              // make_vector2(25.0, WINDOW_HEIGHT - FONT_SIZE * scale),
-                             make_vector2(io.MousePos.x, INITIAL_WINDOW_HEIGHT - io.MousePos.y),
+                             make_vector2(io.MousePos.x, current_window_height - io.MousePos.y),
                              scale,
                              make_vector4(0.5, 0.8, 0.2, 1));
         }
