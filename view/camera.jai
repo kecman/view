@@ -60,21 +60,15 @@ update_camera :: (camera : *Camera, delta_time : float, mouse : *MouseState) {
 
     // Pan with middle down
     if mouse.middle_down {
-        // @TODO apply scale?
-
         // Convert mouse velocity from pixels/frame into NDC/frame @Unused
         ndc_per_frame : Vector2;
         ndc_per_frame.x = (2 * mouse.velocity_px.x) / cast(float)current_window_width;
         ndc_per_frame.y = (2 * mouse.velocity_px.y) / cast(float)current_window_height;
 
-        print("% -> %\n", mouse.velocity_px, ndc_per_frame);
-
-        // Move the camera in such a way that it looks like we're grabbing and moving the geometry
-        // Make the point where the mouse is when you first click be the point you move from
-        camera.eye_position.x -= mouse.velocity_px.x;
-        camera.eye_position.y += mouse.velocity_px.y;
-        camera.look_position.x -= mouse.velocity_px.x;
-        camera.look_position.y += mouse.velocity_px.y;
+        camera.eye_position.x -= ndc_per_frame.x * (camera.orthographic.right - camera.orthographic.left) / 2;
+        camera.eye_position.y += ndc_per_frame.y * (camera.orthographic.top - camera.orthographic.bottom) / 2;
+        camera.look_position.x -= ndc_per_frame.x * (camera.orthographic.right - camera.orthographic.left) / 2;
+        camera.look_position.y += ndc_per_frame.y * (camera.orthographic.top - camera.orthographic.bottom) / 2;
     }
 
     // Rotate about look direction with left down? Might be annoying
