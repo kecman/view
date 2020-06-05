@@ -1,5 +1,6 @@
 #import "Basic";
 #import "Compiler";
+#import "Check";
 
 build :: () {
 
@@ -25,7 +26,16 @@ build :: () {
 
     compiler_begin_intercept(w);
     add_build_file("main.jai", w);
+    while true {
+        message := compiler_wait_for_message();
+        if !message continue;
+        if message.workspace != w continue;
+        if message.kind == .COMPLETE break;
+        do_error_checking(message);
+    }
     compiler_end_intercept(w);
 }
 
-#run build();
+#run {
+    build();
+}
