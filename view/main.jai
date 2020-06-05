@@ -88,7 +88,7 @@ main :: () {
 
     SDL_Init(SDL_INIT_VIDEO);
 
-    window := SDL_CreateWindow("ImGui SDL2+OpenGL example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);
+    window := SDL_CreateWindow("View", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);
 
     // Check that the window was successfully created
     if window == null {
@@ -204,7 +204,8 @@ main :: () {
     io := ImGui.GetIO();
 
     show_demo_window := false;
-    clear_color := make_vector4(0.45, 0.55, 0.60, 1.00);
+    // clear_color := make_vector4(0.45, 0.55, 0.60, 1.00);
+    clear_color := make_vector4(87./256, 194./256, 248./256, 1.00);
 
     // Main loop
     done := false;
@@ -317,7 +318,7 @@ main :: () {
             defer glEnable(GL_CULL_FACE);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-            text := "X";
+            text := "Hello";
             text_w := get_text_width_in_pixels(text, 1.0);
             scale := 0.5;
             render_text_quad(text_shader,
@@ -325,10 +326,12 @@ main :: () {
                              // make_vector2(25.0, WINDOW_HEIGHT - FONT_SIZE * scale),
                              make_vector2(io.MousePos.x, current_window_height - io.MousePos.y),
                              scale,
-                             make_vector4(0.5, 0.8, 0.2, 1));
+                             make_vector4(1., 1., 1., 1));
         }
 
         SDL_GL_SwapWindow(window);
+
+        reset_temporary_storage();
     }
 
     // Cleanup
