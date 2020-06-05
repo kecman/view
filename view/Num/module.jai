@@ -28,3 +28,8 @@ make_look_at_matrix :: (eye : Vector3, center : Vector3, up : Vector3) -> Matrix
 
     return m;
 }
+
+to_radians :: (degrees : float) -> float {
+    scale :: PI / 180;
+    return degrees * scale;
+}

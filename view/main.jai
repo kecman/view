@@ -3,16 +3,21 @@
 #import "String";
 
 #import "Math";
+
 Num :: #import "Num";
 
 #load "vendor/imgui_sdl_gl.jai";
 #load "shaders.jai";
 #load "font.jai";
+#load "camera.jai";
 
 //#import "Debug";
 
-WINDOW_WIDTH  :: 1280;
-WINDOW_HEIGHT :: 720;
+INITIAL_WINDOW_WIDTH  : s32 : 1280;
+INITIAL_WINDOW_HEIGHT : s32 : 720;
+
+current_window_width := INITIAL_WINDOW_WIDTH;
+current_window_height := INITIAL_WINDOW_HEIGHT;
 
 text_shader : GLuint;
 text_vao : GLuint;
@@ -21,41 +26,22 @@ polyline_shader : GLuint;
 polyline_vao : GLuint;
 polyline_vbo : GLuint;
 
-print_errors :: (loc := #caller_location) {
-    DumpGLErrors("context %", #location());
-
-    {
-        error := glGetError();
-        if (error != GL_NO_ERROR) {
-            print("error:%:%,%: code % (%)\n", loc.fully_pathed_filename, loc.line_number, loc.character_number, error, formatInt(error, base=16));
-            print("stack trace\n");
-            for pack_stack_trace() {
-                print_stack_trace(*it);
-            }
-            exit(-1);
-        }
-    }
-}
-
-debug_callback :: (source: GLenum, type: GLenum, id: GLuint, severity: GLenum, length: GLsizei, message: *u8, userParam: *void) #c_call {
-    pctx := cast(*Context) userParam;
-    ctx := <<pctx;
-    push_context ctx {
-        print("source: %\n", source);
-        print("type: %\n", type);
-        print("id: %\n", id);
-        print("severity: %\n", severity);
-        print("length: %\n", length);
-        print("message: %\n", message);
-        print("userParam: %\n", userParam);
-    }
-}
-
 Polyline2 :: struct {
     Point :: Vector2;
     points : [..] Point;
     buffer_id : GLuint;
     is_dirty := true;
+}
+
+polyline_make_box :: () -> Polyline2 #must {
+    polyline : Polyline2;
+    array_add(*polyline.points, make_vector2(-50, -50));
+    array_add(*polyline.points, make_vector2(-50,  50));
+    array_add(*polyline.points, make_vector2( 50,  50));
+    array_add(*polyline.points, make_vector2( 50, -50));
+    array_add(*polyline.points, make_vector2(-50, -50));
+    buffer_polyline(*polyline);
+    return polyline;
 }
 
 buffer_polyline :: (using polyline : *Polyline2) {
@@ -98,77 +84,11 @@ MouseState :: struct {
     middle_down : bool;
 }
 
-Camera :: struct {
-    ProjectionType :: enum u8 {ORTHOGRAPHIC; PERSPECTIVE;};
-
-    eye_position :   Vector3; // world
-    look_position : Vector3;
-    up_direction :   Vector3;
-    projection_type := ProjectionType.ORTHOGRAPHIC;
-}
-
-camera : Camera;
-
-init_camera :: () {
-    camera.eye_position = make_vector3(0, 0, 200);
-    camera.look_position = make_vector3(0, 0, 0);
-    camera.up_direction = make_vector3(0, 1, 0);
-
-    camera.projection_type = Camera.ProjectionType.ORTHOGRAPHIC;
-}
-
-update_camera :: (camera : *Camera, delta_time : float, mouse : *MouseState) {
-    camera_old := << camera;
-
-    k_max_drag_angle_degrees : float : 20;
-
-    // Pan with middle down
-    if mouse.middle_down {
-        // @TODO apply scale?
-
-        // Move the camera in such a way that it looks like we're grabbing and moving the geometry
-        // Make the point where the mouse is when you first click be the point you move from
-        camera.eye_position.x -= mouse.velocity_px.x;
-        camera.eye_position.y += mouse.velocity_px.y;
-        camera.look_position.x -= mouse.velocity_px.x;
-        camera.look_position.y += mouse.velocity_px.y;
-    }
-
-    // Rotate about look direction with left down? Might be annoying
-    if mouse.left_down {
-        // @Incomplete
-    }
-
-    // Zoom with right down or scrolling
-    if #complete camera.projection_type == {
-        case .ORTHOGRAPHIC;
-            if mouse.right_down {
-                camera.eye_position.z += mouse.velocity_px.y;
-            } else {
-                camera.eye_position.z += mouse.wheel;
-            }
-        case .PERSPECTIVE;
-            if mouse.right_down {
-                camera.eye_position.z += mouse.velocity_px.y;
-            } else {
-                camera.eye_position.z += mouse.wheel;
-            }
-    }
-
-    print("%\n", << mouse);
-    print("%\n", << camera);
-}
-
-make_look_at_matrix :: (camera : *Camera) -> Matrix4 {
-    // @Cleanup: use Math.make_look_at_matrix here
-    return Num.make_look_at_matrix(camera.eye_position, camera.look_position, camera.up_direction);
-}
-
 main :: () {
 
     SDL_Init(SDL_INIT_VIDEO);
 
-    window := SDL_CreateWindow("ImGui SDL2+OpenGL example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, xx WINDOW_WIDTH, xx WINDOW_HEIGHT, SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);
+    window := SDL_CreateWindow("ImGui SDL2+OpenGL example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);
 
     // Check that the window was successfully created
     if window == null {
@@ -201,7 +121,7 @@ main :: () {
 
     // Setup text shader
     {
-        projection := orthographic_projection_matrix(0.0, xx WINDOW_WIDTH, 0.0, xx WINDOW_HEIGHT, -1.0, 1.0);
+        projection := orthographic_projection_matrix(0.0, xx INITIAL_WINDOW_WIDTH, 0.0, xx INITIAL_WINDOW_HEIGHT, -1.0, 1.0);
         mvp := projection;
 
         vert := read_entire_file("data/shaders/text.vert");
@@ -253,24 +173,13 @@ main :: () {
         glBindVertexArray(0);
     }
 
-    polyline_make_box :: () -> Polyline2 #must {
-        polyline : Polyline2;
-        array_add(*polyline.points, make_vector2(-50, -50));
-        array_add(*polyline.points, make_vector2(-50,  50));
-        array_add(*polyline.points, make_vector2( 50,  50));
-        array_add(*polyline.points, make_vector2( 50, -50));
-        array_add(*polyline.points, make_vector2(-50, -50));
-        buffer_polyline(*polyline);
-        return polyline;
-    }
-
     polyline := polyline_make_box();
 
     {
         // This should be dynamic, depending on the camera etc
         world_from_model := matrix4_identity();
         view_from_world := make_look_at_matrix(*camera);
-        projection_from_view := orthographic_projection_matrix(-70, 70, -70, 70, 199, 202.0);
+        projection_from_view := make_orthographic_projection_matrix(*camera);
 
         projection_from_model := projection_from_view * view_from_world * world_from_model;
 
@@ -325,7 +234,7 @@ main :: () {
             w, h : s32;
             SDL_GetWindowSize(window, *w, *h);
             ImGui.Text(sprint("Window size %1x%2", w, h));
-            if ImGui.Button("Reset Window Size", size=*make_vector2(0,0)) SDL_SetWindowSize(window, WINDOW_WIDTH, WINDOW_HEIGHT);
+            if ImGui.Button("Reset Window Size", size=*make_vector2(0,0)) SDL_SetWindowSize(window, INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
         }
 
         if show_demo_window {
@@ -356,14 +265,19 @@ main :: () {
         {
             world_from_model := matrix4_identity();
             view_from_world := make_look_at_matrix(*camera);
-            projection_from_view := orthographic_projection_matrix(-70, 70, -70, 70, 0.1, 400.0);
+            projection_from_view := make_orthographic_projection_matrix(*camera);
+            // projection_from_view := make_projection_matrix(45, 70, -70, 70, 0.1, 400.0);
             projection_from_model := projection_from_view * view_from_world * world_from_model;
 
             // model_point := make_vector4(1, 0, 0, 1);
             // world_point := world_from_model * model_point;
             // view_point := view_from_world * world_point;
-            // projection_point := projection_from_view * view_point;
-            // print("model=%\nworld=%\nview=%\nprojection=%\n", model_point, world_point, view_point, projection_point);
+            // projection_point := projection_from_view * view_point; // clip_point??
+            // ndc_point := make_vector4(projection_point.x / projection_point.w,
+            //                           projection_point.y / projection_point.w,
+            //                           projection_point.z / projection_point.w,
+            //                           1);
+            // print("model=%\nworld=%\nview=%\nprojection=%\nndc=%\n", model_point, world_point, view_point, projection_point, ndc_point);
 
             for polyline.points {
                 if it_index != 2 continue;
@@ -382,11 +296,8 @@ main :: () {
         }
 
         {
-            w : s32;
-            h : s32;
-            SDL_GetWindowSize(window, *w, *h);
-            projection := orthographic_projection_matrix(0.0, xx w, 0.0, xx h, -1.0, 1.0);
-
+            SDL_GetWindowSize(window, *current_window_width, *current_window_height);
+            projection := orthographic_projection_matrix(0.0, xx current_window_width, 0.0, xx current_window_height, -1.0, 1.0);
 
             // @fixme: this is broken, text is in the wrong position in y after resizing
             mvp := projection;
@@ -424,7 +335,7 @@ main :: () {
             render_text_quad(text_shader,
                              text,
                              // make_vector2(25.0, WINDOW_HEIGHT - FONT_SIZE * scale),
-                             make_vector2(io.MousePos.x, WINDOW_HEIGHT - io.MousePos.y),
+                             make_vector2(io.MousePos.x, INITIAL_WINDOW_HEIGHT - io.MousePos.y),
                              scale,
                              make_vector4(0.5, 0.8, 0.2, 1));
         }
@@ -462,3 +373,32 @@ debug_print_active_uniforms :: (shader : GLuint) {
     }
 }
 
+print_errors :: (loc := #caller_location) {
+    DumpGLErrors("context %", #location());
+
+    {
+        error := glGetError();
+        if (error != GL_NO_ERROR) {
+            print("error:%:%,%: code % (%)\n", loc.fully_pathed_filename, loc.line_number, loc.character_number, error, formatInt(error, base=16));
+            print("stack trace\n");
+            for pack_stack_trace() {
+                print_stack_trace(*it);
+            }
+            exit(-1);
+        }
+    }
+}
+
+debug_callback :: (source: GLenum, type: GLenum, id: GLuint, severity: GLenum, length: GLsizei, message: *u8, userParam: *void) #c_call {
+    pctx := cast(*Context) userParam;
+    ctx := <<pctx;
+    push_context ctx {
+        print("source: %\n", source);
+        print("type: %\n", type);
+        print("id: %\n", id);
+        print("severity: %\n", severity);
+        print("length: %\n", length);
+        print("message: %\n", message);
+        print("userParam: %\n", userParam);
+    }
+}
