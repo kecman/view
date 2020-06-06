@@ -208,6 +208,12 @@ main :: () {
             SDL_GetWindowSize(window, *w, *h);
             ImGui.Text(sprint("Window size %1x%2", w, h));
             if ImGui.Button("Reset Window Size", size=*make_vector2(0,0)) SDL_SetWindowSize(window, INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
+
+            if ImGui.Button("Reset to bounds", size=*make_vector2(0,0)) {
+                bounds := geom.bounding_box(*polyline);
+                geom.offset(*bounds, 0.05 * geom.extents(*bounds));
+                update_to_fit_on_screen(*camera, *bounds);
+            }
         }
 
         if show_demo_window {
