@@ -101,7 +101,7 @@ update_camera :: (camera : *Camera, delta_time : float, mouse : *MouseState) {
 
 make_look_at_matrix :: (camera : *Camera) -> Matrix4 #must {
     // @Cleanup: use Math.make_look_at_matrix here
-    return Num.make_look_at_matrix(camera.eye_position, camera.look_position, camera.up_direction);
+    return geom.make_look_at_matrix(camera.eye_position, camera.look_position, camera.up_direction);
 }
 
 make_orthographic_projection_matrix :: (camera : *Camera) -> Matrix4 #must {
@@ -113,4 +113,4 @@ make_orthographic_projection_matrix :: (camera : *Camera) -> Matrix4 #must {
 }
 
 #scope_file
-Num :: #import "Num";
+geom :: #import "Geom";

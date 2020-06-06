@@ -4,7 +4,7 @@
 
 #import "Math";
 
-Num :: #import "Num";
+geom :: #import "Geom";
 
 #load "vendor/imgui_sdl_gl.jai";
 #load "shaders.jai";
@@ -22,40 +22,12 @@ current_window_height := INITIAL_WINDOW_HEIGHT;
 text_shader : GLuint;
 text_vao : GLuint;
 text_vbo : GLuint;
+
 polyline_shader : GLuint;
 polyline_vao : GLuint;
 polyline_vbo : GLuint;
 
-Polyline2 :: struct {
-    Point :: Vector2;
-    points : [..] Point;
-    buffer_id : GLuint;
-    is_dirty := true;
-}
-
-polyline_make_box :: () -> Polyline2 #must {
-    polyline : Polyline2;
-    array_add(*polyline.points, make_vector2(-50, -50));
-    array_add(*polyline.points, make_vector2(-50,  50));
-    array_add(*polyline.points, make_vector2( 50,  50));
-    array_add(*polyline.points, make_vector2( 50, -50));
-    array_add(*polyline.points, make_vector2(-50, -50));
-    buffer_polyline(*polyline);
-    return polyline;
-}
-
-buffer_polyline :: (using polyline : *Polyline2) {
-    if is_dirty {
-        if !buffer_id {
-            glGenBuffers(1, *buffer_id);
-        }
-        glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
-        glBufferData(GL_ARRAY_BUFFER, size_of(type_of(points[0])) * points.count, points.data, GL_STATIC_DRAW);
-        is_dirty = false;
-    }
-}
-
-render_polyline :: (shader_program: GLuint, polyline : *Polyline2) {
+render_polyline :: (shader_program: GLuint, polyline : *geom.Polyline2) {
     // for polyline.points print("% %\n", it_index, it);
 
     glUseProgram(polyline_shader);
@@ -173,7 +145,7 @@ main :: () {
         glBindVertexArray(0);
     }
 
-    polyline := polyline_make_box();
+    polyline := geom.polyline_make_box();
 
     {
         // This should be dynamic, depending on the camera etc

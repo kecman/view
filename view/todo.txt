@@ -2,9 +2,30 @@
 [x] Implement zoom with the scroll wheel
 [x] Sync pan with mouse cursor
 [x] Fix text positioning with resize
-[ ] Dont distort geometry in non-square viewports
 [ ] Zoom to geometry
 [ ] Zoom to origin
+[ ] Dont distort geometry in non-square viewports
 [ ] Show grid lines and label
 [ ] Move polylines
 [ ] Boost polygon bindings
+
+
+Present & Explain
+-----------------
+
+Provide the source code to follow along
+Make a proper debug/release build for llvm
+Practice explaining the compile loop
+Mention that searching with <ident> :: is easy
+Make a quick demo program with the syntax for basic things, but not trivial things:
+  AxisBox and Polyline types
+Demo with size of types, which store constants
+Demo iterators on polylines, segment iterator, point iterator etc, stuff from boost geometry
+Demo something with testing, maybe have a build target for that?
+Demo tests using @test, make it work like the @PrintLike thing. You don't need to register them anywhere
+
+If you've ever played his games, there are many ideas in them and they're all coupled and consistent. The game is kinda about exploring all the interactions
+
+
+Questions
+Is there a const concept?

@@ -4,6 +4,9 @@
 
 #scope_export
 
+#load "axis_box.jai";
+#load "polyline.jai";
+
 make_look_at_matrix :: (eye : Vector3, center : Vector3, up : Vector3) -> Matrix4 #must {
 
     f := normalize_or_z_axis(center - eye);
