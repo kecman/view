@@ -55,8 +55,8 @@ update_camera :: (camera : *Camera, delta_time : float, mouse : *MouseState) {
     aspect := camera.aspect_ratio_horizontal_over_vertical;
     camera.fov_vertical_radians = 2 * atan2(camera.top, camera.eye_position.z);
 
-    // Pan with middle down
-    if mouse.middle_down {
+    // Pan with left down
+    if mouse.left_down {
         // Convert mouse velocity from pixels/frame into NDC/frame @Unused
         ndc_per_frame : Vector2;
         ndc_per_frame.x = (2 * mouse.velocity_px.x) / cast(float)current_window_width;
@@ -68,15 +68,16 @@ update_camera :: (camera : *Camera, delta_time : float, mouse : *MouseState) {
         camera.look_position.y += ndc_per_frame.y * (camera.top - camera.bottom) / 2;
     }
 
-    // Rotate about look direction with left down? Might be annoying
-    if mouse.left_down {
-        // @Incomplete
+    // Rotate with middle down
+    if mouse.middle_down {
+        // @FIXME: This screws up panning
+        camera.up_direction.xy = rotate(camera.up_direction.xy, 0.01 * mouse.velocity_px.y);
     }
 
     // Zoom with right down or scrolling
     increment : float = 0;
     if mouse.right_down {
-        increment = xx mouse.velocity_px.y;
+        increment = xx -0.03 * mouse.velocity_px.y;
     } else {
         increment = mouse.wheel;
     }
@@ -102,6 +103,7 @@ update_to_fit_on_screen :: (using camera : *Camera, world_box : *geom.AxisBox2) 
     center := geom.center_point(world_box);
     eye_position.xy = center;
     look_position.xy = center;
+    up_direction = make_vector3(0, 1, 0);
 
     view_from_world := make_look_at_matrix(camera);
     view_min := view_from_world * make_vector4(world_box.min_point.x, world_box.min_point.y, 0, 1);
