@@ -5,6 +5,7 @@
 #import "Math";
 
 geom :: #import "Geom";
+io :: #import "IO";
 
 #load "vendor/imgui_sdl_gl.jai";
 #load "shaders.jai";
@@ -27,6 +28,7 @@ polyline_shader : GLuint;
 polyline_vao : GLuint;
 polyline_vbo : GLuint;
 
+// @TODO move this into the polyine struct
 VertexLabelStyle :: struct {
     show_position := false;
     show_index := true;
@@ -182,8 +184,11 @@ main :: () {
         glBindVertexArray(0);
     }
 
-    polyline := geom.polyline_make_box();
-    fit_polyline_on_screen(*polyline);
+    // polyline := geom.polyline_make_box();
+    polyline := io.load_obj_polyline2();
+    // die();
+
+    fit_polyline_on_screen(polyline);
     vertex_label_style : VertexLabelStyle;
 
     {
@@ -212,7 +217,7 @@ main :: () {
     // ImGui.StyleColorsClassic();
     ImGui.StyleColorsDark();
 
-    io := ImGui.GetIO();
+    imgui_io := ImGui.GetIO();
 
     show_demo_window := false;
     // clear_color := make_vector4(0.45, 0.55, 0.60, 1.00);
@@ -233,7 +238,7 @@ main :: () {
                     done = true;
                 case SDL_KEYUP;
                     if event.key.keysym.sym == SDLK_ESCAPE done = true;
-                    if event.key.keysym.sym == SDLK_r fit_polyline_on_screen(*polyline);
+                    if event.key.keysym.sym == SDLK_r fit_polyline_on_screen(polyline);
                     if event.key.keysym.sym == SDLK_v cycle_vertex_label_style(*vertex_label_style);
             }
         }
@@ -243,14 +248,14 @@ main :: () {
             ImGui.Text("Hello, world!");
             ImGui.ColorEdit3("clear color", clear_color.component);
             if ImGui.Button("Demo Window", size=*make_vector2(0,0)) show_demo_window ^= true;
-            ImGui.Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0 / io.Framerate, io.Framerate);
+            ImGui.Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0 / imgui_io.Framerate, imgui_io.Framerate);
 
             w, h : s32;
             SDL_GetWindowSize(window, *w, *h);
             ImGui.Text(sprint("Window size %1x%2", w, h));
             if ImGui.Button("Reset Window Size", size=*make_vector2(0,0)) SDL_SetWindowSize(window, INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
 
-            if ImGui.Button("Reset to bounds (r)", size=*make_vector2(0,0)) fit_polyline_on_screen(*polyline);
+            if ImGui.Button("Reset to bounds (r)", size=*make_vector2(0,0)) fit_polyline_on_screen(polyline);
             if ImGui.Button("Cycle vertex style (v)", size=*make_vector2(0,0)) cycle_vertex_label_style(*vertex_label_style);
 
         }
@@ -271,12 +276,12 @@ main :: () {
         }
 
         mouse_state : MouseState;
-        mouse_state.position_px = make_vector2(io.MousePos.x, io.MousePos.y);
-        mouse_state.velocity_px = make_vector2(io.MouseDelta.x, io.MouseDelta.y);
-        mouse_state.wheel = io.MouseWheel;
-        mouse_state.left_down = io.MouseDown[0];
-        mouse_state.right_down = io.MouseDown[1];
-        mouse_state.middle_down = io.MouseDown[2];
+        mouse_state.position_px = make_vector2(imgui_io.MousePos.x, imgui_io.MousePos.y);
+        mouse_state.velocity_px = make_vector2(imgui_io.MouseDelta.x, imgui_io.MouseDelta.y);
+        mouse_state.wheel = imgui_io.MouseWheel;
+        mouse_state.left_down = imgui_io.MouseDown[0];
+        mouse_state.right_down = imgui_io.MouseDown[1];
+        mouse_state.middle_down = imgui_io.MouseDown[2];
 
         update_camera(*camera, 1, *mouse_state);
 
@@ -322,10 +327,10 @@ main :: () {
         }
 
         // Rendering
-        glViewport(0, 0, xx io.DisplaySize.x, xx io.DisplaySize.y);
+        glViewport(0, 0, xx imgui_io.DisplaySize.x, xx imgui_io.DisplaySize.y);
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-        render_polyline(polyline_shader, *polyline, *vertex_label_style);
+        render_polyline(polyline_shader, polyline, *vertex_label_style);
         ImGui.Render();
 
         {
@@ -341,7 +346,7 @@ main :: () {
             render_text_quad(text_shader,
                              text,
                              // make_vector2(25.0, WINDOW_HEIGHT - FONT_SIZE * scale),
-                             make_vector2(io.MousePos.x, current_window_height - io.MousePos.y),
+                             make_vector2(imgui_io.MousePos.x, current_window_height - imgui_io.MousePos.y),
                              scale,
                              make_vector4(1., 1., 1., 1));
         }
@@ -361,9 +366,11 @@ main :: () {
 #scope_file
 
 fit_polyline_on_screen :: (polyline : *geom.Polyline2) {
-    bounds := geom.bounding_box(polyline);
-    geom.offset(*bounds, 0.05 * geom.extents(*bounds));
-    update_to_fit_on_screen(*camera, *bounds);
+    if polyline {
+        bounds := geom.bounding_box(polyline);
+        geom.offset(*bounds, 0.05 * geom.extents(*bounds));
+        update_to_fit_on_screen(*camera, *bounds);
+    }
 }
 
 cycle_vertex_label_style :: (using style : *VertexLabelStyle) {

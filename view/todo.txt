@@ -4,6 +4,7 @@
 [x] Fix text positioning with resize
 [x] Zoom to geometry
 [x] Label points
+[x] Load simple obj files
 [ ] Alternate segment colours
 [ ] Dont distort geometry in non-square viewports
 [ ] Zoom to origin
