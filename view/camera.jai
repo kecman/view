@@ -49,8 +49,6 @@ init_camera :: () {
 }
 
 update_camera :: (camera : *Camera, delta_time : float, mouse : *MouseState) {
-    camera_old := << camera;
-
     k_max_drag_angle_degrees : float : 20; // @Unused
 
     camera.aspect_ratio_horizontal_over_vertical = cast(float) current_window_width / cast(float) current_window_height;
@@ -76,7 +74,6 @@ update_camera :: (camera : *Camera, delta_time : float, mouse : *MouseState) {
     }
 
     // Zoom with right down or scrolling
-    // @FIXME not dollying since then we have stupid stuff to do with the clipping planes
     increment : float = 0;
     if mouse.right_down {
         increment = xx mouse.velocity_px.y;
@@ -102,11 +99,26 @@ update_to_fit_on_screen :: (using camera : *Camera, world_box : *geom.AxisBox2) 
     eye_position.xy = center;
     look_position.xy = center;
 
-    // view_from_world := make_look_at_matrix(*camera);
-    // view_min := view_from_world * make_vector4(world_box.min.x, world_box.min.y, 0, 1);
-    // view_max := view_from_world * make_vector4(world_box.max.x, world_box.max.y, 0, 1);
+    view_from_world := make_look_at_matrix(camera);
+    view_min := view_from_world * make_vector4(world_box.min_point.x, world_box.min_point.y, 0, 1);
+    view_max := view_from_world * make_vector4(world_box.max_point.x, world_box.max_point.y, 0, 1);
 
-    // camera.aspect_ratio_horizontal_over_vertical
+    aspect := aspect_ratio_horizontal_over_vertical;
+    extents := geom.extents(world_box);
+    scale := (extents.y / 2) / top;
+    if scale * right < (extents.x / 2) {
+        scale = (extents.x / 2) / right;
+    }
+
+    camera.top *= scale;
+    camera.bottom *= scale;
+    camera.right *= scale;
+    camera.left *= scale;
+
+    camera.top = max(camera.top, 0.1);
+    camera.bottom = min(camera.bottom, -0.1);
+    camera.right = max(camera.right, aspect * 0.1);
+    camera.left = min(camera.left, -aspect * 0.1);;
 }
 
 make_look_at_matrix :: (using camera : *Camera) -> Matrix4 #must {

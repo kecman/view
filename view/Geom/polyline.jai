@@ -32,11 +32,11 @@ bounding_box :: (polyline : *$T/Polyline) -> AxisBox(T.dim) {
 
 polyline_make_box :: () -> Polyline2 #must {
     polyline : Polyline2;
-    array_add(*polyline.points, make_vector2(-50, -50));
-    array_add(*polyline.points, make_vector2(-50,  50));
-    array_add(*polyline.points, make_vector2( 50,  50));
-    array_add(*polyline.points, make_vector2( 50, -50));
-    array_add(*polyline.points, make_vector2(-50, -50));
+    array_add(*polyline.points, make_vector2(-150, -50));
+    array_add(*polyline.points, make_vector2(-150,  50));
+    array_add(*polyline.points, make_vector2( 150,  50));
+    array_add(*polyline.points, make_vector2( 150, -50));
+    array_add(*polyline.points, make_vector2(-150, -50));
     buffer_polyline(*polyline);
     return polyline;
 }

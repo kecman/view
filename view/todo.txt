@@ -2,9 +2,9 @@
 [x] Implement zoom with the scroll wheel
 [x] Sync pan with mouse cursor
 [x] Fix text positioning with resize
-[ ] Zoom to geometry
-[ ] Zoom to origin
+[x] Zoom to geometry
 [ ] Dont distort geometry in non-square viewports
+[ ] Zoom to origin
 [ ] Show grid lines and label
 [ ] Move polylines
 [ ] Boost polygon bindings
