@@ -23,7 +23,7 @@ Polyline :: struct (dim : int) {
 
 Polyline2 :: Polyline(2);
 
-bounding_box :: (polyline : *$T/Polyline) -> AxisBox(T.dim) {
+bounding_box :: (polyline : *$T/Polyline) -> AxisBox(T.dim) #must {
     box : AxisBox(T.dim); // @Cleanup: Can we do this with named return values?
     init(*box);
     for polyline.points expand(*box, it);

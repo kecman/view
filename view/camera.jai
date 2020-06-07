@@ -95,6 +95,10 @@ update_camera :: (camera : *Camera, delta_time : float, mouse : *MouseState) {
 
 // update_to_fit_on_screen :: (camera : *Camera, bbox : *$T/geom.AxisBox) { // @CompilerBug?
 update_to_fit_on_screen :: (using camera : *Camera, world_box : *geom.AxisBox2) {
+    if geom.is_empty(world_box) {
+        return;
+    }
+
     center := geom.center_point(world_box);
     eye_position.xy = center;
     look_position.xy = center;

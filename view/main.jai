@@ -194,6 +194,7 @@ main :: () {
                     done = true;
                 case SDL_KEYUP;
                     if event.key.keysym.sym == SDLK_ESCAPE done = true;
+                    if event.key.keysym.sym == SDLK_r fit_polyline_on_screen(*polyline);
             }
         }
         ImGui_ImplSdl_NewFrame(window);
@@ -209,11 +210,7 @@ main :: () {
             ImGui.Text(sprint("Window size %1x%2", w, h));
             if ImGui.Button("Reset Window Size", size=*make_vector2(0,0)) SDL_SetWindowSize(window, INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
 
-            if ImGui.Button("Reset to bounds", size=*make_vector2(0,0)) {
-                bounds := geom.bounding_box(*polyline);
-                geom.offset(*bounds, 0.05 * geom.extents(*bounds));
-                update_to_fit_on_screen(*camera, *bounds);
-            }
+            if ImGui.Button("Reset to bounds (r)", size=*make_vector2(0,0)) fit_polyline_on_screen(*polyline);
         }
 
         if show_demo_window {
@@ -320,6 +317,12 @@ main :: () {
 }
 
 #scope_file
+
+fit_polyline_on_screen :: (polyline : *geom.Polyline2) {
+    bounds := geom.bounding_box(polyline);
+    geom.offset(*bounds, 0.05 * geom.extents(*bounds));
+    update_to_fit_on_screen(*camera, *bounds);
+}
 
 debug_print_active_uniforms :: (shader : GLuint) {
     max_length: GLint;

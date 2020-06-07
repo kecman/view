@@ -33,6 +33,7 @@ AxisBox3 :: AxisBox(3);
 //     return box;
 // }
 
+// Initialise `box` to a state where `is_empty` returns true and where we can start calling `expand`
 init :: (using box : *$T/AxisBox) {
     for d : 0..T.dim-1 {
         #if type_of(T.Point.x) == float32 {
@@ -46,7 +47,6 @@ init :: (using box : *$T/AxisBox) {
     }
 }
 
-
 make_axis_box :: (min_point : Vector2, max_point : Vector2) -> AxisBox(2) #must {
     assert(is_finite(min_point.x) && is_finite(min_point.y));
     assert(is_finite(max_point.x) && is_finite(max_point.y));
@@ -56,6 +56,15 @@ make_axis_box :: (min_point : Vector2, max_point : Vector2) -> AxisBox(2) #must 
     box.max_point = max_point;
 
     return box;
+}
+
+is_empty :: (using box : *$T/AxisBox) -> bool #must {
+    for d : 0..T.dim-1 {
+        if min_point.component[d] > max_point.component[d] {
+            return true;
+        }
+    }
+    return false;
 }
 
 expand :: (using box : *$T/AxisBox, point : T.Point) {
@@ -69,27 +78,34 @@ center_point :: (using box : *$T/AxisBox) -> T.Point #must {
     return (max_point + min_point) / 2;
 }
 
-offset :: (box : *$T/AxisBox, increment : float) {
+offset :: (using box : *$T/AxisBox, increment : float) {
+    vector_increment : T.Vector;
     for d : 0..T.dim-1 {
-        box.min_point.component[d] -= increment;
-        box.max_point.component[d] += increment;
+        vector_increment.component[d] = increment;
     }
+    offset(box, vector_increment);
 }
 
 offset :: (using box : *$T/AxisBox, increment : T.Vector) {
-    for d : 0..T.dim-1 {
-        box.min_point.component[d] -= increment.component[d];
-        box.max_point.component[d] += increment.component[d];
+    if !is_empty(box) {
+        for d : 0..T.dim-1 {
+            assert(is_finite(increment.component[d]));
+            min_point.component[d] -= increment.component[d];
+            max_point.component[d] += increment.component[d];
+        }
+    }
+
+    if is_empty(box) {
+        init(box); // If box min/max invert after offset, use the standard representation of an empty box
     }
 }
 
 extents :: (using box : *$T/AxisBox) -> T.Vector #must {
-    result := max_point - min_point;
-    return result;
+    box_extents : T.Vector;
+    for d : 0..T.dim-1 {
+        if min_point.component[d] <= max_point.component[d] {
+            box_extents.component[d] = max_point.component[d] - min_point.component[d];
+        }
+    }
+    return box_extents;
 }
-
-#scope_file
-
-
-
-// polyline_bounds
