@@ -3,6 +3,8 @@
 [x] Sync pan with mouse cursor
 [x] Fix text positioning with resize
 [x] Zoom to geometry
+[x] Label points
+[ ] Alternate segment colours
 [ ] Dont distort geometry in non-square viewports
 [ ] Zoom to origin
 [ ] Show grid lines and label

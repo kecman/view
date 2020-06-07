@@ -27,7 +27,12 @@ polyline_shader : GLuint;
 polyline_vao : GLuint;
 polyline_vbo : GLuint;
 
-render_polyline :: (shader_program: GLuint, polyline : *geom.Polyline2) {
+VertexLabelStyle :: struct {
+    show_position := false;
+    show_index := true;
+}
+
+render_polyline :: (shader_program: GLuint, polyline : *geom.Polyline2, vertex_label_style : *VertexLabelStyle = null) {
     // for polyline.points print("% %\n", it_index, it);
 
     glUseProgram(polyline_shader);
@@ -45,6 +50,38 @@ render_polyline :: (shader_program: GLuint, polyline : *geom.Polyline2) {
     glDrawArrays(GL_LINE_STRIP, 0, xx polyline.points.count);
 
     glDisableVertexAttribArray(0);
+
+    if vertex_label_style {
+        glEnable(GL_BLEND);
+        defer glDisable(GL_BLEND);
+        glDisable(GL_CULL_FACE); // LTB---will f-you up with triangles. if only 2d stuff just leave blending on
+        defer glEnable(GL_CULL_FACE);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        world_from_model := matrix4_identity();
+        view_from_world := make_look_at_matrix(*camera);
+        projection_from_view := make_orthographic_projection_matrix(*camera);
+        projection_from_model := projection_from_view * view_from_world * world_from_model;
+
+        for polyline.points {
+            text : string;
+            if vertex_label_style.show_index && vertex_label_style.show_position text = tprint("% (% %)", it_index, it.x, it.y);
+            if vertex_label_style.show_index && !vertex_label_style.show_position text = tprint("%", it_index);
+            if !vertex_label_style.show_index && vertex_label_style.show_position text = tprint("(% %)", it.x, it.y);
+            if !vertex_label_style.show_index && !vertex_label_style.show_position break;
+
+            text_w := get_text_width_in_pixels(text, 1.0);
+            scale := 0.3;
+
+            // [-1, 1]x[-1,1] -> [0, current_window_width]x[0, current_window_height]
+            text_position_px := projection_from_model * make_vector4(it.x, it.y, 0., 1.);
+            text_position_px.x = cast(float)current_window_width * (text_position_px.x + 1) / 2;
+            text_position_px.y = cast(float)current_window_height * (text_position_px.y + 1) / 2;
+
+            render_text_quad(text_shader, text, text_position_px.xy, scale, make_vector4(1., 1., 1., 1));
+        }
+    }
+
 }
 
 MouseState :: struct {
@@ -146,6 +183,8 @@ main :: () {
     }
 
     polyline := geom.polyline_make_box();
+    fit_polyline_on_screen(*polyline);
+    vertex_label_style : VertexLabelStyle;
 
     {
         // This should be dynamic, depending on the camera etc
@@ -170,8 +209,8 @@ main :: () {
     ImGui_ImplSdl_Init(window);
 
     // Setup style
-    ImGui.StyleColorsClassic();
-    //ImGui.StyleColorsLight();
+    // ImGui.StyleColorsClassic();
+    ImGui.StyleColorsDark();
 
     io := ImGui.GetIO();
 
@@ -195,6 +234,7 @@ main :: () {
                 case SDL_KEYUP;
                     if event.key.keysym.sym == SDLK_ESCAPE done = true;
                     if event.key.keysym.sym == SDLK_r fit_polyline_on_screen(*polyline);
+                    if event.key.keysym.sym == SDLK_v cycle_vertex_label_style(*vertex_label_style);
             }
         }
         ImGui_ImplSdl_NewFrame(window);
@@ -211,6 +251,8 @@ main :: () {
             if ImGui.Button("Reset Window Size", size=*make_vector2(0,0)) SDL_SetWindowSize(window, INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
 
             if ImGui.Button("Reset to bounds (r)", size=*make_vector2(0,0)) fit_polyline_on_screen(*polyline);
+            if ImGui.Button("Cycle vertex style (v)", size=*make_vector2(0,0)) cycle_vertex_label_style(*vertex_label_style);
+
         }
 
         if show_demo_window {
@@ -283,7 +325,7 @@ main :: () {
         glViewport(0, 0, xx io.DisplaySize.x, xx io.DisplaySize.y);
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-        render_polyline(polyline_shader, *polyline);
+        render_polyline(polyline_shader, *polyline, *vertex_label_style);
         ImGui.Render();
 
         {
@@ -322,6 +364,13 @@ fit_polyline_on_screen :: (polyline : *geom.Polyline2) {
     bounds := geom.bounding_box(polyline);
     geom.offset(*bounds, 0.05 * geom.extents(*bounds));
     update_to_fit_on_screen(*camera, *bounds);
+}
+
+cycle_vertex_label_style :: (using style : *VertexLabelStyle) {
+    if show_index && show_position show_position = false;
+    else if show_index && !show_position show_index = false;
+    else if !show_index && !show_position show_position = true;
+    else show_index = true;
 }
 
 debug_print_active_uniforms :: (shader : GLuint) {
