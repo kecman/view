@@ -14,6 +14,8 @@ io :: #import "IO";
 
 //#import "Debug";
 
+VERSION :: "0.1.0";
+
 INITIAL_WINDOW_WIDTH  : s32 : 1280;
 INITIAL_WINDOW_HEIGHT : s32 : 720;
 
@@ -35,6 +37,8 @@ VertexLabelStyle :: struct {
 }
 
 render_polyline :: (shader_program: GLuint, polyline : *geom.Polyline2, vertex_label_style : *VertexLabelStyle = null) {
+    if !polyline return;
+
     // for polyline.points print("% %\n", it_index, it);
 
     glUseProgram(polyline_shader);
@@ -50,6 +54,7 @@ render_polyline :: (shader_program: GLuint, polyline : *geom.Polyline2, vertex_l
     glVertexAttribPointer(0, 2, GL_FLOAT, false, size_of(polyline.Point), null);
     // glVertexAttrib4f(ATTRIB_COLOR, 1.0, 1.0, 1.0, 1.0);
     glDrawArrays(GL_LINE_STRIP, 0, xx polyline.points.count);
+    // @Incomplete: Draw points
 
     glDisableVertexAttribArray(0);
 
@@ -99,7 +104,7 @@ main :: () {
 
     SDL_Init(SDL_INIT_VIDEO);
 
-    window := SDL_CreateWindow("View", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);
+    window := SDL_CreateWindow(tprint("View v%", VERSION).data, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);
 
     // Check that the window was successfully created
     if window == null {
@@ -185,7 +190,7 @@ main :: () {
     }
 
     // polyline := geom.polyline_make_box();
-    polyline := io.load_obj_polyline2();
+    polyline : *geom.Polyline2; // = io.load_obj_polyline2();
     // die();
 
     fit_polyline_on_screen(polyline);
@@ -240,6 +245,13 @@ main :: () {
                     if event.key.keysym.sym == SDLK_ESCAPE done = true;
                     if event.key.keysym.sym == SDLK_r fit_polyline_on_screen(polyline);
                     if event.key.keysym.sym == SDLK_v cycle_vertex_label_style(*vertex_label_style);
+                case SDL_DROPFILE;
+                    // @TODO Use a table to not repeatedly load the same file
+                    dropped := to_string(event.drop.file);
+                    print("Loading dropped file: %\n", dropped);
+                    if polyline != null free(polyline);
+                    polyline = io.load_obj_polyline2(dropped);
+                    fit_polyline_on_screen(polyline);
             }
         }
         ImGui_ImplSdl_NewFrame(window);

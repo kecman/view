@@ -5,6 +5,8 @@
 [x] Zoom to geometry
 [x] Label points
 [x] Load simple obj files
+[x] Drag and drop
+[ ] Draw points
 [ ] Alternate segment colours
 [ ] Dont distort geometry in non-square viewports
 [ ] Zoom to origin

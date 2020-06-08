@@ -1,18 +1,10 @@
 geom :: #import "Geom";
 
-load_obj_polyline2 :: () -> *geom.Polyline2 #must { // (filename: string) -> [] *geom.Polyline2 {
+load_obj_polyline2 :: (filename : string) -> *geom.Polyline2 #must { // (filename: string) -> [] *geom.Polyline2 {
 
     handler: Text_File_Handler;
     handler.do_version_number = false;
     defer deinit(*handler);
-
-    found, exe_path, exe_name := split_by_character_from_right(get_path_of_running_executable(), #char "/");
-    if !found {
-        print("Error (%:%): Unable to find my own executable?!\n", #file, #line); // @Cleanup proper logging
-        exit(1);
-    }
-
-    filename := tprint("%/%", exe_path, "test_5.obj");
 
     start_file(*handler, "load_obj", filename, "load_obj_polyine2", false);
     if handler.failed {
