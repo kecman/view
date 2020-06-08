@@ -57,15 +57,19 @@ update_camera :: (camera : *Camera, delta_time : float, mouse : *MouseState) {
 
     // Pan with left down
     if mouse.left_down {
-        // Convert mouse velocity from pixels/frame into NDC/frame @Unused
+        // Convert mouse velocity from pixels/frame into view coords/frame
         ndc_per_frame : Vector2;
-        ndc_per_frame.x = (2 * mouse.velocity_px.x) / cast(float)current_window_width;
-        ndc_per_frame.y = (2 * mouse.velocity_px.y) / cast(float)current_window_height;
+        ndc_per_frame.x = (2 * mouse.velocity_px.x) / cast(float)current_window_width * (camera.right - camera.left) / 2;
+        ndc_per_frame.y = (2 * mouse.velocity_px.y) / cast(float)current_window_height * (camera.top - camera.bottom) / 2;
 
-        camera.eye_position.x -= ndc_per_frame.x * (camera.right - camera.left) / 2;
-        camera.eye_position.y += ndc_per_frame.y * (camera.top - camera.bottom) / 2;
-        camera.look_position.x -= ndc_per_frame.x * (camera.right - camera.left) / 2;
-        camera.look_position.y += ndc_per_frame.y * (camera.top - camera.bottom) / 2;
+        increment : Vector2 = ndc_per_frame;
+        increment.x = dot_product(ndc_per_frame, rotate(unit_vector(camera.up_direction.xy), -TAU/4)); // @Cleanup: use projection/rejection functions here
+        increment.y = dot_product(ndc_per_frame, unit_vector(camera.up_direction.xy));
+
+        camera.eye_position.x -= increment.x;
+        camera.eye_position.y += increment.y;
+        camera.look_position.x -= increment.x;
+        camera.look_position.y += increment.y;
     }
 
     // Rotate with middle down
