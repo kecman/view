@@ -30,6 +30,8 @@ polyline_shader : GLuint;
 polyline_vao : GLuint;
 polyline_vbo : GLuint;
 
+show_ui := true;    // Wish we could declare static variables inside functions.
+
 // @TODO move this into the polyine struct
 VertexLabelStyle :: struct {
     show_position := false;
@@ -98,6 +100,11 @@ MouseState :: struct {
     left_down :   bool;
     right_down :  bool;
     middle_down : bool;
+}
+
+die :: (loc := #caller_location) {
+    print("exit(1) at %:%\n", loc.fully_pathed_filename, loc.line_number);
+    exit(1);
 }
 
 main :: () {
@@ -214,6 +221,11 @@ main :: () {
     // Setup ImGui binding
     ImGui_ImplSdl_Init(window);
 
+    if false {
+        position := make_vector2(0, 0);
+        ImGui.SetWindowPos(pos=*position);
+    }
+
     // Setup style
     // ImGui.StyleColorsClassic();
     ImGui.StyleColorsDark();
@@ -223,6 +235,12 @@ main :: () {
     show_demo_window := false;
     // clear_color := make_vector4(0.45, 0.55, 0.60, 1.00);
     clear_color := make_vector4(87./256, 194./256, 248./256, 1.00);
+
+
+            cursor_text := alloc_string(16);
+            defer free(cursor_text);
+            // cursor_text.data[cursor_text.count] = 0;
+            // cursor_text:="hello";
 
     // Main loop
     done := false;
@@ -242,42 +260,85 @@ main :: () {
                     if event.key.keysym.sym == SDLK_r fit_polylines_on_screen(polylines);
                     if event.key.keysym.sym == SDLK_v cycle_vertex_label_style(*vertex_label_style);
                 case SDL_DROPFILE;
-                    // @TODO Use a table to not repeatedly load the same file
                     dropped := to_string(event.drop.file);
-                    print("Loading dropped file: %\n", dropped);
 
-                    // @Incomplete free the polylines
-                    polyline := io.load_obj_polyline2(dropped);
+                    skip := false;
+                    for polylines {
+                        if it.filename == dropped {
+                            skip = true;
+                            break;
+                        }
+                    }
 
-                    array_add(*polylines, polyline);
-                    fit_polylines_on_screen(polylines);
+                    if skip {
+                        print("Skipping already loaded file: %\n", dropped);
+                    } else {
+                        print("Loading dropped file: %\n", dropped);
+                        polyline := io.load_obj_polyline2(dropped);
+                        array_add(*polylines, polyline);
+                        fit_polylines_on_screen(polylines);
+                    }
             }
         }
         ImGui_ImplSdl_NewFrame(window);
 
         {
-            ImGui.Text("Hello, world!");
-            ImGui.ColorEdit3("clear color", clear_color.component);
-            if ImGui.Button("Demo Window", size=*make_vector2(0,0)) show_demo_window ^= true;
-            ImGui.Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0 / imgui_io.Framerate, imgui_io.Framerate);
+            ImGui.Begin("Tools", *show_ui, ImGui.WindowFlags.AlwaysAutoResize);
+            ImGui.ColorEdit3("Background Color", clear_color.component, ImGui.ColorEditFlags.NoInputs);
 
-            w, h : s32;
-            SDL_GetWindowSize(window, *w, *h);
-            ImGui.Text(sprint("Window size %1x%2", w, h));
-            if ImGui.Button("Reset Window Size", size=*make_vector2(0,0)) SDL_SetWindowSize(window, INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
+            if false {
+                if ImGui.Button("Demo Window", size=*make_vector2(0,0)) show_demo_window ^= true;
+                ImGui.Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0 / imgui_io.Framerate, imgui_io.Framerate);
+                w, h : s32;
+                SDL_GetWindowSize(window, *w, *h);
+                ImGui.Text(sprint("Window size %1x%2", w, h));
+                if show_demo_window {
+                    ImGui.SetNextWindowPos(*make_vector2(650, 20), ImGui.Cond.FirstUseEver, *make_vector2(0,0));
+                    ImGui.ShowDemoWindow(*show_demo_window);
+                }
+            }
 
-            if ImGui.Button("Reset to bounds (r)", size=*make_vector2(0,0)) fit_polylines_on_screen(polylines);
+            if ImGui.Button("Reset Window", size=*make_vector2(0,0)) SDL_SetWindowSize(window, INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
+            if ImGui.Button("Reset Camera (r)", size=*make_vector2(0,0)) fit_polylines_on_screen(polylines);
             if ImGui.Button("Cycle vertex style (v)", size=*make_vector2(0,0)) cycle_vertex_label_style(*vertex_label_style);
 
             for polylines {
                 ImGui.Checkbox(to_c_string(path_filename(it.filename)), *it.visible);
+                ImGui.SameLine();
+                dummy : Vector3;
+                ImGui.ColorEdit3("", dummy.component, ImGui.ColorEditFlags.NoInputs);
+                ImGui.SameLine();
+                if ImGui.Button(to_c_string(tprint("Remove##%", it_index)), size=*make_vector2(0, 0)) {
+                    print("not implemented\n");
+                }
             }
+
+            /*
+            for polylines {
+                ImGui.Checkbox(to_c_string(path_filename(it.filename)), *it.visible);
+                ImGui.SameLine();
+                if ImGui.Button("Remove", size=*make_vector2(0, 0)) {
+                    // @TODO check this works
+                    free(it);
+                    it = null;
+                }
+            }
+
+            while true {
+                count_removed := array_unordered_remove_by_value(*polylines, null);
+                if count_removed == 0 break;
+            }
+            */
+
+            // @FIXME
+            // if ImGui.InputText("Cursor Text", cursor_text.data, xx cursor_text.count) {
+            //     // cursor_text.count = str_length(cursor_text.data);
+            // }
+            // ImGui.Text("%", cursor_text);
+
+            ImGui.End();
         }
 
-        if show_demo_window {
-            ImGui.SetNextWindowPos(*make_vector2(650, 20), ImGui.Cond.FirstUseEver, *make_vector2(0,0));
-            ImGui.ShowDemoWindow(*show_demo_window);
-        }
 
         if ImGui.GetMouseCursor() == {
             case .Arrow;         SDL_SetCursor(cursor_arrow);
@@ -297,23 +358,15 @@ main :: () {
         mouse_state.right_down = imgui_io.MouseDown[1];
         mouse_state.middle_down = imgui_io.MouseDown[2];
 
-        update_camera(*camera, 1, *mouse_state);
+        if !imgui_io.WantCaptureMouse {
+            update_camera(*camera, 1, *mouse_state);
+        }
 
         {
             world_from_model := matrix4_identity();
             view_from_world := make_look_at_matrix(*camera);
             projection_from_view := make_orthographic_projection_matrix(*camera);
             projection_from_model := projection_from_view * view_from_world * world_from_model;
-
-            // model_point := make_vector4(1, 0, 0, 1);
-            // world_point := world_from_model * model_point;
-            // view_point := view_from_world * world_point;
-            // projection_point := projection_from_view * view_point; // clip_point??
-            // ndc_point := make_vector4(projection_point.x / projection_point.w,
-            //                           projection_point.y / projection_point.w,
-            //                           projection_point.z / projection_point.w,
-            //                           1);
-            // print("model=%\nworld=%\nview=%\nprojection=%\nndc=%\n", model_point, world_point, view_point, projection_point, ndc_point);
 
             glUseProgram(polyline_shader);
             mvp_loc := glGetUniformLocation(polyline_shader, "mvp");
@@ -334,10 +387,6 @@ main :: () {
         #if false {
             debug_print_active_uniforms(text_shader);
             debug_print_active_uniforms(polyline_shader);
-
-            // glUseProgram(polyline_shader);
-            // mvp_loc := glGetUniformLocation(polyline_shader, "mvp");
-            // glUniformMatrix4fv(mvp_loc, 1, GL_TRUE, *projection_from_local._11);
         }
 
         // Rendering
@@ -349,7 +398,7 @@ main :: () {
         }
         ImGui.Render();
 
-        {
+        if false { // @Cleanup: remove this
             glEnable(GL_BLEND);
             defer glDisable(GL_BLEND);
             glDisable(GL_CULL_FACE); // LTB---will f-you up with triangles. if only 2d stuff just leave blending on
@@ -357,6 +406,7 @@ main :: () {
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
             text := "Hello";
+            // text := cursor_text;
             text_w := get_text_width_in_pixels(text, 1.0);
             scale := 0.5;
             render_text_quad(text_shader,
