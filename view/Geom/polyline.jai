@@ -19,6 +19,8 @@ Polyline :: struct (dim : int) {
 
     buffer_id : GLuint;
     is_dirty := true;
+    filename : string;
+    visible : bool = true;
 }
 
 Polyline2 :: Polyline(2);

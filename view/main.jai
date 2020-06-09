@@ -37,7 +37,7 @@ VertexLabelStyle :: struct {
 }
 
 render_polyline :: (shader_program: GLuint, polyline : *geom.Polyline2, vertex_label_style : *VertexLabelStyle = null) {
-    if !polyline return;
+    if !polyline || !polyline.visible return;
 
     // for polyline.points print("% %\n", it_index, it);
 
@@ -189,11 +189,7 @@ main :: () {
         glBindVertexArray(0);
     }
 
-    // polyline := geom.polyline_make_box();
-    polyline : *geom.Polyline2; // = io.load_obj_polyline2();
-    // die();
-
-    fit_polyline_on_screen(polyline);
+    polylines : [..] *geom.Polyline2;
     vertex_label_style : VertexLabelStyle;
 
     {
@@ -243,15 +239,18 @@ main :: () {
                     done = true;
                 case SDL_KEYUP;
                     if event.key.keysym.sym == SDLK_ESCAPE done = true;
-                    if event.key.keysym.sym == SDLK_r fit_polyline_on_screen(polyline);
+                    if event.key.keysym.sym == SDLK_r fit_polylines_on_screen(polylines);
                     if event.key.keysym.sym == SDLK_v cycle_vertex_label_style(*vertex_label_style);
                 case SDL_DROPFILE;
                     // @TODO Use a table to not repeatedly load the same file
                     dropped := to_string(event.drop.file);
                     print("Loading dropped file: %\n", dropped);
-                    if polyline != null free(polyline);
-                    polyline = io.load_obj_polyline2(dropped);
-                    fit_polyline_on_screen(polyline);
+
+                    // @Incomplete free the polylines
+                    polyline := io.load_obj_polyline2(dropped);
+
+                    array_add(*polylines, polyline);
+                    fit_polylines_on_screen(polylines);
             }
         }
         ImGui_ImplSdl_NewFrame(window);
@@ -267,9 +266,12 @@ main :: () {
             ImGui.Text(sprint("Window size %1x%2", w, h));
             if ImGui.Button("Reset Window Size", size=*make_vector2(0,0)) SDL_SetWindowSize(window, INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
 
-            if ImGui.Button("Reset to bounds (r)", size=*make_vector2(0,0)) fit_polyline_on_screen(polyline);
+            if ImGui.Button("Reset to bounds (r)", size=*make_vector2(0,0)) fit_polylines_on_screen(polylines);
             if ImGui.Button("Cycle vertex style (v)", size=*make_vector2(0,0)) cycle_vertex_label_style(*vertex_label_style);
 
+            for polylines {
+                ImGui.Checkbox(to_c_string(path_filename(it.filename)), *it.visible);
+            }
         }
 
         if show_demo_window {
@@ -342,7 +344,9 @@ main :: () {
         glViewport(0, 0, xx imgui_io.DisplaySize.x, xx imgui_io.DisplaySize.y);
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-        render_polyline(polyline_shader, polyline, *vertex_label_style);
+        for polylines {
+            if it.visible render_polyline(polyline_shader, it, *vertex_label_style);
+        }
         ImGui.Render();
 
         {
@@ -377,12 +381,17 @@ main :: () {
 
 #scope_file
 
-fit_polyline_on_screen :: (polyline : *geom.Polyline2) {
-    if polyline {
-        bounds := geom.bounding_box(polyline);
-        geom.offset(*bounds, 0.05 * geom.extents(*bounds));
-        update_to_fit_on_screen(*camera, *bounds);
+fit_polylines_on_screen :: (polylines : [] *geom.Polyline2) {
+    overall_bounds : geom.AxisBox2;
+    geom.init(*overall_bounds);
+    for polylines {
+        if it.visible {
+            bounds := geom.bounding_box(it);
+            geom.expand(*overall_bounds, *bounds);
+        }
     }
+    geom.offset(*overall_bounds, 0.05 * geom.extents(*overall_bounds));
+    update_to_fit_on_screen(*camera, *overall_bounds);
 }
 
 cycle_vertex_label_style :: (using style : *VertexLabelStyle) {

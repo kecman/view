@@ -13,6 +13,7 @@ load_obj_polyline2 :: (filename : string) -> *geom.Polyline2 #must { // (filenam
     }
 
     polyline := New(geom.Polyline2);
+    polyline.filename = filename;
 
     while true {
         line, found := consume_next_line(*handler);

@@ -74,6 +74,13 @@ expand :: (using box : *$T/AxisBox, point : T.Point) {
     }
 }
 
+expand :: (using box : *$T/AxisBox, other : *T) {
+    if !is_empty(other) {
+        expand(box, other.min_point);
+        expand(box, other.max_point);
+    }
+}
+
 center_point :: (using box : *$T/AxisBox) -> T.Point #must {
     return (max_point + min_point) / 2;
 }
