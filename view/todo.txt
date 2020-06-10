@@ -7,7 +7,7 @@
 [x] Load simple obj files
 [x] Drag and drop
 [x] Show loaded polylines
-[ ] Implement remove button
+[x] Implement remove button
 [ ] Colour picker for polylines
 [ ] Draw points
 [ ] Alternate segment colours
@@ -34,10 +34,14 @@ Demo iterators on polylines, segment iterator, point iterator etc, stuff from bo
 Demo something with testing, maybe have a build target for that?
 Demo tests using @test, make it work like the @PrintLike thing. You don't need to register them anywhere
 
+Make sure you can explain the context stuff, including logging and allocation
+
 If you've ever played his games, there are many ideas in them and they're all coupled and consistent. The game is kinda about exploring all the interactions
 
 do not read the JaiPrimer
 
 
+
 Questions
 Is there a const concept?
+Can you debug at compile time ie while running bytecode?

@@ -302,25 +302,12 @@ main :: () {
             if ImGui.Button("Reset Camera (r)", size=*make_vector2(0,0)) fit_polylines_on_screen(polylines);
             if ImGui.Button("Cycle vertex style (v)", size=*make_vector2(0,0)) cycle_vertex_label_style(*vertex_label_style);
 
-            for polylines {
-                ImGui.Checkbox(to_c_string(path_filename(it.filename)), *it.visible);
+            for * polylines {
+                ImGui.Checkbox(to_c_string(path_filename((<<it).filename)), *(<<it).visible);
                 ImGui.SameLine();
-                dummy : Vector3;
-                ImGui.ColorEdit3("", dummy.component, ImGui.ColorEditFlags.NoInputs);
-                ImGui.SameLine();
-                if ImGui.Button(to_c_string(tprint("Remove##%", it_index)), size=*make_vector2(0, 0)) {
-                    print("not implemented\n");
-                }
-            }
-
-            /*
-            for polylines {
-                ImGui.Checkbox(to_c_string(path_filename(it.filename)), *it.visible);
-                ImGui.SameLine();
-                if ImGui.Button("Remove", size=*make_vector2(0, 0)) {
-                    // @TODO check this works
-                    free(it);
-                    it = null;
+                if ImGui.Button(to_c_string(tprint("Remove##%", <<it)), size=*make_vector2(0, 0)) {
+                    free(<<it);
+                    <<it = null;
                 }
             }
 
@@ -328,7 +315,6 @@ main :: () {
                 count_removed := array_unordered_remove_by_value(*polylines, null);
                 if count_removed == 0 break;
             }
-            */
 
             // @FIXME
             // if ImGui.InputText("Cursor Text", cursor_text.data, xx cursor_text.count) {
