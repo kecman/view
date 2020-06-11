@@ -19,8 +19,10 @@ Polyline :: struct (dim : int) {
 
     buffer_id : GLuint;
     is_dirty := true;
-    filename : string;
+    filename : string; // @Cleanup rename to fully_pathed_filename
     visible : bool = true;
+
+    line_color : Vector4;
 }
 
 Polyline2 :: Polyline(2);

@@ -47,6 +47,9 @@ render_polyline :: (shader_program: GLuint, polyline : *geom.Polyline2, vertex_l
     // position := game.camera_position;
     // glUniform3f(uniloc(shader, "camera.position"), position.x, position.y, position.z);
 
+    line_color_loc := glGetUniformLocation(polyline_shader, "line_color");
+    glUniform4f(line_color_loc, polyline.line_color.x, polyline.line_color.y, polyline.line_color.z, polyline.line_color.w);
+
     assert(polyline.is_dirty == false);
     glBindBuffer(GL_ARRAY_BUFFER, polyline.buffer_id);
 
@@ -273,7 +276,7 @@ main :: () {
                     if skip {
                         print("Skipping already loaded file: %\n", dropped);
                     } else {
-                        print("Loading dropped file: %\n", dropped);
+                        print("Loading file: %\n", dropped);
                         polyline := io.load_obj_polyline2(dropped);
                         array_add(*polylines, polyline);
                         fit_polylines_on_screen(polylines);
@@ -305,15 +308,12 @@ main :: () {
             for * polylines {
                 ImGui.Checkbox(to_c_string(path_filename((<<it).filename)), *(<<it).visible);
                 ImGui.SameLine();
+                ImGui.ColorEdit3(to_c_string(tprint("LC##%", <<it)), (<<it).line_color.component, ImGui.ColorEditFlags.NoInputs);
+                ImGui.SameLine();
                 if ImGui.Button(to_c_string(tprint("Remove##%", <<it)), size=*make_vector2(0, 0)) {
                     free(<<it);
-                    <<it = null;
+                    remove it;
                 }
-            }
-
-            while true {
-                count_removed := array_unordered_remove_by_value(*polylines, null);
-                if count_removed == 0 break;
             }
 
             // @FIXME

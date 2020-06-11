@@ -8,14 +8,21 @@
 [x] Drag and drop
 [x] Show loaded polylines
 [x] Implement remove button
-[ ] Colour picker for polylines
+[x] Colour picker for polylines
+[ ] Optionally mesh the inside of the polyline
+[ ] Cleanup buffer_ids in openGL?
 [ ] Draw points
-[ ] Alternate segment colours
+[ ] Alternate segment colours (two draw calls?)
+[ ] Auto pick distinct colours, Gio's implementation?
 [ ] Dont distort geometry in non-square viewports
 [ ] Zoom to origin
 [ ] Show grid lines and label
 [ ] Move polylines
 [ ] Boost polygon bindings
+[ ] Toggle fullscreen/maximise
+[ ] Transparent imgui window so UI is like Fusion?
+[ ] Compiled at time in Window, after version?
+[ ] Some kind of ui cooldown for removing files?
 
 [] Fix orbit/rotation location when many files are loaded but some aren't visible
 
@@ -45,3 +52,7 @@ do not read the JaiPrimer
 Questions
 Is there a const concept?
 Can you debug at compile time ie while running bytecode?
+
+
+
+Put this on github, and then make a github io page
