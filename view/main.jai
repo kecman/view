@@ -250,6 +250,7 @@ main :: () {
 
     // Setup style
     // ImGui.StyleColorsClassic();
+    // ImGui.StyleColorsLight();
     ImGui.StyleColorsDark();
 
     imgui_io := ImGui.GetIO();
@@ -307,7 +308,8 @@ main :: () {
         ImGui_ImplSdl_NewFrame(window);
 
         {
-            ImGui.Begin("Tools", *show_ui, ImGui.WindowFlags.AlwaysAutoResize);
+            ImGui.SetNextWindowPos(pos=*make_vector2(10, 10), pivot=*make_vector2(0,0));
+            ImGui.Begin("", *show_ui, ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar);
             ImGui.ColorEdit3("Background Color", clear_color.component, ImGui.ColorEditFlags.NoInputs);
 
             if false {
@@ -322,9 +324,10 @@ main :: () {
                 }
             }
 
-            if ImGui.Button("Reset Window", size=*make_vector2(0,0)) SDL_SetWindowSize(window, INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
-            if ImGui.Button("Reset Camera (r)", size=*make_vector2(0,0)) fit_polylines_on_screen(polylines);
-            if ImGui.Button("Cycle vertex style (v)", size=*make_vector2(0,0)) cycle_vertex_label_style(*vertex_label_style);
+            if ImGui.Button("Reset Window          ", size=*make_vector2(0,0)) SDL_SetWindowSize(window, INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
+            if ImGui.Button("Reset Camera       (R)", size=*make_vector2(0,0)) fit_polylines_on_screen(polylines);
+            if ImGui.Button("Cycle vertex style (V)", size=*make_vector2(0,0)) cycle_vertex_label_style(*vertex_label_style);
+            if ImGui.Button("Cycle line style   (L)", size=*make_vector2(0,0)) cycle_line_style(*vertex_label_style);
 
             for * polylines {
                 ImGui.Checkbox(to_c_string(path_filename((<<it).filename)), *(<<it).visible);
