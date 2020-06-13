@@ -35,13 +35,19 @@ show_ui := true;    // Wish we could declare static variables inside functions.
 // @TODO move this into the polyine struct
 VertexLabelStyle :: struct {
     show_position := false;
-    show_index := true;
+    show_index := false;
+
+    point_size : int = 4; // 0, 2, 4, 6
+    line_width : int = 2; // 1, 1, 2, 3
 }
 
-render_polyline :: (shader_program: GLuint, polyline : *geom.Polyline2, vertex_label_style : *VertexLabelStyle = null) {
+render_polyline :: (shader_program: GLuint, polyline : *geom.Polyline2, style : *VertexLabelStyle = null) {
     if !polyline || !polyline.visible return;
 
-    // for polyline.points print("% %\n", it_index, it);
+    // Backup GL state
+    last_line_width: float; glGetFloatv(GL_LINE_WIDTH, xx *last_line_width);
+    defer glLineWidth(last_line_width);
+
 
     glUseProgram(polyline_shader);
     // position := game.camera_position;
@@ -49,6 +55,11 @@ render_polyline :: (shader_program: GLuint, polyline : *geom.Polyline2, vertex_l
 
     line_color_loc := glGetUniformLocation(polyline_shader, "line_color");
     glUniform4f(line_color_loc, polyline.line_color.x, polyline.line_color.y, polyline.line_color.z, polyline.line_color.w);
+
+    point_size_loc := glGetUniformLocation(polyline_shader, "point_size");
+    glUniform1f(point_size_loc, xx style.point_size);
+
+    glLineWidth(xx style.line_width); // 1, 2, 3... See also glEnable(GL_LINE_SMOOTH);
 
     assert(polyline.is_dirty == false);
     glBindBuffer(GL_ARRAY_BUFFER, polyline.buffer_id);
@@ -61,9 +72,12 @@ render_polyline :: (shader_program: GLuint, polyline : *geom.Polyline2, vertex_l
     glDrawArrays(GL_LINE_STRIP, 0, xx polyline.points.count);
     // @Incomplete: Draw points
 
+    glEnable(GL_PROGRAM_POINT_SIZE);
+    glDrawArrays(GL_POINTS, 0, xx polyline.points.count);
+
     glDisableVertexAttribArray(0);
 
-    if vertex_label_style {
+    if style {
         glEnable(GL_BLEND);
         defer glDisable(GL_BLEND);
         glDisable(GL_CULL_FACE); // LTB---will f-you up with triangles. if only 2d stuff just leave blending on
@@ -77,10 +91,10 @@ render_polyline :: (shader_program: GLuint, polyline : *geom.Polyline2, vertex_l
 
         for polyline.points {
             text : string;
-            if vertex_label_style.show_index && vertex_label_style.show_position text = tprint("% (% %)", it_index, it.x, it.y);
-            if vertex_label_style.show_index && !vertex_label_style.show_position text = tprint("%", it_index);
-            if !vertex_label_style.show_index && vertex_label_style.show_position text = tprint("(% %)", it.x, it.y);
-            if !vertex_label_style.show_index && !vertex_label_style.show_position break;
+            if style.show_index && style.show_position text = tprint("% (% %)", it_index, it.x, it.y);
+            if style.show_index && !style.show_position text = tprint("%", it_index);
+            if !style.show_index && style.show_position text = tprint("(% %)", it.x, it.y);
+            if !style.show_index && !style.show_position break;
 
             text_w := get_text_width_in_pixels(text, 1.0);
             scale := 0.3;
@@ -125,8 +139,8 @@ main :: () {
 
     // print("%\n", to_string(ImGui.GetVersion()));
 
-    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, xx SDL_GL_CONTEXT_PROFILE_CORE);
 
     gl_context := SDL_GL_CreateContext(window);
@@ -138,6 +152,11 @@ main :: () {
     gl_load(*gl, SDL_GL_GetProcAddress);
 
     gl_enable_debug_output(break_on_error=true);
+
+    opengl_major_version, opengl_minor_version : s32;
+    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, *opengl_major_version);
+    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, *opengl_minor_version);
+    print("OpenGL Version %.%\n", opengl_major_version, opengl_minor_version);
 
     init_camera();
 
@@ -237,7 +256,8 @@ main :: () {
 
     show_demo_window := false;
     // clear_color := make_vector4(0.45, 0.55, 0.60, 1.00);
-    clear_color := make_vector4(87./256, 194./256, 248./256, 1.00);
+    // clear_color := make_vector4(87./256, 194./256, 248./256, 1.00); // light blue
+    clear_color := make_vector4(170./256, 170./256, 170./256, 1.00); // light grey
 
 
             cursor_text := alloc_string(16);
@@ -262,6 +282,7 @@ main :: () {
                     if event.key.keysym.sym == SDLK_ESCAPE done = true;
                     if event.key.keysym.sym == SDLK_r fit_polylines_on_screen(polylines);
                     if event.key.keysym.sym == SDLK_v cycle_vertex_label_style(*vertex_label_style);
+                    if event.key.keysym.sym == SDLK_l cycle_line_style(*vertex_label_style);
                 case SDL_DROPFILE;
                     dropped := to_string(event.drop.file);
 
@@ -308,7 +329,7 @@ main :: () {
             for * polylines {
                 ImGui.Checkbox(to_c_string(path_filename((<<it).filename)), *(<<it).visible);
                 ImGui.SameLine();
-                ImGui.ColorEdit3(to_c_string(tprint("LC##%", <<it)), (<<it).line_color.component, ImGui.ColorEditFlags.NoInputs);
+                ImGui.ColorEdit3(to_c_string(tprint("##%", <<it)), (<<it).line_color.component, ImGui.ColorEditFlags.NoInputs);
                 ImGui.SameLine();
                 if ImGui.Button(to_c_string(tprint("Remove##%", <<it)), size=*make_vector2(0, 0)) {
                     free(<<it);
@@ -435,6 +456,18 @@ cycle_vertex_label_style :: (using style : *VertexLabelStyle) {
     else if show_index && !show_position show_index = false;
     else if !show_index && !show_position show_position = true;
     else show_index = true;
+}
+
+cycle_line_style :: (using style : *VertexLabelStyle) {
+    if point_size == 0 && line_width == 1 {
+        point_size = 2; line_width = 1;
+    } else if point_size == 2 && line_width == 1 {
+        point_size = 4; line_width = 2;
+    } else if point_size == 4 && line_width == 2 {
+        point_size = 6; line_width = 3;
+    } else {
+        point_size = 0; line_width = 1;
+    }
 }
 
 debug_print_active_uniforms :: (shader : GLuint) {

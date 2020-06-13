@@ -125,6 +125,7 @@ update_to_fit_on_screen :: (using camera : *Camera, world_box : *geom.AxisBox2) 
     camera.right *= scale;
     camera.left *= scale;
 
+    // @TODO pick these numbers so details at 5um are clearly visible e.g., fill up whole screen?
     camera.top = max(camera.top, 0.1);
     camera.bottom = min(camera.bottom, -0.1);
     camera.right = max(camera.right, aspect * 0.1);
