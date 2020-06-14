@@ -41,7 +41,7 @@ VertexLabelStyle :: struct {
     line_width : int = 2; // 1, 1, 2, 3
 }
 
-render_polyline :: (shader_program: GLuint, polyline : *geom.Polyline2, style : *VertexLabelStyle = null) {
+render_polyline :: (shader_program: GLuint, polyline : *geom.Renderable_Polyline2, style : *VertexLabelStyle = null) {
     if !polyline || !polyline.visible return;
 
     // Backup GL state
@@ -222,7 +222,8 @@ main :: () {
         glBindVertexArray(0);
     }
 
-    polylines : [..] *geom.Polyline2;
+    geometries : [..] *geom.Renderable_Geometry; // @Cleanup rename to geometries?
+
     vertex_label_style : VertexLabelStyle;
 
     {
@@ -285,14 +286,14 @@ main :: () {
                     done = true;
                 case SDL_KEYUP;
                     if event.key.keysym.sym == SDLK_ESCAPE done = true;
-                    if event.key.keysym.sym == SDLK_r fit_polylines_on_screen(polylines);
+                    if event.key.keysym.sym == SDLK_r fit_on_screen(geometries);
                     if event.key.keysym.sym == SDLK_v cycle_vertex_label_style(*vertex_label_style);
                     if event.key.keysym.sym == SDLK_l cycle_line_style(*vertex_label_style);
                 case SDL_DROPFILE;
                     dropped := to_string(event.drop.file);
 
                     skip := false;
-                    for polylines {
+                    for geometries {
                         if it.filename == dropped {
                             skip = true;
                             break;
@@ -305,6 +306,8 @@ main :: () {
                         obj := io.load_obj(dropped);
                         print("Loaded file: '%'\n", dropped);
 
+
+                        // @TODO Make a function to guess the type of the loaded obj and then convert to it
                         is_polyline_2d := true;
                         for obj.vertices if it.z != obj.vertices[0].z is_polyline_2d = false;
                         if !is_polyline_2d {
@@ -312,13 +315,13 @@ main :: () {
                             continue;
                         }
 
-                        polyline := New(geom.Polyline2);
+                        polyline := New(geom.Renderable_Polyline2);
                         polyline.filename = dropped;
                         for obj.vertices array_add(*polyline.points, it.xy);
                         geom.buffer_polyline(polyline);
 
-                        array_add(*polylines, polyline);
-                        fit_polylines_on_screen(polylines);
+                        array_add(*geometries, polyline);
+                        fit_on_screen(geometries);
                     }
             }
         }
@@ -342,18 +345,23 @@ main :: () {
             }
 
             if ImGui.Button("Reset Window          ", size=*make_vector2(0,0)) SDL_SetWindowSize(window, INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
-            if ImGui.Button("Reset Camera       (R)", size=*make_vector2(0,0)) fit_polylines_on_screen(polylines);
+            if ImGui.Button("Reset Camera       (R)", size=*make_vector2(0,0)) fit_on_screen(geometries);
             if ImGui.Button("Cycle vertex style (V)", size=*make_vector2(0,0)) cycle_vertex_label_style(*vertex_label_style);
             if ImGui.Button("Cycle line style   (L)", size=*make_vector2(0,0)) cycle_line_style(*vertex_label_style);
 
-            for * polylines {
-                ImGui.Checkbox(to_c_string(path_filename((<<it).filename)), *(<<it).visible);
-                ImGui.SameLine();
-                ImGui.ColorEdit3(to_c_string(tprint("##%", <<it)), (<<it).line_color.component, ImGui.ColorEditFlags.NoInputs);
-                ImGui.SameLine();
-                if ImGui.Button(to_c_string(tprint("Remove##%", <<it)), size=*make_vector2(0, 0)) {
-                    free(<<it);
-                    remove it;
+            for geometries {
+                if #complete it.type == {
+                    case geom.Renderable_Geometry_Type.POLYLINE2; #through;
+                    case geom.Renderable_Geometry_Type.POLYLINE_SOUP2;
+                        p := cast(*geom.Renderable_Polyline2) it;
+                        ImGui.Checkbox(to_c_string(path_filename(it.filename)), *it.visible);
+                        ImGui.SameLine();
+                        ImGui.ColorEdit3(to_c_string(tprint("##%", it)), p.line_color.component, ImGui.ColorEditFlags.NoInputs);
+                        ImGui.SameLine();
+                        if ImGui.Button(to_c_string(tprint("Remove##%", it)), size=*make_vector2(0, 0)) {
+                            free(it);
+                            remove it;
+                        }
                 }
             }
 
@@ -420,8 +428,14 @@ main :: () {
         glViewport(0, 0, xx imgui_io.DisplaySize.x, xx imgui_io.DisplaySize.y);
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-        for polylines {
-            if it.visible render_polyline(polyline_shader, it, *vertex_label_style);
+        for geometries {
+            if #complete it.type == {
+                case .POLYLINE2;
+                    p := cast(*geom.Renderable_Polyline2) it;
+                    if it.visible render_polyline(polyline_shader, p, *vertex_label_style);
+                case .POLYLINE_SOUP2;
+                    assert(false); // @Incompleted
+            }
         }
         ImGui.Render();
 
@@ -458,10 +472,10 @@ main :: () {
 
 #scope_file
 
-fit_polylines_on_screen :: (polylines : [] *geom.Polyline2) {
+fit_on_screen :: (geometries : [] *geom.Renderable_Geometry) {
     overall_bounds : geom.AxisBox2;
     geom.init(*overall_bounds);
-    for polylines {
+    for geometries {
         if it.visible {
             bounds := geom.bounding_box(it);
             geom.expand(*overall_bounds, *bounds);
