@@ -6,6 +6,7 @@
 
 #load "axis_box.jai";
 #load "polyline.jai";
+#load "rendering.jai";
 
 make_look_at_matrix :: (eye : Vector3, center : Vector3, up : Vector3) -> Matrix4 #must {
 
