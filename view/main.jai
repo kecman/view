@@ -139,8 +139,9 @@ main :: () {
 
     // print("%\n", to_string(ImGui.GetVersion()));
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    // @FIXME If I don't explicitly set attributes here gl_get_version() returns a different result
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, xx SDL_GL_CONTEXT_PROFILE_CORE);
 
     gl_context := SDL_GL_CreateContext(window);
@@ -153,10 +154,13 @@ main :: () {
 
     gl_enable_debug_output(break_on_error=true);
 
-    opengl_major_version, opengl_minor_version : s32;
-    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, *opengl_major_version);
-    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, *opengl_minor_version);
-    print("OpenGL Version %.%\n", opengl_major_version, opengl_minor_version);
+    // opengl_major_version, opengl_minor_version : s32;
+    // SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, *opengl_major_version);
+    // SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, *opengl_minor_version);
+    // print("OpenGL Version %.%\n", opengl_major_version, opengl_minor_version);
+
+    gl_version_major, gl_version_minor = gl_get_version();
+    print ("OpenGL %.%\n", gl_version_major, gl_version_minor);
 
     init_camera();
 
@@ -296,10 +300,23 @@ main :: () {
                     }
 
                     if skip {
-                        print("Skipping already loaded file: %\n", dropped);
+                        print("Skipped file: '%' (already loaded)\n", dropped);
                     } else {
-                        print("Loading file: %\n", dropped);
-                        polyline := io.load_obj_polyline2(dropped);
+                        obj := io.load_obj(dropped);
+                        print("Loaded file: '%'\n", dropped);
+
+                        is_polyline_2d := true;
+                        for obj.vertices if it.z != obj.vertices[0].z is_polyline_2d = false;
+                        if !is_polyline_2d {
+                            print("Skipped file: '%' (only 2D polylines with constant z are supported)\n", dropped);
+                            continue;
+                        }
+
+                        polyline := New(geom.Polyline2);
+                        polyline.filename = dropped;
+                        for obj.vertices array_add(*polyline.points, it.xy);
+                        geom.buffer_polyline(polyline);
+
                         array_add(*polylines, polyline);
                         fit_polylines_on_screen(polylines);
                     }

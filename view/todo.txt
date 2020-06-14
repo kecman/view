@@ -14,8 +14,19 @@
 [x] Draw points
 [x] l cycles through line styles
 [ ] Support polyline soups general obj polyline files
+[ ] Distribution stuff, how to make this a single executable? statically link?
 [ ] Support polygons and polygon soups, and do convex decomposition for rendering
 [ ] Write * to indicate an identical first and last point
+[ ] Mode line showing the style info etc
+[ ] Load from command line?
+
+# For present and explain version
+
+[ ] Understand and use context
+  [ ] Understand and use logging
+  [ ] Understand and use assertions
+  [ ] Understand and use allocaters
+[ ] Build system stuff: build_debug and build_release
 
 # minor version
 
@@ -25,6 +36,7 @@
 [ ] Auto pick distinct colours
 [ ] Toggle fullscreen/maximise
 [ ] Some kind of ui cooldown for removing files?
+[ ] If file is hovered in the list then make it flash to white and back, and draw it lastt 
 
 # minor version
 

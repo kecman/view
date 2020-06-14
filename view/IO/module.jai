@@ -1,6 +1,50 @@
 geom :: #import "Geom";
 
-load_obj_polyline2 :: (filename : string) -> *geom.Polyline2 #must { // (filename: string) -> [] *geom.Polyline2 {
+
+// Collect the verts, lines, faces etc, and decide what the type of the thing was at the end
+// ex1. All verts, l with xy only and no z, or const z => polyline|polylinesoup
+// Probably polyline2 should have a z height too
+
+Vector2i :: struct {
+    x, y: int;
+
+#place x;
+    component: [2] float = ---;
+}
+
+make_vector2i :: (x : int, y : int) -> Vector2i {
+    v: Vector2i = ---;
+    v.x, v.y = x, y;
+    return v;
+}
+
+Vector3i :: struct {
+    x, y, z: int;
+
+#place x;
+    xy: Vector2i = ---;
+#place y;
+    yz: Vector2i = ---;
+
+#place x;
+    component: [3] int = ---;
+}
+
+make_vector3i :: (x : int, y : int, z : int) -> Vector3i {
+    v: Vector3i = ---;
+    v.x, v.y, v.z = x, y, z;
+    return v;
+}
+
+Obj :: struct {
+    vertices :  [..] Vector3;
+    normals :   [..] Vector3;
+    segments :  [..] Vector2i;
+    triangles : [..] Vector3i;
+    polygons :  [..][..] int;
+}
+
+load_obj :: (filename : string) -> Obj #must {
 
     handler: Text_File_Handler;
     handler.do_version_number = false;
@@ -12,8 +56,7 @@ load_obj_polyline2 :: (filename : string) -> *geom.Polyline2 #must { // (filenam
         exit(1);
     }
 
-    polyline := New(geom.Polyline2);
-    polyline.filename = filename;
+    obj : Obj;
 
     while true {
         line, found := consume_next_line(*handler);
@@ -25,33 +68,56 @@ load_obj_polyline2 :: (filename : string) -> *geom.Polyline2 #must { // (filenam
             continue;
         }
 
-        parse_vertex :: (handler : *Text_File_Handler, str : string) -> bool, geom.Polyline2.Point {
+        // @TODO Make this nd and maybe also pass the string_to_number function (consider using procedure_of_call?)
+        parse_upto_3d :: (handler : *Text_File_Handler, str : string) -> (vector : Vector3 #must, dim : int) {
+            vector : Vector3;
             str_x, str_yz := break_by_spaces(str);
-            str_y, str_z := break_by_spaces(str_yz);
-            return true, make_vector2(string_to_float(str_x), string_to_float(str_y));
+            vector.x = string_to_float(str_x);
+            if str_yz {
+                str_y, str_z := break_by_spaces(str_yz);
+                vector.y = string_to_float(str_y);
+                if str_z {
+                    _, expect_empty := break_by_spaces(str_z);
+                    vector.z = string_to_float(str_z);
+                    if expect_empty {
+                        return vector, -1;
+                    }
+                    return vector, 3;
+                }
+                return vector, 2;
+            }
+            return vector, 1;
         }
 
         if key_name == {
             case "v";
-                success, vertex := parse_vertex(*handler, rhs);
-                if !success continue;
-                array_add(*polyline.points, vertex);
+                vertex, dim := parse_upto_3d(*handler, rhs);
+                if dim == -1 || dim == 1 {
+                    error(handler, tprint("Expected 2d or 3d vertex coordinates, got dim=%.\n", dim)); // @Incomplete test this
+                    continue;
+                }
+                array_add(*obj.vertices, vertex);
             case "vn"; // @Incomplete
             case "vt"; // @Incomplete
-            case "l"; // @Incomplete
+            case "l";
+                segment, dim := parse_upto_3d(*handler, rhs);
+                if dim != 2 {
+                    error(handler, "Expected a segment connecting two vertices.\n");
+                    continue;
+                }
+                array_add(*obj.segments, make_vector2i(xx segment.x, xx segment.y));
             case "f"; // @Incomplete
             case;
                 print("found unknown: %\n", rhs);
-                error(handler, "Found unexpected '%'.\n", rhs);
+                error(handler, "Unexpected '%'.\n", rhs);
                 continue;
         }
     }
 
-    // print("%\n", <<polyline);
-    // for polyline.points print("%\n", it);
-    geom.buffer_polyline(polyline);
+    // for obj.vertices print("vertices: %\n", it);
+    // for obj.segments print("segments: %\n", it);
 
-    return polyline;
+    return obj;
 }
 
 #scope_file
