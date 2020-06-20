@@ -41,7 +41,8 @@ VertexLabelStyle :: struct {
     line_width : int = 2; // 1, 1, 2, 3
 }
 
-render_polyline :: (shader_program: GLuint, polyline : *geom.Renderable_Polyline2, style : *VertexLabelStyle = null) {
+render_polyline :: (polyline : *geom.Renderable_Polyline2, style : *VertexLabelStyle = null) {
+
     if !polyline || !polyline.visible return;
 
     // Backup GL state
@@ -70,7 +71,6 @@ render_polyline :: (shader_program: GLuint, polyline : *geom.Renderable_Polyline
     glVertexAttribPointer(0, 2, GL_FLOAT, false, size_of(polyline.Point), null);
     // glVertexAttrib4f(ATTRIB_COLOR, 1.0, 1.0, 1.0, 1.0);
     glDrawArrays(GL_LINE_STRIP, 0, xx polyline.points.count);
-    // @Incomplete: Draw points
 
     glEnable(GL_PROGRAM_POINT_SIZE);
     glDrawArrays(GL_POINTS, 0, xx polyline.points.count);
@@ -211,13 +211,18 @@ main :: () {
 
     // Prepare VAO for lines
     {
+        // @TODO Make a ibo for polylines, later make two of them so we can have alternating segments in a different colour
+
+
         glGenVertexArrays(1, *polyline_vao);
         glGenBuffers(1, *polyline_vbo);
+
         glBindVertexArray(polyline_vao);
         glBindBuffer(GL_ARRAY_BUFFER, polyline_vbo);
         glBufferData(GL_ARRAY_BUFFER, size_of(GLfloat) * 6 * 4, null, GL_DYNAMIC_DRAW);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * size_of(GLfloat), xx 0);
+
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
     }
@@ -359,6 +364,7 @@ main :: () {
                         ImGui.ColorEdit3(to_c_string(tprint("##%", it)), p.line_color.component, ImGui.ColorEditFlags.NoInputs);
                         ImGui.SameLine();
                         if ImGui.Button(to_c_string(tprint("Remove##%", it)), size=*make_vector2(0, 0)) {
+                            glDeleteBuffers(1, *it.buffer_id);
                             free(it);
                             remove it;
                         }
@@ -432,7 +438,7 @@ main :: () {
             if #complete it.type == {
                 case .POLYLINE2;
                     p := cast(*geom.Renderable_Polyline2) it;
-                    if it.visible render_polyline(polyline_shader, p, *vertex_label_style);
+                    if it.visible render_polyline(p, *vertex_label_style);
                 case .POLYLINE_SOUP2;
                     assert(false); // @Incompleted
             }
