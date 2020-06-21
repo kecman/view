@@ -41,37 +41,34 @@ VertexLabelStyle :: struct {
     line_width : int = 2; // 1, 1, 2, 3
 }
 
+// TODO Make this render Polyline_Soup3 and convert all others to that first?
 render_polyline :: (polyline : *geom.Renderable_Polyline2, style : *VertexLabelStyle = null) {
 
-    if !polyline || !polyline.visible return;
+    if !polyline || !polyline.visible {
+        return;
+    }
 
-    // Backup GL state
-    last_line_width: float; glGetFloatv(GL_LINE_WIDTH, xx *last_line_width);
-    defer glLineWidth(last_line_width);
-
+    assert(polyline.is_dirty == false);
 
     glUseProgram(polyline_shader);
-    // position := game.camera_position;
-    // glUniform3f(uniloc(shader, "camera.position"), position.x, position.y, position.z);
 
     line_color_loc := glGetUniformLocation(polyline_shader, "line_color");
     glUniform4f(line_color_loc, polyline.line_color.x, polyline.line_color.y, polyline.line_color.z, polyline.line_color.w);
-
     point_size_loc := glGetUniformLocation(polyline_shader, "point_size");
     glUniform1f(point_size_loc, xx style.point_size);
 
-    glLineWidth(xx style.line_width); // 1, 2, 3... See also glEnable(GL_LINE_SMOOTH);
-
-    assert(polyline.is_dirty == false);
-    glBindBuffer(GL_ARRAY_BUFFER, polyline.buffer_id);
-
     glBindVertexArray(polyline_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, polyline.buffer_id);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, false, size_of(polyline.Point), null);
-    // glVertexAttrib4f(ATTRIB_COLOR, 1.0, 1.0, 1.0, 1.0);
-    glDrawArrays(GL_LINE_STRIP, 0, xx polyline.points.count);
 
+    last_line_width: float;
+    glGetFloatv(GL_LINE_WIDTH, xx *last_line_width);
+    defer glLineWidth(last_line_width);
+    glLineWidth(xx style.line_width); // 1, 2, 3... See also glEnable(GL_LINE_SMOOTH);
+
+    glDrawArrays(GL_LINE_STRIP, 0, xx polyline.points.count);
     glEnable(GL_PROGRAM_POINT_SIZE);
     glDrawArrays(GL_POINTS, 0, xx polyline.points.count);
 
@@ -80,7 +77,7 @@ render_polyline :: (polyline : *geom.Renderable_Polyline2, style : *VertexLabelS
     if style {
         glEnable(GL_BLEND);
         defer glDisable(GL_BLEND);
-        glDisable(GL_CULL_FACE); // LTB---will f-you up with triangles. if only 2d stuff just leave blending on
+        glDisable(GL_CULL_FACE);
         defer glEnable(GL_CULL_FACE);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 

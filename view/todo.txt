@@ -19,6 +19,7 @@
 [ ] Write * to indicate an identical first and last point
 [ ] Mode line showing the style info etc
 [ ] Load from command line?
+[ ] Custom key-bindings and sensitivity of parameters, dynamically generate UI for this? and save to the text file
 
 # For present and explain version
 
@@ -35,7 +36,7 @@
 [ ] Alternate segment colours (two draw calls?)
 [ ] Auto pick distinct colours
 [ ] Toggle fullscreen/maximise
-[ ] Some kind of ui cooldown for removing files?
+[ ] Some kind of ui cooldown for removing files? So that you don't loose track of what's being deleted
 [ ] If file is hovered in the list then make it flash to white and back, and draw it lastt 
 
 # minor version
@@ -44,7 +45,7 @@
 [ ] Zoom to origin
 [ ] Show grid lines and label
 [ ] Move polylines
-[ ] Boost polygon bindings
+[ ] Boost polygon bindings and a nice way to play around with the functions in a scripting way
 [ ] Transparent imgui window so UI is like Fusion?
 [ ] Compiled at time in Window, after version?
 [ ] Distribute shaders with source for hot loading/editing them. Pass them lots of unused data then
