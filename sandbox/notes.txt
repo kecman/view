@@ -2,3 +2,4 @@ Can you make aliases for types/functions? I saw a thing in Math.jai about aliasi
 
 There is no const concept/keyword? A. There is, it's to use ::, rather than :=
 
+The difference between #import and #load. error when you #import a module by also writing .jai 
