@@ -58,6 +58,20 @@ make_axis_box :: (min_point : Vector2, max_point : Vector2) -> AxisBox(2) #must 
     return box;
 }
 
+to_polyline :: (using box : *AxisBox2) -> Polyline2 #must {
+    polyline : Polyline2;
+    // @Incomplete
+
+    // @FIXME
+    // @FIXME
+    // @FIXME
+    // @FIXME
+    // @FIXME
+    // @FIXME
+
+    return polyline;
+}
+
 is_empty :: (using box : *$T/AxisBox) -> bool #must {
     for d : 0..T.dim-1 {
         if min_point.component[d] > max_point.component[d] {

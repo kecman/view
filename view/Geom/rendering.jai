@@ -50,14 +50,24 @@ buffer_polyline :: (using polyline : *$T/Renderable_Polyline2) {
     }
 }
 
-// @FIXME How to send points and indices separately?
 buffer_polyline_soup :: (using soup : *$T/Renderable_Polyline_Soup2) {
     if is_dirty {
         if !buffer_id {
             glGenBuffers(1, *buffer_id);
         }
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
+
+        // @FIXME
+        // @FIXME
+        // @FIXME How to send points and indices separately?
+        // @FIXME
+        // @FIXME
+
         glBufferData(GL_ARRAY_BUFFER, size_of(type_of(points[0])) * points.count, points.data, GL_STATIC_DRAW);
+
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_ib_handle);
+    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_array.count * size_of(u16), index_array.data, GL_STREAM_DRAW);
+        
         is_dirty = false;
     }
 }

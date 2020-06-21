@@ -29,6 +29,7 @@ text_vbo : GLuint;
 polyline_shader : GLuint;
 polyline_vao : GLuint;
 polyline_vbo : GLuint;
+polyline_ibo : GLuint;
 
 show_ui := true;    // Wish we could declare static variables inside functions.
 
@@ -213,10 +214,11 @@ main :: () {
 
         glGenVertexArrays(1, *polyline_vao);
         glGenBuffers(1, *polyline_vbo);
+        glGenBuffers(1, *polyline_ibo);
 
         glBindVertexArray(polyline_vao);
         glBindBuffer(GL_ARRAY_BUFFER, polyline_vbo);
-        glBufferData(GL_ARRAY_BUFFER, size_of(GLfloat) * 6 * 4, null, GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, size_of(GLfloat) * 6 * 4, null, GL_DYNAMIC_DRAW); // why 6 * 4 * size_of(GLfloat)? and the null means we just reserve memory now?
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * size_of(GLfloat), xx 0);
 
@@ -225,6 +227,19 @@ main :: () {
     }
 
     geometries : [..] *geom.Renderable_Geometry; // @Cleanup rename to geometries?
+
+/*
+    test_soup := New(geom.Renderable_Polyline_Soup2);
+    defer free(test_soup);
+    {
+        using test_soup.geometry;
+        array_add(*polylines, geom.to_polyline(*geom.make_axis_box(make_vector2(-10, -10), make_vector2(10, 10))));
+        array_add(*polylines, geom.to_polyline(*geom.make_axis_box(make_vector2(-50, -50), make_vector2(50, 50))));
+    }
+    geom.buffer_polyline_soup(test_soup);
+
+    array_add(*geometries, test_soup);
+*/
 
     vertex_label_style : VertexLabelStyle;
 
