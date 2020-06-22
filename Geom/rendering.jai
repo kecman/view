@@ -9,7 +9,7 @@ Renderable_Geometry_Type :: enum {
 Renderable_Geometry :: struct {
     type : Renderable_Geometry_Type;
 
-    vbo : GLuint;
+    vbo : GLuint; // vertex buffer object
     is_dirty := true;
     filename : string; // @Cleanup rename to fully_pathed_filename
     visible : bool = true;
@@ -40,10 +40,10 @@ bounding_box :: (renderable_geometry : *Renderable_Geometry) -> AxisBox(2) #must
 }
 
 buffer_polyline :: (using polyline : *$T/Renderable_Polyline2) {
+    type = .POLYLINE2;
+    visible = true;
     if is_dirty {
-        if !vbo {
-            glGenBuffers(1, *vbo);
-        }
+        if !vbo glGenBuffers(1, *vbo);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, size_of(type_of(points[0])) * points.count, points.data, GL_STATIC_DRAW);
         is_dirty = false;
@@ -51,23 +51,22 @@ buffer_polyline :: (using polyline : *$T/Renderable_Polyline2) {
 }
 
 buffer_polyline_soup :: (using soup : *$T/Renderable_Polyline_Soup2) {
+    type = .POLYLINE_SOUP2;
+    visible = true;
     if is_dirty {
-        if !vbo {
-            glGenBuffers(1, *vbo);
-        }
+        if !vbo glGenBuffers(1, *vbo);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-        // @FIXME
-        // @FIXME
-        // @FIXME How to send points and indices separately?
-        // @FIXME
-        // @FIXME
+        num_points := 0;
+        for polyline : polylines num_points += polyline.points.count;
 
-        glBufferData(GL_ARRAY_BUFFER, size_of(type_of(points[0])) * points.count, points.data, GL_STATIC_DRAW);
+        offset := 0;
+        glBufferData(GL_ARRAY_BUFFER, size_of(type_of(polylines[0].points[0])) * num_points, null, GL_STATIC_DRAW);
+        for polyline : polylines {
+            glBufferSubData(vbo, xx offset, offset + polyline.points.count, polyline.points.data);
+            offset += polyline.points.count;
+        }
 
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_ib_handle);
-    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_array.count * size_of(u16), index_array.data, GL_STREAM_DRAW);
-        
         is_dirty = false;
     }
 }

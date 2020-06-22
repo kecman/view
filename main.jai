@@ -433,9 +433,13 @@ main :: () {
         for geometries {
             if #complete it.type == {
                 case .POLYLINE2;
-                    p := cast(*geom.Renderable_Polyline2) it;
-                    if it.visible render_polyline(p, *vertex_label_style);
+                    polyline := cast(*geom.Renderable_Polyline2) it;
+                    render_polyline(polyline, *vertex_label_style);
                 case .POLYLINE_SOUP2;
+                    // soup := cast(*geom.Renderable_Polyline_Soup2) it;
+                    // for polyline : soup.polylines {
+                    //     render_polyline(polyline, *vertex_label_style);
+                    // }
                     assert(false); // @Incompleted
             }
         }
