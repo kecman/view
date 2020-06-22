@@ -9,7 +9,7 @@ Renderable_Geometry_Type :: enum {
 Renderable_Geometry :: struct {
     type : Renderable_Geometry_Type;
 
-    buffer_id : GLuint;
+    vbo : GLuint;
     is_dirty := true;
     filename : string; // @Cleanup rename to fully_pathed_filename
     visible : bool = true;
@@ -41,10 +41,10 @@ bounding_box :: (renderable_geometry : *Renderable_Geometry) -> AxisBox(2) #must
 
 buffer_polyline :: (using polyline : *$T/Renderable_Polyline2) {
     if is_dirty {
-        if !buffer_id {
-            glGenBuffers(1, *buffer_id);
+        if !vbo {
+            glGenBuffers(1, *vbo);
         }
-        glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, size_of(type_of(points[0])) * points.count, points.data, GL_STATIC_DRAW);
         is_dirty = false;
     }
@@ -52,10 +52,10 @@ buffer_polyline :: (using polyline : *$T/Renderable_Polyline2) {
 
 buffer_polyline_soup :: (using soup : *$T/Renderable_Polyline_Soup2) {
     if is_dirty {
-        if !buffer_id {
-            glGenBuffers(1, *buffer_id);
+        if !vbo {
+            glGenBuffers(1, *vbo);
         }
-        glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
         // @FIXME
         // @FIXME

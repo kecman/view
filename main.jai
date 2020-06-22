@@ -57,7 +57,7 @@ render_polyline :: (polyline : *geom.Renderable_Polyline2, style : *VertexLabelS
     glUniform1f(point_size_loc, xx style.point_size);
 
     glBindVertexArray(polyline_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, polyline.buffer_id);
+    glBindBuffer(GL_ARRAY_BUFFER, polyline.vbo);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, false, size_of(polyline.Point), null);
@@ -360,7 +360,7 @@ main :: () {
                         ImGui.ColorEdit3(to_c_string(tprint("##%", it)), p.line_color.component, ImGui.ColorEditFlags.NoInputs);
                         ImGui.SameLine();
                         if ImGui.Button(to_c_string(tprint("Remove##%", it)), size=*make_vector2(0, 0)) {
-                            glDeleteBuffers(1, *it.buffer_id);
+                            glDeleteBuffers(1, *it.vbo);
                             free(it);
                             remove it;
                         }
