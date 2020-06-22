@@ -28,8 +28,6 @@ text_vbo : GLuint;
 
 polyline_shader : GLuint;
 polyline_vao : GLuint;
-polyline_vbo : GLuint;
-polyline_ibo : GLuint;
 
 show_ui := true;    // Wish we could declare static variables inside functions.
 
@@ -209,21 +207,7 @@ main :: () {
 
     // Prepare VAO for lines
     {
-        // @TODO Make a ibo for polylines, later make two of them so we can have alternating segments in a different colour
-
-
         glGenVertexArrays(1, *polyline_vao);
-        glGenBuffers(1, *polyline_vbo);
-        glGenBuffers(1, *polyline_ibo);
-
-        glBindVertexArray(polyline_vao);
-        glBindBuffer(GL_ARRAY_BUFFER, polyline_vbo);
-        glBufferData(GL_ARRAY_BUFFER, size_of(GLfloat) * 6 * 4, null, GL_DYNAMIC_DRAW); // why 6 * 4 * size_of(GLfloat)? and the null means we just reserve memory now?
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * size_of(GLfloat), xx 0);
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
     }
 
     geometries : [..] *geom.Renderable_Geometry; // @Cleanup rename to geometries?
