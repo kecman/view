@@ -41,7 +41,7 @@ VertexLabelStyle :: struct {
 }
 
 // TODO Make this render Polyline_Soup3 and convert all others to that first?
-render_polyline :: (polyline : *geom.Renderable_Polyline2, style : *VertexLabelStyle = null) {
+render_polyline :: (polyline : *geom.Renderable_Polyline2, style : *VertexLabelStyle) {
 
     if !polyline || !polyline.visible {
         return;
@@ -72,38 +72,37 @@ render_polyline :: (polyline : *geom.Renderable_Polyline2, style : *VertexLabelS
     glDrawArrays(GL_POINTS, 0, xx polyline.points.count);
 
     glDisableVertexAttribArray(0);
+}
 
-    if style {
-        glEnable(GL_BLEND);
-        defer glDisable(GL_BLEND);
-        glDisable(GL_CULL_FACE);
-        defer glEnable(GL_CULL_FACE);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+render_vertex_labels :: (points : []Vector2, style : *VertexLabelStyle, label_index_offset : int = 0) {
+    glEnable(GL_BLEND);
+    defer glDisable(GL_BLEND);
+    glDisable(GL_CULL_FACE);
+    defer glEnable(GL_CULL_FACE);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        world_from_model := matrix4_identity();
-        view_from_world := make_look_at_matrix(*camera);
-        projection_from_view := make_orthographic_projection_matrix(*camera);
-        projection_from_model := projection_from_view * view_from_world * world_from_model;
+    world_from_model := matrix4_identity();
+    view_from_world := make_look_at_matrix(*camera);
+    projection_from_view := make_orthographic_projection_matrix(*camera);
+    projection_from_model := projection_from_view * view_from_world * world_from_model;
 
-        for polyline.points {
-            text : string;
-            if style.show_index && style.show_position text = tprint("% (% %)", it_index, it.x, it.y);
-            if style.show_index && !style.show_position text = tprint("%", it_index);
-            if !style.show_index && style.show_position text = tprint("(% %)", it.x, it.y);
-            if !style.show_index && !style.show_position break;
+    for points {
+        text : string;
+        if style.show_index && style.show_position text = tprint("% (% %)", label_index_offset + it_index, it.x, it.y);
+        if style.show_index && !style.show_position text = tprint("%", label_index_offset + it_index);
+        if !style.show_index && style.show_position text = tprint("(% %)", it.x, it.y);
+        if !style.show_index && !style.show_position break;
 
-            text_w := get_text_width_in_pixels(text, 1.0);
-            scale := 0.3;
+        text_w := get_text_width_in_pixels(text, 1.0);
+        scale := 0.3;
 
-            // [-1, 1]x[-1,1] -> [0, current_window_width]x[0, current_window_height]
-            text_position_px := projection_from_model * make_vector4(it.x, it.y, 0., 1.);
-            text_position_px.x = cast(float)current_window_width * (text_position_px.x + 1) / 2;
-            text_position_px.y = cast(float)current_window_height * (text_position_px.y + 1) / 2;
+        // [-1, 1]x[-1,1] -> [0, current_window_width]x[0, current_window_height]
+        text_position_px := projection_from_model * make_vector4(it.x, it.y, 0., 1.);
+        text_position_px.x = cast(float)current_window_width * (text_position_px.x + 1) / 2;
+        text_position_px.y = cast(float)current_window_height * (text_position_px.y + 1) / 2;
 
-            render_text_quad(text_shader, text, text_position_px.xy, scale, make_vector4(1., 1., 1., 1));
-        }
+        render_text_quad(text_shader, text, text_position_px.xy, scale, make_vector4(1., 1., 1., 1));
     }
-
 }
 
 MouseState :: struct {
@@ -433,8 +432,11 @@ main :: () {
         for geometries {
             if #complete it.type == {
                 case .POLYLINE2;
-                    polyline := cast(*geom.Renderable_Polyline2) it;
-                    render_polyline(polyline, *vertex_label_style);
+                    if it.visible {
+                        polyline := cast(*geom.Renderable_Polyline2) it;
+                        render_polyline(polyline, *vertex_label_style);
+                        render_vertex_labels(polyline.points, *vertex_label_style);
+                    }
                 case .POLYLINE_SOUP2;
                     // soup := cast(*geom.Renderable_Polyline_Soup2) it;
                     // for polyline : soup.polylines {
