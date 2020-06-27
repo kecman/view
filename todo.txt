@@ -39,6 +39,7 @@
 [ ] Toggle fullscreen/maximise
 [ ] Some kind of ui cooldown for removing files? So that you don't loose track of what's being deleted
 [ ] If file is hovered in the list then make it flash to white and back, and draw it lastt 
+[ ] Make orbitting/rotatoin work based on the relation between the cursor position and the CoM of the visible shape? or orbit location
 
 # minor version
 
