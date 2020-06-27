@@ -45,7 +45,7 @@ buffer_polyline :: (using polyline : *$T/Renderable_Polyline2) {
     if is_dirty {
         if !vbo glGenBuffers(1, *vbo);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, size_of(type_of(points[0])) * points.count, points.data, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, size_of(Point) * points.count, points.data, GL_STATIC_DRAW);
         is_dirty = false;
     }
 }
@@ -60,11 +60,12 @@ buffer_polyline_soup :: (using soup : *$T/Renderable_Polyline_Soup2) {
         num_points := 0;
         for polyline : polylines num_points += polyline.points.count;
 
+        glBufferData(GL_ARRAY_BUFFER, size_of(Point) * num_points, null, GL_STATIC_DRAW);
+
         offset := 0;
-        glBufferData(GL_ARRAY_BUFFER, size_of(type_of(polylines[0].points[0])) * num_points, null, GL_STATIC_DRAW);
         for polyline : polylines {
-            glBufferSubData(vbo, xx offset, offset + polyline.points.count, polyline.points.data);
-            offset += polyline.points.count;
+            glNamedBufferSubData(vbo, xx offset, size_of(Point) * polyline.points.count, polyline.points.data);
+            offset += size_of(Point) * polyline.points.count;
         }
 
         is_dirty = false;

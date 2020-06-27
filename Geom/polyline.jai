@@ -24,7 +24,14 @@ Polyline2 :: Polyline(2);
 Polyline3 :: Polyline(3);
 
 Polyline_Soup :: struct (dim : int) {
-    Point : Polyline(dim).Point;
+    #if dim == 2 {
+        Point :: Vector2;
+    } else #if dim == 3 {
+        Point :: Vector3;
+    } else {
+        #run compiler_report_error(#file, #line, 0, "Polyline must be 2D or 3D"); // @TODO better way which reports the call site?
+    }
+
     polylines : [..]Polyline(dim);
 }
 

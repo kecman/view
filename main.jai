@@ -74,6 +74,44 @@ render_polyline :: (polyline : *geom.Renderable_Polyline2, style : *VertexLabelS
     glDisableVertexAttribArray(0);
 }
 
+render_polyline_soup :: (soup : *geom.Renderable_Polyline_Soup2, style : *VertexLabelStyle) {
+
+    if !soup || !soup.visible {
+        return;
+    }
+
+    assert(soup.is_dirty == false);
+
+    glUseProgram(polyline_shader);
+
+    line_color_loc := glGetUniformLocation(polyline_shader, "line_color");
+    glUniform4f(line_color_loc, soup.line_color.x, soup.line_color.y, soup.line_color.z, soup.line_color.w);
+    point_size_loc := glGetUniformLocation(polyline_shader, "point_size");
+    glUniform1f(point_size_loc, xx style.point_size);
+
+    glBindVertexArray(polyline_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, soup.vbo);
+
+    last_line_width: float;
+    glGetFloatv(GL_LINE_WIDTH, xx *last_line_width);
+    defer glLineWidth(last_line_width);
+    glLineWidth(xx style.line_width); // 1, 2, 3... See also glEnable(GL_LINE_SMOOTH);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, false, size_of(soup.Point), null);
+
+    offset := 0;
+    for polyline : soup.polylines {
+        glDrawArrays(GL_LINE_STRIP, xx offset, xx polyline.points.count);
+        glEnable(GL_PROGRAM_POINT_SIZE);
+        glDrawArrays(GL_POINTS, xx offset, xx polyline.points.count);
+        offset += polyline.points.count;
+    }
+
+    glDisableVertexAttribArray(0);
+}
+
+
 render_vertex_labels :: (points : []Vector2, style : *VertexLabelStyle, label_index_offset : int = 0) {
     glEnable(GL_BLEND);
     defer glDisable(GL_BLEND);
@@ -121,6 +159,11 @@ die :: (loc := #caller_location) {
 
 main :: () {
 
+    // my_logger :: (message: string, ident: string, mode: Log_Mode, data: *void) {
+    //     print("my_logger: [%] %", ident, message);
+    // }
+    // context.logger = my_logger; // default is no-op so need to set our own
+
     SDL_Init(SDL_INIT_VIDEO);
 
     window := SDL_CreateWindow(tprint("View v%", VERSION).data, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);
@@ -147,7 +190,9 @@ main :: () {
 
     gl_load(*gl, SDL_GL_GetProcAddress);
 
-    gl_enable_debug_output(break_on_error=true);
+    // @TODO enable these for debug builds?
+    // gl_enable_debug_output(true);
+    // glEnable(GL_DEBUG_OUTPUT); // @FIXME above enables GL_DEBUG_OUTPUT_SYNCHRONOUS, but without this line debug output doesn't work
 
     // opengl_major_version, opengl_minor_version : s32;
     // SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, *opengl_major_version);
@@ -209,9 +254,8 @@ main :: () {
         glGenVertexArrays(1, *polyline_vao);
     }
 
-    geometries : [..] *geom.Renderable_Geometry; // @Cleanup rename to geometries?
+    geometries : [..] *geom.Renderable_Geometry;
 
-/*
     test_soup := New(geom.Renderable_Polyline_Soup2);
     defer free(test_soup);
     {
@@ -222,7 +266,6 @@ main :: () {
     geom.buffer_polyline_soup(test_soup);
 
     array_add(*geometries, test_soup);
-*/
 
     vertex_label_style : VertexLabelStyle;
 
@@ -349,16 +392,32 @@ main :: () {
             if ImGui.Button("Cycle vertex style (V)", size=*make_vector2(0,0)) cycle_vertex_label_style(*vertex_label_style);
             if ImGui.Button("Cycle line style   (L)", size=*make_vector2(0,0)) cycle_line_style(*vertex_label_style);
 
+            imgui_label :: (label : string, ptr : *void) -> c_string {
+                return to_c_string(concatenate(label, tprint("##%", ptr)));
+            }
+
             for geometries {
                 if #complete it.type == {
-                    case geom.Renderable_Geometry_Type.POLYLINE2; #through;
-                    case geom.Renderable_Geometry_Type.POLYLINE_SOUP2;
+                    // @Cleanup duplication
+                    case geom.Renderable_Geometry_Type.POLYLINE2;
                         p := cast(*geom.Renderable_Polyline2) it;
-                        ImGui.Checkbox(to_c_string(path_filename(it.filename)), *it.visible);
+                        print("Polyline2 visible = %\n", it.visible);
+                        ImGui.Checkbox(imgui_label(path_filename(it.filename), xx it), *it.visible);
                         ImGui.SameLine();
-                        ImGui.ColorEdit3(to_c_string(tprint("##%", it)), p.line_color.component, ImGui.ColorEditFlags.NoInputs);
+                        ImGui.ColorEdit3(imgui_label("", it), p.line_color.component, ImGui.ColorEditFlags.NoInputs);
                         ImGui.SameLine();
-                        if ImGui.Button(to_c_string(tprint("Remove##%", it)), size=*make_vector2(0, 0)) {
+                        if ImGui.Button(imgui_label("Remove", it), size=*make_vector2(0, 0)) {
+                            glDeleteBuffers(1, *it.vbo);
+                            free(it);
+                            remove it;
+                        }
+                    case geom.Renderable_Geometry_Type.POLYLINE_SOUP2;
+                        p := cast(*geom.Renderable_Polyline_Soup2) it;
+                        ImGui.Checkbox(imgui_label(path_filename(it.filename), xx it), *it.visible);
+                        ImGui.SameLine();
+                        ImGui.ColorEdit3(imgui_label("", it), p.line_color.component, ImGui.ColorEditFlags.NoInputs);
+                        ImGui.SameLine();
+                        if ImGui.Button(imgui_label("Remove", it), size=*make_vector2(0, 0)) {
                             glDeleteBuffers(1, *it.vbo);
                             free(it);
                             remove it;
@@ -430,19 +489,21 @@ main :: () {
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
         for geometries {
-            if #complete it.type == {
-                case .POLYLINE2;
-                    if it.visible {
+            if it.visible {
+                if #complete it.type == {
+                    case .POLYLINE2;
                         polyline := cast(*geom.Renderable_Polyline2) it;
                         render_polyline(polyline, *vertex_label_style);
                         render_vertex_labels(polyline.points, *vertex_label_style);
-                    }
-                case .POLYLINE_SOUP2;
-                    // soup := cast(*geom.Renderable_Polyline_Soup2) it;
-                    // for polyline : soup.polylines {
-                    //     render_polyline(polyline, *vertex_label_style);
-                    // }
-                    assert(false); // @Incompleted
+                    case .POLYLINE_SOUP2;
+                        soup := cast(*geom.Renderable_Polyline_Soup2) it;
+                        render_polyline_soup(soup, *vertex_label_style);
+                        offset := 0;
+                        for polyline : soup.polylines {
+                            render_vertex_labels(polyline.points, *vertex_label_style, offset);
+                            offset += polyline.points.count;
+                        }
+                }
             }
         }
         ImGui.Render();

@@ -60,15 +60,11 @@ make_axis_box :: (min_point : Vector2, max_point : Vector2) -> AxisBox(2) #must 
 
 to_polyline :: (using box : *AxisBox2) -> Polyline2 #must {
     polyline : Polyline2;
-    // @Incomplete
-
-    // @FIXME
-    // @FIXME
-    // @FIXME
-    // @FIXME
-    // @FIXME
-    // @FIXME
-
+    array_add(*polyline.points, make_vector2(min_point.x, min_point.y));
+    array_add(*polyline.points, make_vector2(max_point.x, min_point.y));
+    array_add(*polyline.points, make_vector2(max_point.x, max_point.y));
+    array_add(*polyline.points, make_vector2(min_point.x, max_point.y));
+    array_add(*polyline.points, make_vector2(min_point.x, min_point.y));
     return polyline;
 }
 
