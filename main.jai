@@ -14,8 +14,6 @@ io :: #import "IO";
 
 //#import "Debug";
 
-VERSION :: "0.1.0";
-
 INITIAL_WINDOW_WIDTH  : s32 : 1280;
 INITIAL_WINDOW_HEIGHT : s32 : 720;
 
@@ -166,7 +164,7 @@ main :: () {
 
     SDL_Init(SDL_INIT_VIDEO);
 
-    window := SDL_CreateWindow(tprint("View v%", VERSION).data, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);
+    window := SDL_CreateWindow(tprint("View v%", VIEW_VERSION_STRING).data, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);
 
     // Check that the window was successfully created
     if window == null {
@@ -256,6 +254,7 @@ main :: () {
 
     geometries : [..] *geom.Renderable_Geometry;
 
+    /*
     test_soup := New(geom.Renderable_Polyline_Soup2);
     defer free(test_soup);
     {
@@ -264,8 +263,8 @@ main :: () {
         array_add(*polylines, geom.to_polyline(*geom.make_axis_box(make_vector2(-50, -50), make_vector2(50, 50))));
     }
     geom.buffer_polyline_soup(test_soup);
-
     array_add(*geometries, test_soup);
+    */
 
     vertex_label_style : VertexLabelStyle;
 
@@ -349,21 +348,36 @@ main :: () {
                         obj := io.load_obj(dropped);
                         print("Loaded file: '%'\n", dropped);
 
+                        soup2, success := io.unpack_obj(obj);
+                        defer free(soup2.polylines.data);
 
-                        // @TODO Make a function to guess the type of the loaded obj and then convert to it
-                        is_polyline_2d := true;
-                        for obj.vertices if it.z != obj.vertices[0].z is_polyline_2d = false;
-                        if !is_polyline_2d {
+                        if !success {
                             print("Skipped file: '%' (only 2D polylines with constant z are supported)\n", dropped);
                             continue;
                         }
 
-                        polyline := New(geom.Renderable_Polyline2);
-                        polyline.filename = dropped;
-                        for obj.vertices array_add(*polyline.points, it.xy);
-                        geom.buffer_polyline(polyline);
+                        if soup2.polylines.count == {
+                            case 0; {
+                                continue;
+                            }
 
-                        array_add(*geometries, polyline);
+                            case 1; {
+                                renderable := New(geom.Renderable_Polyline2);
+                                renderable.filename = dropped;
+                                array_copy(*renderable.geometry.points, soup2.polylines[0].points);
+                                geom.buffer_polyline(renderable);
+                                array_add(*geometries, renderable);
+                            }
+
+                            case; {
+                                renderable := New(geom.Renderable_Polyline_Soup2);
+                                renderable.filename = dropped;
+                                array_copy(*renderable.geometry.polylines, soup2.polylines);
+                                geom.buffer_polyline_soup(renderable);
+                                array_add(*geometries, renderable);
+                            }
+                        }
+
                         fit_on_screen(geometries);
                     }
             }
@@ -401,7 +415,6 @@ main :: () {
                     // @Cleanup duplication
                     case geom.Renderable_Geometry_Type.POLYLINE2;
                         p := cast(*geom.Renderable_Polyline2) it;
-                        print("Polyline2 visible = %\n", it.visible);
                         ImGui.Checkbox(imgui_label(path_filename(it.filename), xx it), *it.visible);
                         ImGui.SameLine();
                         ImGui.ColorEdit3(imgui_label("", it), p.line_color.component, ImGui.ColorEditFlags.NoInputs);

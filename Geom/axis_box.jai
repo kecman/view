@@ -35,6 +35,8 @@ AxisBox3 :: AxisBox(3);
 
 // Initialise `box` to a state where `is_empty` returns true and where we can start calling `expand`
 init :: (using box : *$T/AxisBox) {
+    FLOAT32_NEGATIVE_INFINITY :: 0hFF800000; // @Cleanup: -FLOAT32_INFINITY?
+
     for d : 0..T.dim-1 {
         #if type_of(T.Point.x) == float32 {
             min_point.component[d] = FLOAT32_INFINITY;

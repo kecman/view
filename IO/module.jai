@@ -120,6 +120,60 @@ load_obj :: (filename : string) -> Obj #must {
     return obj;
 }
 
+unpack_obj :: (using obj : Obj) -> geom.Polyline_Soup2, bool {
+    soup2 : geom.Polyline_Soup2;
+
+    is_2d := true;
+    for vertices if it.z != vertices[0].z is_2d = false;
+    if !is_2d || triangles.count || polygons.count {
+        return soup2, false;
+    }
+
+    // @TODO make an `obj_polyline_soup` function and test it, and run tests using procedure notes
+    // @TODO perhaps this is simpler to implement with segment iterators etc
+    if segments.count {
+
+        segment_index := 0;
+
+        polyline := array_add(*soup2.polylines);
+
+        segment := segments[segment_index];
+        polyline_start := segment.x;
+
+        // Add the start point of the first segment
+        point_index := 0;
+        array_add(*polyline.points, vertices[polyline_start - 1].xy);
+        point_index += 1;
+
+        while true {
+            // Add the end point of the current segment
+            segment = segments[segment_index];
+            array_add(*polyline.points, vertices[segment.y - 1].xy);
+            point_index += 1;
+
+            segment_index += 1;
+
+            if segment_index == segments.count break;
+
+            if segment.y == polyline_start {
+                // If we reached the vertex index that started the current polyline create a new polyline
+                polyline = array_add(*soup2.polylines);
+
+                // Update segment (segment_index already incremented) and polyline start point
+                segment = segments[segment_index];
+                polyline_start = segment.x;
+
+                // Add the start point of the first segment
+                point_index = 0;
+                array_add(*polyline.points, vertices[polyline_start - 1].xy);
+                point_index += 1;
+            }
+        }
+    }
+
+    return soup2, true;
+}
+
 #scope_file
 
 #import "Text_File_Handler";

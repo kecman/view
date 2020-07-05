@@ -14,7 +14,7 @@
 [x] Draw points
 [x] l cycles through line styles
 [x] Draw polyline soups
-[ ] Support polyline soups general obj polyline files
+[x] Support polyline soup obj files
 [ ] Distribution stuff, how to make this a single executable? statically link?
 [ ] Support polygons and polygon soups, and do convex decomposition for rendering
 [ ] Write * to indicate an identical first and last point
