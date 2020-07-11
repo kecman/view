@@ -394,7 +394,7 @@ main :: () {
                 ImGui.Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0 / imgui_io.Framerate, imgui_io.Framerate);
                 w, h : s32;
                 SDL_GetWindowSize(window, *w, *h);
-                ImGui.Text(sprint("Window size %1x%2", w, h));
+                ImGui.Text(tprint("Window size %1x%2", w, h));
                 if show_demo_window {
                     ImGui.SetNextWindowPos(*make_vector2(650, 20), ImGui.Cond.FirstUseEver, *make_vector2(0,0));
                     ImGui.ShowDemoWindow(*show_demo_window);
