@@ -132,9 +132,29 @@ update_to_fit_on_screen :: (using camera : *Camera, world_box : *geom.AxisBox2) 
     camera.left = min(camera.left, -aspect * 0.1);;
 }
 
+// @Cleanup: use Math.make_look_at_matrix here
 make_look_at_matrix :: (using camera : *Camera) -> Matrix4 #must {
-    // @Cleanup: use Math.make_look_at_matrix here
-    return geom.make_look_at_matrix(eye_position, look_position, up_direction);
+    f := normalize_or_z_axis(look_position - eye_position);
+    s := normalize_or_z_axis(cross(f, up_direction));
+    u := cross(s, f);
+
+    m := matrix4_identity();
+
+    // See glm::lookAtRH, but using row-major
+    m.coef[0][0] =  s.x;
+    m.coef[0][1] =  s.y;
+    m.coef[0][2] =  s.z;
+    m.coef[1][0] =  u.x;
+    m.coef[1][1] =  u.y;
+    m.coef[1][2] =  u.z;
+    m.coef[2][0] = -f.x;
+    m.coef[2][1] = -f.y;
+    m.coef[2][2] = -f.z;
+    m.coef[0][3] = -dot(s, eye_position);
+    m.coef[1][3] = -dot(u, eye_position);
+    m.coef[2][3] =  dot(f, eye_position);
+
+    return m;
 }
 
 make_orthographic_projection_matrix :: (using camera : *Camera) -> Matrix4 #must {

@@ -37,6 +37,9 @@ build :: () {
             build_options.output_executable_name = "view";
         }
         build_options.lazy_foreign_function_lookups = true;
+        // build_options.memory_debugger = true;
+        // build_options.emit_debug_info = .DWARF;
+        // build_options.llvm_options.debug_options = {:string: "-g"};
         array_add(*build_options.modules_search_path_array, get_working_directory());
         set_build_options(build_options, w);
     }
