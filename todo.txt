@@ -1,5 +1,3 @@
-# For initial release
-
 [x] Implement pan with the holding down the middle button
 [x] Implement zoom with the scroll wheel
 [x] Sync pan with mouse cursor
@@ -15,6 +13,7 @@
 [x] l cycles through line styles
 [x] Draw polyline soups
 [x] Support polyline soup obj files
+[ ] Sort by time loaded
 [ ] Distribution stuff, how to make this a single executable? statically link?
 [ ] Support polygons and polygon soups, and do convex decomposition for rendering
 [ ] Write * to indicate an identical first and last point
@@ -22,15 +21,11 @@
 [ ] Load from command line?
 [ ] Custom key-bindings and sensitivity of parameters, dynamically generate UI for this? and save to the text file
 
-# For present and explain version
-
 [ ] Understand and use context
   [ ] Understand and use logging
   [ ] Understand and use assertions
   [ ] Understand and use allocaters
 [ ] Build system stuff: build_debug and build_release
-
-# minor version
 
 [ ] Give each polyline a number 1-9 then pressing that number before some modifier for colour/vertex etc only modifies that one, number 0 means everything?
 [ ] Optionally mesh the inside of the polyline
@@ -41,8 +36,6 @@
 [ ] If file is hovered in the list then make it flash to white and back, and draw it lastt 
 [ ] Make orbitting/rotatoin work based on the relation between the cursor position and the CoM of the visible shape? or orbit location
 
-# minor version
-
 [ ] Dont distort geometry in non-square viewports
 [ ] Zoom to origin
 [ ] Show grid lines and label
@@ -52,11 +45,12 @@
 [ ] Compiled at time in Window, after version?
 [ ] Distribute shaders with source for hot loading/editing them. Pass them lots of unused data then
 
-# fixes
-
 [ ] Fix orbit/rotation location when many files are loaded but some aren't visible
 [ ] Cleanup buffer_ids in openGL?
 
+# bugs
+
+[ ] Fix memory leaks, need to use a new version of valgrind for --keep-debuginfo=yes option but it seems like getting to show line numbers properly isn't working
 
 Present & Explain
 -----------------

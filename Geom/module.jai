@@ -1,9 +1,3 @@
-#scope_file
-
-#import "Math";
-
-#scope_export
-
 #load "axis_box.jai";
 #load "polyline.jai";
 #load "rendering.jai";
