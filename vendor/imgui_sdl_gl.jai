@@ -1,12 +1,8 @@
-#scope_file
-
 #import "Basic";
 #import "ImGui";
 #import "SDL";
 #import "Math";
 #import "GL";
-
-#scope_export
 
 // Data
 g_Time: float64 = 0.0;
@@ -333,13 +329,13 @@ ImGui_ImplSdl_Init :: (window: *SDL_Window) -> bool {
         io.ImeWindowHandle = wmInfo.info.win.window;
     }
 
-    cursor_arrow = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
-    cursor_text_input = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
-    cursor_move = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
-    cursor_resize_ns = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENS);
-    cursor_resize_ew = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEWE);
-    cursor_resize_nesw = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW);
-    cursor_resize_nwse = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE);
+    cursor_arrow = SDL_CreateSystemCursor(.ARROW);
+    cursor_text_input = SDL_CreateSystemCursor(.IBEAM);
+    cursor_move = SDL_CreateSystemCursor(.HAND);
+    cursor_resize_ns = SDL_CreateSystemCursor(.SIZENS);
+    cursor_resize_ew = SDL_CreateSystemCursor(.SIZEWE);
+    cursor_resize_nesw = SDL_CreateSystemCursor(.SIZENESW);
+    cursor_resize_nwse = SDL_CreateSystemCursor(.SIZENWSE);
 
     return true;
 }
