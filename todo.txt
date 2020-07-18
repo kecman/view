@@ -72,7 +72,11 @@ If you've ever played his games, there are many ideas in them and they're all co
 
 do not read the JaiPrimer
 
+Having a single code declaration and simple syntax makes it so easy to grep your code, so you don't need a frikkin IDE to be able to jump to definition. And your computer runs much faster.
 
+Error messages and compile times alone are the best!
+
+Joy of programming: prevents burnout
 
 Questions
 Is there a const concept?
