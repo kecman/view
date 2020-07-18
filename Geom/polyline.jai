@@ -2,7 +2,6 @@
 
 #import "Math";
 #import "Compiler";
-#import "GL"; // @TODO remove gl stuff from this file?
 
 #scope_export
 

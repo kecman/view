@@ -71,3 +71,7 @@ buffer_polyline_soup :: (using soup : *$T/Renderable_Polyline_Soup2) {
         is_dirty = false;
     }
 }
+
+#scope_file
+
+#import "GL";
