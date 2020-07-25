@@ -1,6 +1,6 @@
 Renderable_Geometry_Type :: enum {
-    POLYLINE2       :: 0;
-    POLYLINE_SOUP2  :: 1;
+    POLYLINE2;
+    POLYLINE_SOUP2;
     // POLYLINE3;
     // POLYLINE_SOUP3;
     // OBJ;
@@ -19,24 +19,14 @@ Renderable_Polyline2 :: struct {
     using renderable : Renderable_Geometry;
     line_color : Vector4;
 
-    using geometry : Polyline(2);
+    using geometry : Polyline2;
 }
 
 Renderable_Polyline_Soup2 :: struct {
     using renderable : Renderable_Geometry;
     line_color : Vector4;
 
-    using geometry : Polyline_Soup(2);
-}
-
-bounding_box :: (renderable_geometry : *Renderable_Geometry) -> AxisBox(2) #must {
-    if #complete renderable_geometry.type == {
-        case .POLYLINE2;
-            polyline2 := cast(*Renderable_Polyline2)renderable_geometry;
-            return bounding_box(polyline2);
-        case .POLYLINE_SOUP2;
-            return bounding_box((cast(*Renderable_Polyline_Soup2)renderable_geometry));
-    }
+    using geometry : Polyline_Soup2;
 }
 
 buffer_polyline :: (using polyline : *$T/Renderable_Polyline2) {

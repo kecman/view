@@ -559,8 +559,16 @@ fit_on_screen :: (geometries : [] *geom.Renderable_Geometry) {
     geom.init(*overall_bounds);
     for geometries {
         if it.visible {
-            bounds := geom.bounding_box(it);
-            geom.expand(*overall_bounds, *bounds);
+            if #complete it.type == {
+                case .POLYLINE2;
+                    shape := cast(*geom.Renderable_Polyline2)it;
+                    bounds := geom.bounding_box(shape);
+                    geom.expand(*overall_bounds, *bounds);
+                case .POLYLINE_SOUP2;
+                    shape := cast(*geom.Renderable_Polyline_Soup2)it;
+                    bounds := geom.bounding_box(shape);
+                    geom.expand(*overall_bounds, *bounds);
+            }
         }
     }
     geom.offset(*overall_bounds, 0.05 * geom.extents(*overall_bounds));
