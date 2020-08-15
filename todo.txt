@@ -22,6 +22,7 @@
 [ ] Custom key-bindings and sensitivity of parameters, dynamically generate UI for this? and save to the text file
 
 [ ] Understand and use context
+  [ ] Watch the https://youtu.be/ciGQCP6HgqI video
   [ ] Understand and use logging
   [ ] Understand and use assertions
   [ ] Understand and use allocaters
@@ -51,6 +52,10 @@
 # bugs
 
 [ ] Fix memory leaks, need to use a new version of valgrind for --keep-debuginfo=yes option but it seems like getting to show line numbers properly isn't working
+
+# boost polygon bindings
+
+[ ] Look at how Hash_Table is implemented by storing an `entries : []Entry;` array, not a dynamic array [..], and then having the allocator stuff separate, I should do the same for Polygon types
 
 Present & Explain
 -----------------
@@ -89,3 +94,11 @@ Put this on github, and then make a github io page
 Very different philosophy RE how to program, everything very simple. Makes *some* things inconvenient, but no the hard things e.g.,
 - initialising things is a bit annoying, you need to declare+init right now. 
 - operator overloading limited, so longer function names, and simple imports/namespaces (no adl) mean sometimes annoying to use
+
+
+
+
+## Misc ideas
+
+- Extend the imgui_inspector example to allow you to drag+drop jai files and have show you all the types in the file
+- @Bug ImGui bindings for unix don't write declare CreateContext arguments #c_call
