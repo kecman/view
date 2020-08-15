@@ -1,12 +1,11 @@
 #import "Basic";
 #import "File";
 #import "String";
-
 #import "Math";
 
-geom :: #import "Geom";
-io :: #import "IO";
+geom :: #import "geometry";
 
+#load "io.jai";
 #load "vendor/imgui_sdl_gl.jai";
 #load "shaders.jai";
 #load "font.jai";
@@ -211,11 +210,8 @@ main :: () {
         projection := orthographic_projection_matrix(0.0, xx current_window_width, 0.0, xx current_window_height, -1.0, 1.0);
         mvp := projection;
 
-        vert := read_entire_file("data/shaders/text.vert");
-        frag := read_entire_file("data/shaders/text.frag");
-        defer free(vert);
-        defer free(frag);
-
+        vert :: #run read_entire_file("source/shaders/text.vert");
+        frag :: #run read_entire_file("source/shaders/text.frag");
         text_shader = get_shader_program(vert, frag);
 
         glUseProgram(text_shader);
@@ -238,13 +234,9 @@ main :: () {
 
     // Setup line shader
     {
-        vert := read_entire_file("data/shaders/polyline.vert");
-        frag := read_entire_file("data/shaders/polyline.frag");
-        defer free(vert);
-        defer free(frag);
-
+        vert :: #run read_entire_file("source/shaders/polyline.vert");
+        frag :: #run read_entire_file("source/shaders/polyline.frag");
         polyline_shader = get_shader_program(vert, frag);
-
     }
 
     // Prepare VAO for lines
@@ -345,10 +337,10 @@ main :: () {
                     if skip {
                         print("Skipped file: '%' (already loaded)\n", dropped);
                     } else {
-                        obj := io.load_obj(dropped);
+                        obj := load_obj(dropped);
                         print("Loaded file: '%'\n", dropped);
 
-                        soup2, success := io.unpack_obj(obj);
+                        soup2, success := unpack_obj(obj);
                         defer free(soup2.polylines.data);
 
                         if !success {

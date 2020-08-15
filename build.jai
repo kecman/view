@@ -1,6 +1,7 @@
 #import "Basic";
 #import "Compiler";
 #import "Check";
+#import "String";
 
 build :: () {
 
@@ -40,15 +41,17 @@ build :: () {
         // build_options.memory_debugger = true;
         // build_options.emit_debug_info = .DWARF;
         // build_options.llvm_options.debug_options = {:string: "-g"};
-        array_add(*build_options.modules_search_path_array, get_working_directory());
+
+        cwd :: #run get_working_directory();
+        array_add(*build_options.modules_search_path_array, join(.. .[cwd, "source", "modules"], "/"));
         set_build_options(build_options, w);
     }
 
     compiler_begin_intercept(w);
     if array_find(command_line_arguments, "test") {
-        add_build_file("test.jai", w);
+        add_build_file("source/test.jai", w);
     } else {
-        add_build_file("main.jai", w);
+        add_build_file("source/main.jai", w);
     }
     add_build_string("VIEW_VERSION_STRING :: \"0.0.1\";", w); // @TODO add date here
     while true {

@@ -1,5 +1,5 @@
 #scope_file
-geom :: #import "Geom";
+geom :: #import "geometry";
 
 #scope_export
 

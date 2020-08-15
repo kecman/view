@@ -1,6 +1,3 @@
-geom :: #import "Geom";
-
-
 // Collect the verts, lines, faces etc, and decide what the type of the thing was at the end
 // ex1. All verts, l with xy only and no z, or const z => polyline|polylinesoup
 // Probably polyline2 should have a z height too
@@ -36,6 +33,7 @@ make_vector3i :: (x : int, y : int, z : int) -> Vector3i {
     return v;
 }
 
+// @Cleanup Use something like Mesh3
 Obj :: struct {
     vertices :  [..] Vector3;
     normals :   [..] Vector3;
@@ -120,8 +118,8 @@ load_obj :: (filename : string) -> Obj #must {
     return obj;
 }
 
-unpack_obj :: (using obj : Obj) -> geom.Polyline_Soup2, bool {
-    soup2 : geom.Polyline_Soup2;
+unpack_obj :: (using obj : Obj) -> Polyline_Soup2, bool {
+    soup2 : Polyline_Soup2;
 
     is_2d := true;
     for vertices if it.z != vertices[0].z is_2d = false;
@@ -181,3 +179,5 @@ unpack_obj :: (using obj : Obj) -> geom.Polyline_Soup2, bool {
 #import "System";  // To get the executable's path.
 #import "String";
 #import "Math";
+
+#import "geometry";

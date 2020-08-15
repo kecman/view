@@ -1,6 +1,7 @@
 #import "Basic";
-io :: #import "IO";
-geom :: #import "Geom";
+
+#import "geometry";
+#load "io.jai";
 
 check_failure_terminates :: false;
 
@@ -25,12 +26,12 @@ require :: (a : $T, b : T, check_proc : (T, T)->bool, loc := #caller_location) {
 // @TODO perhaps this is simpler to implement with segment iterators etc
 main :: () {
     dropped := "/home/matija/Dropbox/view/data/test-geometry/polyline_soup_2_000.obj";
-    obj := io.load_obj(dropped);
+    obj := load_obj(dropped);
     default_check :: (a,b)=>(a==b); 
     check(obj.segments.count, 9, default_check);
     check(obj.vertices.count, 10, default_check);
 
-    soup2, success := io.unpack_obj(obj);
+    soup2, success := unpack_obj(obj);
     check(success, true, default_check);
     if !success print("Skipped file: '%' (only 2D polylines with constant z are supported)\n", dropped);
 
