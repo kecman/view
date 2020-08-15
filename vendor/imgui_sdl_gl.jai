@@ -6,7 +6,7 @@
 
 // Data
 g_Time: float64 = 0.0;
-g_MousePressed: [3]bool = {:bool: false, false, false };
+g_MousePressed: [3]bool = .[false, false, false];
 g_MouseWheel: float = 0.0;
 g_FontTexture: GLuint = 0;
 g_ShaderHandle: GLuint = 0;
@@ -322,7 +322,7 @@ ImGui_ImplSdl_Init :: (window: *SDL_Window) -> bool {
     io.GetClipboardTextFn = ImGui_ImplSdl_GetClipboardText;
     io.ClipboardUserData = null;
 
-    #if OS_WINDOWS {
+    #if OS == .WINDOWS {
         wmInfo: SDL_SysWMinfo ;
         SDL_VERSION(*wmInfo.version);
         SDL_GetWindowWMInfo(window, *wmInfo);
