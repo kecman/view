@@ -4,6 +4,7 @@
 #import "Math";
 
 geom :: #import "geometry";
+#import "BoostPolygon";
 
 #load "io.jai";
 #load "vendor/imgui_sdl_gl.jai";
@@ -323,6 +324,18 @@ main :: () {
                     if event.key.keysym.sym == SDLK_r fit_on_screen(geometries);
                     if event.key.keysym.sym == SDLK_v cycle_vertex_label_style(*vertex_label_style);
                     if event.key.keysym.sym == SDLK_l cycle_line_style(*vertex_label_style);
+
+                    if event.key.keysym.sym == SDLK_RIGHTBRACKET {
+                        amount : float = 45;
+                        if SDL_GetModState() & KMOD_SHIFT amount = 15;
+                        camera.up_direction.xy = rotate(camera.up_direction.xy, to_radians(amount));
+                    }
+                    if event.key.keysym.sym == SDLK_LEFTBRACKET {
+                        amount : float = 45;
+                        if SDL_GetModState() & KMOD_SHIFT amount = 15;
+                        camera.up_direction.xy = rotate(camera.up_direction.xy, to_radians(-amount));
+                    }
+
                 case SDL_DROPFILE;
                     dropped := to_string(event.drop.file);
 
@@ -365,6 +378,9 @@ main :: () {
                                 renderable := New(geom.Renderable_Polyline_Soup2);
                                 renderable.filename = dropped;
                                 array_copy(*renderable.geometry.polylines, soup2.polylines);
+                                for soup2.polylines {
+                                    array_copy(*renderable.geometry.polylines[it_index].points, soup2.polylines[it_index].points);
+                                }
                                 geom.buffer_polyline_soup(renderable);
                                 array_add(*geometries, renderable);
                             }
@@ -411,7 +427,24 @@ main :: () {
                         ImGui.SameLine();
                         ImGui.ColorEdit3(imgui_label("", it), p.line_color.component, ImGui.ColorEditFlags.NoInputs);
                         ImGui.SameLine();
+
                         if ImGui.Button(imgui_label("Remove", it), size=*make_vector2(0, 0)) {
+                            glDeleteBuffers(1, *it.vbo);
+                            free(it);
+                            remove it;
+                        }
+                        ImGui.SameLine();
+
+                        if ImGui.Button(imgui_label("Offset", it), size=*make_vector2(0, 0)) {
+                            offset := BoostPolygon.offset(*p.geometry, 1);
+                            boundary := BoostPolygon.clockwise_boundaries(*offset);
+
+                            renderable := New(geom.Renderable_Polyline_Soup2);
+                            renderable.filename = copy_string(it.filename);
+                            array_copy(*renderable.geometry.polylines, boundary.polylines);
+                            geom.buffer_polyline_soup(renderable);
+                            array_add(*geometries, renderable);
+
                             glDeleteBuffers(1, *it.vbo);
                             free(it);
                             remove it;
@@ -422,7 +455,24 @@ main :: () {
                         ImGui.SameLine();
                         ImGui.ColorEdit3(imgui_label("", it), p.line_color.component, ImGui.ColorEditFlags.NoInputs);
                         ImGui.SameLine();
+
                         if ImGui.Button(imgui_label("Remove", it), size=*make_vector2(0, 0)) {
+                            glDeleteBuffers(1, *it.vbo);
+                            free(it);
+                            remove it;
+                        }
+                        ImGui.SameLine();
+                        
+                        if ImGui.Button(imgui_label("Offset", it), size=*make_vector2(0, 0)) {
+                            offset := BoostPolygon.offset(*p.geometry, 1);
+                            boundary := BoostPolygon.clockwise_boundaries(*offset);
+
+                            renderable := New(geom.Renderable_Polyline_Soup2);
+                            renderable.filename = copy_string(it.filename);
+                            array_copy(*renderable.geometry.polylines, boundary.polylines);
+                            geom.buffer_polyline_soup(renderable);
+                            array_add(*geometries, renderable);
+
                             glDeleteBuffers(1, *it.vbo);
                             free(it);
                             remove it;
