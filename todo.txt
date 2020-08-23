@@ -13,6 +13,16 @@
 [x] l cycles through line styles
 [x] Draw polyline soups
 [x] Support polyline soup obj files
+[ ] Port the imgui 1.53 console to jai and use it to call the offset function
+[ ] Autogenerate the console registering code to add commands to the console
+[ ] Command list:
+  - [ ] 3.14 # result is a float
+  - [ ] wkt "s" # result is a shape described by "s"
+  - [ ] assign x # assigns x to the previous result
+  - [ ] offset x r # offsets x by r and creates a new result
+  - [ ] load path/to/file.obj # load given file
+  - [ ] run path/to/script.txt # run the commands in a given script
+[ ] Rename project to polyline calculator?
 [ ] Sort by time loaded
 [ ] Distribution stuff, how to make this a single executable? statically link?
 [ ] Support polygons and polygon soups, and do convex decomposition for rendering

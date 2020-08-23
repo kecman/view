@@ -11,6 +11,7 @@ geom :: #import "geometry";
 #load "shaders.jai";
 #load "font.jai";
 #load "camera.jai";
+#load "console.jai";
 
 //#import "Debug";
 
@@ -397,7 +398,7 @@ main :: () {
             ImGui.Begin("", *show_ui, ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar);
             ImGui.ColorEdit3("Background Color", clear_color.component, ImGui.ColorEditFlags.NoInputs);
 
-            if false {
+            #if false {
                 if ImGui.Button("Demo Window", size=*make_vector2(0,0)) show_demo_window ^= true;
                 ImGui.Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0 / imgui_io.Framerate, imgui_io.Framerate);
                 w, h : s32;
@@ -488,6 +489,8 @@ main :: () {
 
             ImGui.End();
         }
+
+        console_draw();
 
 
         if ImGui.GetMouseCursor() == {
