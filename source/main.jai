@@ -12,6 +12,7 @@ geom :: #import "geometry";
 #load "font.jai";
 #load "camera.jai";
 #load "console.jai";
+//#load "commands.jai"; // @CompilerBug? loading this here and console.jai causes:Error: Redeclaration of variable 'command_list'. but I think this should work? Hmmm
 
 //#import "Debug";
 
@@ -39,7 +40,7 @@ VertexLabelStyle :: struct {
     line_width : int = 2; // 1, 1, 2, 3
 }
 
-// TODO Make this render Polyline_Soup3 and convert all others to that first?
+// TODO Make this render Polyline_Soup3 and convert all others to that first? Better---use struct of vertices, indices and format
 render_polyline :: (polyline : *geom.Renderable_Polyline2, style : *VertexLabelStyle) {
 
     if !polyline || !polyline.visible {
@@ -279,6 +280,7 @@ main :: () {
 
 
     init_font();
+    init_commands();
 
     ImGui.CreateContext();
     // Setup ImGui binding

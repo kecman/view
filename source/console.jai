@@ -1,3 +1,5 @@
+#load "commands.jai";
+
 Console :: struct {
     // history : [..]string;
     // history_position : int = -1; // -1: new line, 0..History.Size-1 browsing history.
@@ -27,9 +29,41 @@ console_clear_log :: () {
 }
 
 console_execute_command :: (command : string) {
-    if !command.count return;
+    if !eat_spaces(command).count {
+        return;
+    }
 
-    console_add_log("Wowee executing: %", command);
+    args : [..]string;
+    {
+        remainder := command;
+        remainder = eat_spaces(remainder);
+        while (remainder.count) {
+            arg : string;
+            arg, remainder = break_by_spaces(remainder);
+            if arg.count {
+                array_add(*args, arg);
+            }
+        }
+    }
+
+    found_command := false;
+    for command_list {
+        if it.name == args[0] {
+
+            // Strip the procedure name from the argument list
+            args.data += 1;
+            args.count -= 1;
+
+            console_add_log("%", command);
+            it.procedure(args);
+
+            found_command = true;
+        }
+    }
+
+    if !found_command {
+        console_add_log("# '%' : Command not found", command);
+    }
 }
 
 console_draw :: () {
@@ -37,31 +71,13 @@ console_draw :: () {
     ImGui.Begin("console"); // TODO if !Begin should close
 
     ImGui.TextWrapped("Enter 'HELP' for help, press TAB to use text completion.");
-
-    if (ImGui.SmallButton("Add Dummy Text")) {
-        console_add_log("% some text", console.items.count);
-        console_add_log("some more text");
-        console_add_log("display very important message here!");
-    }
-    ImGui.SameLine();
-
-    if (ImGui.SmallButton("Add Dummy Error")) {
-        console_add_log("[error] something went wrong");
-    }
     ImGui.SameLine();
 
     if (ImGui.SmallButton("Clear")) {
          console_clear_log();
     }
-    ImGui.SameLine();
 
     ImGui.Separator();
-
-    // ImGui.PushStyleVar(.FramePadding, *ImVec2.{0,0});
-    // // static ImGuiTextFilter filter;
-    // // filter.Draw("Filter (\"incl,-excl\") (\"error\")", 180);
-    // ImGui.PopStyleVar();
-    // ImGui.Separator();
 
     footer_height_to_reserve := ImGui.GetStyle().ItemSpacing.y + ImGui.GetFrameHeightWithSpacing(); // 1 separator, 1 input text
 
@@ -81,12 +97,14 @@ console_draw :: () {
 
     ImGui.PushStyleVar(.ItemSpacing, *ImVec2.{4,1}); // Tighten spacing
     for item : console.items {
-        col := ImVec4.{1,1,1,1}; // A better implementation may store a type per-item. For the sample let's just parse the text.
-        // if (strstr(item, "[error]")) col = ImColor(1.0f,0.4f,0.4f,1.0f);
-        // else if (strncmp(item, "# ", 2) == 0) col = ImColor(1.0f,0.78f,0.58f,1.0f);
-        // ImGui.PushStyleColor(.Text, col);
-        ImGui.TextUnformatted(temp_c_string(item));
-        // ImGui.PopStyleColor();
+        assert(item.count != 0);
+        col := ImVec4.{1., 1., 1., 1.};
+        if begins_with(item, "#") {
+            col = ImVec4.{1., .78, .58, 1.};
+        } else if begins_with(item, "[error]") {
+            col = ImVec4.{1., .4, .4, 1.};
+        }
+        ImGui.TextColored(*col, "%s", temp_c_string(item));
     }
     ImGui.PopStyleVar();
     ImGui.EndChild();
@@ -100,7 +118,9 @@ console_draw :: () {
         }
 
         // Keeping auto focus on the input box after command is entered
-        if (ImGui.IsItemHovered() || (ImGui.IsWindowFocused(.RootAndChildWindows) && !ImGui.IsAnyItemActive() && !ImGui.IsMouseClicked(0))) {
+        if (ImGui.IsItemHovered() || ( ImGui.IsWindowFocused(.RootAndChildWindows) &&
+                                      !ImGui.IsAnyItemActive()                     &&
+                                      !ImGui.IsMouseClicked(0))) {
             ImGui.SetKeyboardFocusHere(-1); // Auto focus previous widget
         }
     }
