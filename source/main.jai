@@ -31,6 +31,9 @@ polyline_vao : GLuint;
 
 show_ui := true;    // Wish we could declare static variables inside functions.
 
+// @TODO this should be calculator memory and should visualise Vector2 and float etc (which display as editable widgets. Points could be visualised). Maybe ids ar g*, p*, n* for geometry, point and number resp?
+geometries : [..] *geom.Renderable_Geometry;
+
 // @TODO move this into the polyine struct
 VertexLabelStyle :: struct {
     show_position := false;
@@ -247,8 +250,6 @@ main :: () {
         glGenVertexArrays(1, *polyline_vao);
     }
 
-    geometries : [..] *geom.Renderable_Geometry;
-
     /*
     test_soup := New(geom.Renderable_Polyline_Soup2);
     defer free(test_soup);
@@ -436,6 +437,8 @@ main :: () {
                             free(it);
                             remove it;
                         }
+
+                        /*
                         ImGui.SameLine();
 
                         if ImGui.Button(imgui_label("Offset", it), size=*make_vector2(0, 0)) {
@@ -452,6 +455,7 @@ main :: () {
                             free(it);
                             remove it;
                         }
+                        */
                     case geom.Renderable_Geometry_Type.POLYLINE_SOUP2;
                         p := cast(*geom.Renderable_Polyline_Soup2) it;
                         ImGui.Checkbox(imgui_label(path_filename(it.filename), xx it), *it.visible);
@@ -464,6 +468,8 @@ main :: () {
                             free(it);
                             remove it;
                         }
+
+                        /*
                         ImGui.SameLine();
                         
                         if ImGui.Button(imgui_label("Offset", it), size=*make_vector2(0, 0)) {
@@ -480,6 +486,7 @@ main :: () {
                             free(it);
                             remove it;
                         }
+                        */
                 }
             }
 

@@ -13,7 +13,8 @@
 [x] l cycles through line styles
 [x] Draw polyline soups
 [x] Support polyline soup obj files
-[ ] Port the imgui 1.53 console to jai and use it to call the offset function
+[x] Port the imgui 1.53 console to jai and use it to call the offset function
+[ ] Make the polygon/polyline types use slices, not dynamic arrays, put allocators in the top level, 
 [ ] Autogenerate the console registering code to add commands to the console
 [ ] Command list:
   - [ ] 3.14 # result is a float
@@ -66,6 +67,7 @@
 # boost polygon bindings
 
 [ ] Look at how Hash_Table is implemented by storing an `entries : []Entry;` array, not a dynamic array [..], and then having the allocator stuff separate, I should do the same for Polygon types
+[ ] Just log warnings and ignore the context allocator if it's not malloc, or create a new polygon allocated with malloc if passing to c
 
 Present & Explain
 -----------------
