@@ -31,7 +31,7 @@ main :: () {
     check(obj.segments.count, 9, default_check);
     check(obj.vertices.count, 10, default_check);
 
-    soup2, success := unpack_obj(obj);
+    soup2, success := to_Polyline_Soup2(obj);
     check(success, true, default_check);
     if !success print("Skipped file: '%' (only 2D polylines with constant z are supported)\n", dropped);
 

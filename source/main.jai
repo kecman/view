@@ -357,7 +357,7 @@ main :: () {
                         obj := load_obj(dropped);
                         print("Loaded file: '%'\n", dropped);
 
-                        soup2, success := unpack_obj(obj);
+                        soup2, success := to_Polyline_Soup2(obj);
                         defer free(soup2.polylines.data);
 
                         if !success {

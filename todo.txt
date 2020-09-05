@@ -14,6 +14,7 @@
 [x] Draw polyline soups
 [x] Support polyline soup obj files
 [x] Port the imgui 1.53 console to jai and use it to call the offset function
+[ ] Hash filename to colours
 [ ] Make the polygon/polyline types use slices, not dynamic arrays, put allocators in the top level, 
 [ ] Autogenerate the console registering code to add commands to the console
 [ ] Command list:
@@ -82,6 +83,7 @@ Demo with size of types, which store constants
 Demo iterators on polylines, segment iterator, point iterator etc, stuff from boost geometry
 Demo something with testing, maybe have a build target for that?
 Demo tests using @test, make it work like the @PrintLike thing. You don't need to register them anywhere
+Demo console registering with @ConsoleCommand
 
 Make sure you can explain the context stuff, including logging and allocation
 

@@ -33,16 +33,22 @@ make_vector3i :: (x : int, y : int, z : int) -> Vector3i {
     return v;
 }
 
-// @Cleanup Use something like Mesh3
-Obj :: struct {
-    vertices :  [..] Vector3;
-    normals :   [..] Vector3;
-    segments :  [..] Vector2i;
-    triangles : [..] Vector3i;
-    polygons :  [..][..] int;
+Geometry_Format :: enum {
+    UNKNOWN;
+    POINTS;
+    LINES;
+    TRIANGLES;
 }
 
-load_obj :: (filename : string) -> Obj #must {
+Mesh :: struct {
+    geometry_format := Geometry_Format.UNKNOWN;
+
+    // @Cleanup Store array slices and put the allocator on the Mesh
+    vertices :  [..]Vector3;
+    indices : [..]int;
+}
+
+load_obj :: (filename : string) -> Mesh #must {
 
     handler: Text_File_Handler;
     handler.do_version_number = false;
@@ -54,7 +60,7 @@ load_obj :: (filename : string) -> Obj #must {
         exit(1);
     }
 
-    obj : Obj;
+    result : Mesh;
 
     while true {
         line, found := consume_next_line(*handler);
@@ -88,13 +94,14 @@ load_obj :: (filename : string) -> Obj #must {
         }
 
         if key_name == {
+            case "#"; // Ignore comments
             case "v";
                 vertex, dim := parse_upto_3d(*handler, rhs);
                 if dim == -1 || dim == 1 {
                     error(handler, tprint("Expected 2d or 3d vertex coordinates, got dim=%.\n", dim)); // @Incomplete test this
                     continue;
                 }
-                array_add(*obj.vertices, vertex);
+                array_add(*result.vertices, vertex);
             case "vn"; // @Incomplete
             case "vt"; // @Incomplete
             case "l";
@@ -103,69 +110,82 @@ load_obj :: (filename : string) -> Obj #must {
                     error(handler, "Expected a segment connecting two vertices.\n");
                     continue;
                 }
-                array_add(*obj.segments, make_vector2i(xx segment.x, xx segment.y));
+
+                if result.geometry_format == .UNKNOWN {
+                    result.geometry_format = .LINES;
+                } else if result.geometry_format != .LINES {
+                    error(handler, "Expected consistent geometry format, got %, wanted %.\n", Geometry_Format.LINES, result.geometry_format);
+                    continue;
+                }
+
+                // obj indices are 1-based
+                array_add(*result.indices, xx segment.x - 1);
+                array_add(*result.indices, xx segment.y - 1);
             case "f"; // @Incomplete
             case;
-                print("found unknown: %\n", rhs);
                 error(handler, "Unexpected '%'.\n", rhs);
                 continue;
         }
     }
 
-    // for obj.vertices print("vertices: %\n", it);
-    // for obj.segments print("segments: %\n", it);
+    // for result.vertices print("vertices: %\n", it);
+    // for result.indices print("indices: %\n", it);
 
-    return obj;
+    return result;
 }
 
-unpack_obj :: (using obj : Obj) -> Polyline_Soup2, bool {
+to_Polyline_Soup2 :: (mesh : Mesh) -> Polyline_Soup2, bool {
     soup2 : Polyline_Soup2;
 
-    is_2d := true;
-    for vertices if it.z != vertices[0].z is_2d = false;
-    if !is_2d || triangles.count || polygons.count {
+    if mesh.geometry_format != .LINES || mesh.indices.count < 2 || mesh.vertices.count == 0 {
         return soup2, false;
     }
 
-    // @TODO make an `obj_polyline_soup` function and test it, and run tests using procedure notes
-    // @TODO perhaps this is simpler to implement with segment iterators etc
-    if segments.count {
+    for mesh.vertices {
+        if it.z != mesh.vertices[0].z {
+            return soup2, false; // Not a 2D shape in the xy-plane
+        }
+    }
 
-        segment_index := 0;
+    // @Cleanup Implement a segment iterator?
 
-        polyline := array_add(*soup2.polylines);
+    Segment :: struct {
+        from_index : int = ---;
+        to_index : int = ---;
+        from_point : Vector2 = ---;
+        to_point : Vector2 = ---;
+    }
 
-        segment := segments[segment_index];
-        polyline_start := segment.x;
+    get_segment :: (mesh : Mesh, segment_index : int) -> Segment {
+        assert(2 * segment_index + 1 < mesh.indices.count);
 
-        // Add the start point of the first segment
-        point_index := 0;
-        array_add(*polyline.points, vertices[polyline_start - 1].xy);
-        point_index += 1;
+        segment : Segment;
+        segment.from_index = mesh.indices[2 * segment_index];
+        segment.to_index   = mesh.indices[2 * segment_index + 1];
+        segment.from_point = mesh.vertices[segment.from_index].xy;
+        segment.to_point   = mesh.vertices[segment.to_index].xy;
+        return segment;
+    }
 
-        while true {
-            // Add the end point of the current segment
-            segment = segments[segment_index];
-            array_add(*polyline.points, vertices[segment.y - 1].xy);
-            point_index += 1;
+    segment_index := 0;
 
-            segment_index += 1;
+    segment := get_segment(mesh, segment_index);
+    polyline_start_index := segment.from_index;
+    polyline := array_add(*soup2.polylines);
+    array_add(*polyline.points, segment.from_point);
 
-            if segment_index == segments.count break;
+    while true {
+        segment := get_segment(mesh, segment_index);
+        array_add(*polyline.points, segment.to_point);
 
-            if segment.y == polyline_start {
-                // If we reached the vertex index that started the current polyline create a new polyline
-                polyline = array_add(*soup2.polylines);
+        segment_index += 1;
+        if 2 * segment_index + 1 >= mesh.indices.count break;
 
-                // Update segment (segment_index already incremented) and polyline start point
-                segment = segments[segment_index];
-                polyline_start = segment.x;
-
-                // Add the start point of the first segment
-                point_index = 0;
-                array_add(*polyline.points, vertices[polyline_start - 1].xy);
-                point_index += 1;
-            }
+        if segment.to_index == polyline_start_index {
+            segment := get_segment(mesh, segment_index);
+            polyline_start_index = segment.from_index;
+            polyline = array_add(*soup2.polylines);
+            array_add(*polyline.points, segment.from_point);
         }
     }
 
@@ -176,7 +196,6 @@ unpack_obj :: (using obj : Obj) -> Polyline_Soup2, bool {
 
 #import "Text_File_Handler";
 #import "Basic";
-#import "System";  // To get the executable's path.
 #import "String";
 #import "Math";
 
