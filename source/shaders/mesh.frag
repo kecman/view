@@ -1,9 +1,9 @@
 #version 330 core
 
-uniform vec4 shape_colour; // rgba
+uniform vec4 color; // rgba
 
-out vec4 colour;
+out vec4 out_color;
 
 void main() {
-    colour = shape_colour;
+    out_color = color;
 }

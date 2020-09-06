@@ -14,10 +14,11 @@ Mesh :: struct {
     is_dirty := true;
     fully_pathed_filename : string;
     visible : bool = true;
+    color : Vector4;
 
     // @Cleanup Store array slices and put the allocator on the Mesh
     vertices :  [..]Vector3;
-    indices : [..]int;
+    indices : [..]u32;
 }
 
 buffer_mesh :: (mesh : *Mesh) {
@@ -28,7 +29,7 @@ buffer_mesh :: (mesh : *Mesh) {
 
         if !mesh.ibo glGenBuffers(1, *mesh.ibo);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ibo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, size_of(int) * mesh.indices.count, mesh.indices.data, GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, size_of(u32) * mesh.indices.count, mesh.indices.data, GL_STATIC_DRAW);
 
         mesh.is_dirty = false;
     }

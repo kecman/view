@@ -27,6 +27,8 @@ text_shader : GLuint;
 text_vao : GLuint;
 text_vbo : GLuint;
 
+mesh_shader : GLuint;
+mesh_vao : GLuint;
 polyline_shader : GLuint;
 polyline_vao : GLuint;
 
@@ -43,6 +45,40 @@ VertexLabelStyle :: struct {
 
     point_size : int = 4; // 0, 2, 4, 6
     line_width : int = 2; // 1, 1, 2, 3
+}
+
+render_mesh :: (mesh : Mesh, style : VertexLabelStyle) {
+
+    if !mesh.visible {
+        return;
+    }
+
+    assert(mesh.is_dirty == false);
+
+    glUseProgram(mesh_shader);
+
+    color_loc := glGetUniformLocation(mesh_shader, "color");
+    glUniform4f(color_loc, mesh.color.x, mesh.color.y, mesh.color.z, mesh.color.w);
+    point_size_loc := glGetUniformLocation(mesh_shader, "point_size");
+    glUniform1f(point_size_loc, xx style.point_size);
+
+    glBindVertexArray(mesh_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ibo);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, size_of(Vector3), null);
+
+    last_line_width: float;
+    glGetFloatv(GL_LINE_WIDTH, xx *last_line_width);
+    defer glLineWidth(last_line_width);
+    glLineWidth(xx style.line_width); // 1, 2, 3... See also glEnable(GL_LINE_SMOOTH);
+
+    glDrawElements(GL_LINES, xx mesh.indices.count, GL_UNSIGNED_INT, null); // @FIXME Make this match the geometry type
+    glEnable(GL_PROGRAM_POINT_SIZE);
+    glDrawArrays(GL_POINTS, 0, xx mesh.vertices.count);
+
+    glDisableVertexAttribArray(0);
 }
 
 // @Cleanup :OnlyRenderMeshType:
@@ -248,9 +284,17 @@ main :: () {
         polyline_shader = get_shader_program(vert, frag);
     }
 
+    // Setup mesh shader
+    {
+        vert :: #run read_entire_file("source/shaders/mesh.vert");
+        frag :: #run read_entire_file("source/shaders/mesh.frag");
+        mesh_shader = get_shader_program(vert, frag);
+    }
+
     // Prepare VAO for lines
     {
         glGenVertexArrays(1, *polyline_vao);
+        glGenVertexArrays(1, *mesh_vao);
     }
 
     /*
@@ -265,6 +309,26 @@ main :: () {
     array_add(*geometries, test_soup);
     */
 
+    test_mesh : geom.Mesh;
+    {
+        array_add(*test_mesh.vertices, .{0, 0, 0});
+        array_add(*test_mesh.vertices, .{5, 0, 0});
+        array_add(*test_mesh.vertices, .{5, 5, 0});
+        array_add(*test_mesh.vertices, .{0, 5, 0});
+        for test_mesh.vertices print("vertex [%] %\n", it_index, it);
+
+        array_add(*test_mesh.indices, 0); array_add(*test_mesh.indices, 1);
+        array_add(*test_mesh.indices, 1); array_add(*test_mesh.indices, 2);
+        array_add(*test_mesh.indices, 2); array_add(*test_mesh.indices, 3);
+        array_add(*test_mesh.indices, 3); array_add(*test_mesh.indices, 4);
+        for test_mesh.indices print("index [%] %\n", it_index, it);
+
+        test_mesh.geometry_format = .LINES;
+        geom.buffer_mesh(*test_mesh);
+        print("mesh %\n", test_mesh);
+    }
+
+
     vertex_label_style : VertexLabelStyle;
 
     {
@@ -275,11 +339,19 @@ main :: () {
 
         projection_from_model := projection_from_view * view_from_world * world_from_model;
 
-
+        {
+        // @TODO Remove this
         glUseProgram(polyline_shader);
         mvp_loc := glGetUniformLocation(polyline_shader, "mvp");
         glUniformMatrix4fv(mvp_loc, 1, GL_TRUE, *projection_from_model._11);
         // print("exit(0) at %:%\n", #location().fully_pathed_filename, #location().line_number); exit(0);
+        }
+
+        {
+            glUseProgram(mesh_shader);
+            mvp_loc := glGetUniformLocation(mesh_shader, "mvp");
+            glUniformMatrix4fv(mvp_loc, 1, GL_TRUE, *projection_from_model._11);
+        }
     }
 
 
@@ -539,6 +611,7 @@ main :: () {
                 }
             }
         }
+        render_mesh(test_mesh, vertex_label_style);
         ImGui.Render();
 
         if false { // @Cleanup: remove this

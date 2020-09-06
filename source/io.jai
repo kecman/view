@@ -104,8 +104,8 @@ load_obj :: (filename : string) -> Mesh #must {
                 }
 
                 // obj indices are 1-based
-                array_add(*result.indices, xx segment.x - 1);
-                array_add(*result.indices, xx segment.y - 1);
+                array_add(*result.indices, cast(u32)segment.x - 1);
+                array_add(*result.indices, cast(u32)segment.y - 1);
             case "f"; // @Incomplete
             case;
                 error(handler, "Unexpected '%'.\n", rhs);
