@@ -20,17 +20,17 @@ Mesh :: struct {
     indices : [..]int;
 }
 
-buffer_mesh :: (mesh : Mesh) {
-    if is_dirty {
-        if !vbo glGenBuffers(1, *vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+buffer_mesh :: (mesh : *Mesh) {
+    if mesh.is_dirty {
+        if !mesh.vbo glGenBuffers(1, *mesh.vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
         glBufferData(GL_ARRAY_BUFFER, size_of(Vector3) * mesh.vertices.count, mesh.vertices.data, GL_STATIC_DRAW);
 
-        if !ibo glGenBuffers(1, *ibo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+        if !mesh.ibo glGenBuffers(1, *mesh.ibo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ibo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, size_of(int) * mesh.indices.count, mesh.indices.data, GL_STATIC_DRAW);
 
-        is_dirty = false;
+        mesh.is_dirty = false;
     }
 }
 
@@ -40,9 +40,8 @@ bounding_box :: (using mesh : Mesh) -> AxisBox2 #must {
 
     box : AxisBox2;
     init(*box);
-    for * polylines {
-        polyline_box := bounding_box(it);
-        expand(*box, *polyline_box);
+    for * mesh.vertices {
+        expand(*box, it.xy);
     }
     return box;
 }
