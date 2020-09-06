@@ -135,15 +135,15 @@ load_obj :: (filename : string) -> Mesh #must {
 }
 
 to_Polyline_Soup2 :: (mesh : Mesh) -> Polyline_Soup2, bool {
-    soup2 : Polyline_Soup2;
+    result : Polyline_Soup2;
 
     if mesh.geometry_format != .LINES || mesh.indices.count < 2 || mesh.vertices.count == 0 {
-        return soup2, false;
+        return result, false;
     }
 
     for mesh.vertices {
         if it.z != mesh.vertices[0].z {
-            return soup2, false; // Not a 2D shape in the xy-plane
+            return result, false; // Not a 2D shape in the xy-plane
         }
     }
 
@@ -171,7 +171,7 @@ to_Polyline_Soup2 :: (mesh : Mesh) -> Polyline_Soup2, bool {
 
     segment := get_segment(mesh, segment_index);
     polyline_start_index := segment.from_index;
-    polyline := array_add(*soup2.polylines);
+    polyline := array_add(*result.polylines);
     array_add(*polyline.points, segment.from_point);
 
     while true {
@@ -184,12 +184,12 @@ to_Polyline_Soup2 :: (mesh : Mesh) -> Polyline_Soup2, bool {
         if segment.to_index == polyline_start_index {
             segment := get_segment(mesh, segment_index);
             polyline_start_index = segment.from_index;
-            polyline = array_add(*soup2.polylines);
+            polyline = array_add(*result.polylines);
             array_add(*polyline.points, segment.from_point);
         }
     }
 
-    return soup2, true;
+    return result, true;
 }
 
 #scope_file
