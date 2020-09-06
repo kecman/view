@@ -33,21 +33,6 @@ make_vector3i :: (x : int, y : int, z : int) -> Vector3i {
     return v;
 }
 
-Geometry_Format :: enum {
-    UNKNOWN;
-    POINTS;
-    LINES;
-    TRIANGLES;
-}
-
-Mesh :: struct {
-    geometry_format := Geometry_Format.UNKNOWN;
-
-    // @Cleanup Store array slices and put the allocator on the Mesh
-    vertices :  [..]Vector3;
-    indices : [..]int;
-}
-
 load_obj :: (filename : string) -> Mesh #must {
 
     handler: Text_File_Handler;
