@@ -3,11 +3,12 @@
 #import "String";
 #import "Math";
 
-geom :: #import "geometry";
+#load "vendor/imgui_sdl_gl.jai";
+
+geom :: #import "geometry"; // @Cleanup simnpler if this isn't a module
 #import "BoostPolygon";
 
 #load "io.jai";
-#load "vendor/imgui_sdl_gl.jai";
 #load "shaders.jai";
 #load "font.jai";
 #load "camera.jai";
@@ -45,9 +46,9 @@ VertexLabelStyle :: struct {
 }
 
 // @Cleanup :OnlyRenderMeshType:
-render_polyline :: (polyline : *geom.Renderable_Polyline2, style : *VertexLabelStyle) {
+render_polyline :: (polyline : geom.Renderable_Polyline2, style : VertexLabelStyle) {
 
-    if !polyline || !polyline.visible {
+    if !polyline.visible {
         return;
     }
 
@@ -78,9 +79,9 @@ render_polyline :: (polyline : *geom.Renderable_Polyline2, style : *VertexLabelS
     glDisableVertexAttribArray(0);
 }
 
-render_polyline_soup :: (soup : *geom.Renderable_Polyline_Soup2, style : *VertexLabelStyle) {
+render_polyline_soup :: (soup : geom.Renderable_Polyline_Soup2, style : VertexLabelStyle) {
 
-    if !soup || !soup.visible {
+    if !soup.visible {
         return;
     }
 
@@ -116,7 +117,7 @@ render_polyline_soup :: (soup : *geom.Renderable_Polyline_Soup2, style : *Vertex
 }
 
 
-render_vertex_labels :: (points : []Vector2, style : *VertexLabelStyle, label_index_offset : int = 0) {
+render_vertex_labels :: (points : []Vector2, style : VertexLabelStyle, label_index_offset : int = 0) {
     glEnable(GL_BLEND);
     defer glDisable(GL_BLEND);
     glDisable(GL_CULL_FACE);
@@ -525,14 +526,14 @@ main :: () {
                 if #complete it.type == {
                     case .POLYLINE2;
                         polyline := cast(*geom.Renderable_Polyline2) it;
-                        render_polyline(polyline, *vertex_label_style);
-                        render_vertex_labels(polyline.points, *vertex_label_style);
+                        render_polyline(<< polyline, vertex_label_style);
+                        render_vertex_labels(polyline.points, vertex_label_style);
                     case .POLYLINE_SOUP2;
                         soup := cast(*geom.Renderable_Polyline_Soup2) it;
-                        render_polyline_soup(soup, *vertex_label_style);
+                        render_polyline_soup(<< soup, vertex_label_style);
                         offset := 0;
                         for polyline : soup.polylines {
-                            render_vertex_labels(polyline.points, *vertex_label_style, offset);
+                            render_vertex_labels(polyline.points, vertex_label_style, offset);
                             offset += polyline.points.count;
                         }
                 }
