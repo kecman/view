@@ -31,7 +31,8 @@ polyline_vao : GLuint;
 
 show_ui := true;    // Wish we could declare static variables inside functions.
 
-// @TODO this should be calculator memory and should visualise Vector2 and float etc (which display as editable widgets. Points could be visualised). Maybe ids ar g*, p*, n* for geometry, point and number resp?
+// @Cleanup :OnlyRenderMeshType: This should represent the calculator memory, it should be an array of a base type with an enum that
+//  identifies the type stored in the memory slot, that type will have ui render info (imgui widgets) and graphical render info (mesh)
 geometries : [..] *geom.Renderable_Geometry;
 
 // @TODO move this into the polyine struct
@@ -43,7 +44,7 @@ VertexLabelStyle :: struct {
     line_width : int = 2; // 1, 1, 2, 3
 }
 
-// TODO Make this render Polyline_Soup3 and convert all others to that first? Better---use struct of vertices, indices and format
+// @Cleanup :OnlyRenderMeshType:
 render_polyline :: (polyline : *geom.Renderable_Polyline2, style : *VertexLabelStyle) {
 
     if !polyline || !polyline.visible {
@@ -127,6 +128,7 @@ render_vertex_labels :: (points : []Vector2, style : *VertexLabelStyle, label_in
     projection_from_view := make_orthographic_projection_matrix(*camera);
     projection_from_model := projection_from_view * view_from_world * world_from_model;
 
+    // @TODO call render_text_quad once with a list of points
     for points {
         text : string;
         if style.show_index && style.show_position text = tprint("% (% %)", label_index_offset + it_index, it.x, it.y);
@@ -325,7 +327,7 @@ main :: () {
                     done = true;
                 case SDL_KEYUP;
                     if event.key.keysym.sym == SDLK_ESCAPE done = true;
-                    if event.key.keysym.sym == SDLK_r fit_on_screen(geometries);
+                    if event.key.keysym.sym == SDLK_r fit_on_screen();
                     if event.key.keysym.sym == SDLK_v cycle_vertex_label_style(*vertex_label_style);
                     if event.key.keysym.sym == SDLK_l cycle_line_style(*vertex_label_style);
 
@@ -358,7 +360,7 @@ main :: () {
                         print("Loaded file: '%'\n", dropped);
 
                         soup2, success := to_Polyline_Soup2(obj);
-                        defer free(soup2.polylines.data);
+                        defer array_free(soup2.polylines);
 
                         if !success {
                             print("Skipped file: '%' (only 2D polylines with constant z are supported)\n", dropped);
@@ -390,7 +392,7 @@ main :: () {
                             }
                         }
 
-                        fit_on_screen(geometries);
+                        fit_on_screen();
                     }
             }
         }
@@ -414,7 +416,7 @@ main :: () {
             }
 
             if ImGui.Button("Reset Window          ", size=*make_vector2(0,0)) SDL_SetWindowSize(window, INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
-            if ImGui.Button("Reset Camera       (R)", size=*make_vector2(0,0)) fit_on_screen(geometries);
+            if ImGui.Button("Reset Camera       (R)", size=*make_vector2(0,0)) fit_on_screen();
             if ImGui.Button("Cycle vertex style (V)", size=*make_vector2(0,0)) cycle_vertex_label_style(*vertex_label_style);
             if ImGui.Button("Cycle line style   (L)", size=*make_vector2(0,0)) cycle_line_style(*vertex_label_style);
 
@@ -438,24 +440,6 @@ main :: () {
                             remove it;
                         }
 
-                        /*
-                        ImGui.SameLine();
-
-                        if ImGui.Button(imgui_label("Offset", it), size=*make_vector2(0, 0)) {
-                            offset := BoostPolygon.offset(*p.geometry, 1);
-                            boundary := BoostPolygon.clockwise_boundaries(*offset);
-
-                            renderable := New(geom.Renderable_Polyline_Soup2);
-                            renderable.filename = copy_string(it.filename);
-                            array_copy(*renderable.geometry.polylines, boundary.polylines);
-                            geom.buffer_polyline_soup(renderable);
-                            array_add(*geometries, renderable);
-
-                            glDeleteBuffers(1, *it.vbo);
-                            free(it);
-                            remove it;
-                        }
-                        */
                     case geom.Renderable_Geometry_Type.POLYLINE_SOUP2;
                         p := cast(*geom.Renderable_Polyline_Soup2) it;
                         ImGui.Checkbox(imgui_label(path_filename(it.filename), xx it), *it.visible);
@@ -468,25 +452,6 @@ main :: () {
                             free(it);
                             remove it;
                         }
-
-                        /*
-                        ImGui.SameLine();
-                        
-                        if ImGui.Button(imgui_label("Offset", it), size=*make_vector2(0, 0)) {
-                            offset := BoostPolygon.offset(*p.geometry, 1);
-                            boundary := BoostPolygon.clockwise_boundaries(*offset);
-
-                            renderable := New(geom.Renderable_Polyline_Soup2);
-                            renderable.filename = copy_string(it.filename);
-                            array_copy(*renderable.geometry.polylines, boundary.polylines);
-                            geom.buffer_polyline_soup(renderable);
-                            array_add(*geometries, renderable);
-
-                            glDeleteBuffers(1, *it.vbo);
-                            free(it);
-                            remove it;
-                        }
-                        */
                 }
             }
 
@@ -608,7 +573,7 @@ main :: () {
 
 #scope_file
 
-fit_on_screen :: (geometries : [] *geom.Renderable_Geometry) {
+fit_on_screen :: () {
     overall_bounds : geom.AxisBox2;
     geom.init(*overall_bounds);
     for geometries {

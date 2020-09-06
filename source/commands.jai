@@ -3,6 +3,12 @@ Command_Info :: struct {
     procedure : ([] string) -> void;
 }
 
+// Ideas:
+// - load to load files (loading files by drag and drop should effectively run this command)
+// - save to save files
+// - session_save to write all commands in the session
+// - session_load to change  all commands in the session
+// - undo to undo previous command
 command_list : [..]Command_Info;
 
 init_commands :: () {
@@ -52,7 +58,7 @@ tmp_offset :: (args : []string) {
         it := geometries[geometry_index];
 
         if #complete it.type == {
-            case geom.Renderable_Geometry_Type.POLYLINE2;
+            case .POLYLINE2;
                 p := cast(*geom.Renderable_Polyline2) it;
 
                 offset := BoostPolygon.offset(*p.geometry, offset_radius);
@@ -68,7 +74,7 @@ tmp_offset :: (args : []string) {
                 geom.buffer_polyline_soup(renderable);
                 array_add(*geometries, renderable);
 
-            case geom.Renderable_Geometry_Type.POLYLINE_SOUP2;
+            case .POLYLINE_SOUP2;
                 p := cast(*geom.Renderable_Polyline_Soup2) it;
                 offset := BoostPolygon.offset(*p.geometry, offset_radius);
                 if offset.polygons.count == 0 {
