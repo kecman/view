@@ -5,6 +5,7 @@ Geometry_Format :: enum {
     TRIANGLES;
 }
 
+// Maybe this should be polymorphic on the vertex type?
 Mesh :: struct {
     geometry_format := Geometry_Format.UNKNOWN;
 

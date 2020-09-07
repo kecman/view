@@ -14,6 +14,7 @@
 [x] Draw polyline soups
 [x] Support polyline soup obj files
 [x] Port the imgui 1.53 console to jai and use it to call the offset function
+[ ] :OnlyRenderMeshType: Refactor to only render the Mesh type, remove the annoying per-geometry type rendering, polyline/polygon types are only for interfacing with Boost Polygon and implementing your own polygon algorithms
 [ ] Hash filename to colours
 [ ] Make the polygon/polyline types use slices, not dynamic arrays, put allocators in the top level, 
 [ ] Autogenerate the console registering code to add commands to the console
@@ -116,3 +117,33 @@ Very different philosophy RE how to program, everything very simple. Makes *some
 
 - Extend the imgui_inspector example to allow you to drag+drop jai files and have show you all the types in the file
 - @Bug ImGui bindings for unix don't write declare CreateContext arguments #c_call
+
+
+
+
+
+## snippets
+
+
+                        if soup2.polylines.count == {
+                            case 0; {
+                                continue;
+                            }
+
+                            case 1; {
+                                renderable := New(geom.Renderable_Polyline2);
+                                renderable.filename = dropped;
+                                array_copy(*renderable.geometry.points, soup2.polylines[0].points);
+                                geom.buffer_polyline(renderable);
+                                array_add(*geometries, renderable);
+                            }
+
+                            case; {
+                                renderable := New(geom.Renderable_Polyline_Soup2);
+                                renderable.filename = dropped;
+                                array_copy(*renderable.geometry.polylines, soup2.polylines);
+                                for soup2.polylines {
+                                    array_copy(*renderable.geometry.polylines[it_index].points, soup2.polylines[it_index].points);
+                                }
+                                geom.buffer_polyline_soup(renderable);
+                                array_add(*geometries, renderable);

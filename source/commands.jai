@@ -53,42 +53,37 @@ tmp_offset :: (args : []string) {
         }
     }
 
-    if geometries.count > geometry_index {
+    if entities.count > geometry_index {
         console_add_log("# offsetting % by % and returning boundaries", geometry_index, offset_radius);
-        it := geometries[geometry_index];
+        it := entities[geometry_index];
 
-        if #complete it.type == {
-            case .POLYLINE2;
-                p := cast(*geom.Renderable_Polyline2) it;
+        if !it.mesh return;
 
-                offset := BoostPolygon.offset(*p.geometry, offset_radius);
-                if offset.polygons.count == 0 {
-                    console_add_log("# result is empty"); // offsetting a line with a negative value gives nothing
-                    return;
-                }
+        shape, success := to_Polyline_Soup2(<<it.mesh);
 
-                boundary := BoostPolygon.clockwise_boundaries(*offset);
-                renderable := New(geom.Renderable_Polyline_Soup2);
-                renderable.filename = "";
-                array_copy(*renderable.geometry.polylines, boundary.polylines);
-                geom.buffer_polyline_soup(renderable);
-                array_add(*geometries, renderable);
+        if !success return;
 
-            case .POLYLINE_SOUP2;
-                p := cast(*geom.Renderable_Polyline_Soup2) it;
-                offset := BoostPolygon.offset(*p.geometry, offset_radius);
-                if offset.polygons.count == 0 {
-                    console_add_log("# result is empty"); // offsetting a line with a negative value gives nothing
-                    return;
-                }
-
-                boundary := BoostPolygon.clockwise_boundaries(*offset);
-                renderable := New(geom.Renderable_Polyline_Soup2);
-                renderable.filename = "";
-                array_copy(*renderable.geometry.polylines, boundary.polylines);
-                geom.buffer_polyline_soup(renderable);
-                array_add(*geometries, renderable);
+        offset_polygon := BoostPolygon.offset(*shape, offset_radius);
+        if offset_polygon.polygons.count == 0 {
+            console_add_log("# result is empty"); // offsetting a line with a negative value gives nothing
+            return;
         }
+        offset := BoostPolygon.clockwise_boundaries(*offset_polygon);
+
+        // TODO Make this a make_Polyline_Soup2_Entity() function
+        entity := New(Polyline_Soup2_Entity);
+        entity.type = .POLYLINE_SOUP2;
+        entity.mesh = New(Mesh);
+        to_Mesh(offset, *entity.mesh);
+        geom.buffer_mesh(entity.mesh);
+        // entity.ui = ...
+        // entity.id = ...
+        array_copy(*entity.shape.polylines, offset.polylines);
+        for shape.polylines {
+            array_copy(*entity.shape.polylines[it_index].points, offset.polylines[it_index].points);
+        }
+        array_add(*entities, entity);
+
     } else {
         console_add_log("[error] no geometry with index %", geometry_index);
     }

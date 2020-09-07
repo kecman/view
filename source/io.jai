@@ -33,7 +33,11 @@ make_vector3i :: (x : int, y : int, z : int) -> Vector3i {
     return v;
 }
 
-load_obj :: (filename : string) -> Mesh #must {
+load_obj :: (filename : string, result : **Mesh) {
+
+    if !<<result {
+        <<result = New(Mesh);
+    }
 
     handler: Text_File_Handler;
     handler.do_version_number = false;
@@ -44,8 +48,6 @@ load_obj :: (filename : string) -> Mesh #must {
         print("Error (%:%): Unable to find my own executable?!\n", #file, #line); // @Cleanup proper logging
         exit(1);
     }
-
-    result : Mesh;
 
     while true {
         line, found := consume_next_line(*handler);
@@ -86,7 +88,7 @@ load_obj :: (filename : string) -> Mesh #must {
                     error(handler, tprint("Expected 2d or 3d vertex coordinates, got dim=%.\n", dim)); // @Incomplete test this
                     continue;
                 }
-                array_add(*result.vertices, vertex);
+                array_add(*(<<result).vertices, vertex);
             case "vn"; // @Incomplete
             case "vt"; // @Incomplete
             case "l";
@@ -96,16 +98,16 @@ load_obj :: (filename : string) -> Mesh #must {
                     continue;
                 }
 
-                if result.geometry_format == .UNKNOWN {
-                    result.geometry_format = .LINES;
-                } else if result.geometry_format != .LINES {
-                    error(handler, "Expected consistent geometry format, got %, wanted %.\n", Geometry_Format.LINES, result.geometry_format);
+                if (<<result).geometry_format == .UNKNOWN {
+                    (<<result).geometry_format = .LINES;
+                } else if (<<result).geometry_format != .LINES {
+                    error(handler, "Expected consistent geometry format, got %, wanted %.\n", Geometry_Format.LINES, (<<result).geometry_format);
                     continue;
                 }
 
                 // obj indices are 1-based
-                array_add(*result.indices, cast(u32)segment.x - 1);
-                array_add(*result.indices, cast(u32)segment.y - 1);
+                array_add(*(<<result).indices, cast(u32)segment.x - 1);
+                array_add(*(<<result).indices, cast(u32)segment.y - 1);
             case "f"; // @Incomplete
             case;
                 error(handler, "Unexpected '%'.\n", rhs);
@@ -115,11 +117,36 @@ load_obj :: (filename : string) -> Mesh #must {
 
     // for result.vertices print("vertices: %\n", it);
     // for result.indices print("indices: %\n", it);
-
-    return result;
 }
 
-to_Polyline_Soup2 :: (mesh : Mesh) -> Polyline_Soup2, bool {
+// FIXME
+// FIXME
+// FIXME
+// FIXME
+// FIXME
+// FIXME
+// FIXME
+// FIXME
+// FIXME
+// FIXME
+// FIXME
+// FIXME
+
+to_Mesh :: (shape : Polyline_Soup2, mesh : **Mesh) {
+    assert(<<mesh != null);
+
+    index := 0;
+    for polyline : shape.polylines {
+        for point : polyline.points {
+            array_add(*(<<mesh).vertices, make_vector3(point.x, point.y, 0));
+            array_add(*(<<mesh).indices, xx index);
+            index += 1;
+        }
+    }
+}
+
+// TODO Make APIs consistent: pass in the polying soup memory to fill
+to_Polyline_Soup2 :: (mesh : Mesh) -> Polyline_Soup2, bool #must {
     result : Polyline_Soup2;
 
     if mesh.geometry_format != .LINES || mesh.indices.count < 2 || mesh.vertices.count == 0 {

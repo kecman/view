@@ -34,9 +34,37 @@ polyline_vao : GLuint;
 
 show_ui := true;    // Wish we could declare static variables inside functions.
 
-// @Cleanup :OnlyRenderMeshType: This should represent the calculator memory, it should be an array of a base type with an enum that
-//  identifies the type stored in the memory slot, that type will have ui render info (imgui widgets) and graphical render info (mesh)
-geometries : [..] *geom.Renderable_Geometry;
+Entity :: struct {
+    Entity_Type :: enum {
+        UNKNOWN;
+        POLYLINE_SOUP2;
+        POLYGON_SOUP2;
+        MESH;
+        FLOAT;
+    }
+
+    type : Entity_Type = .UNKNOWN;
+
+    mesh : *Mesh = null;
+    ui : (entity : *Entity) -> void = null;
+    id : string;
+}
+
+Polyline_Soup2_Entity :: struct {
+    using base : Entity;
+    shape : geom.Polyline_Soup2;
+}
+
+Polygon_Soup2_Entity :: struct {
+    using base : Entity;
+    shape : geom.Polygon_Soup2;
+}
+
+Mesh_Entity :: struct {
+    using base : Entity;
+}
+
+entities : [..]*Entity;
 
 // @TODO move this into the polyine struct
 VertexLabelStyle :: struct {
@@ -81,79 +109,7 @@ render_mesh :: (mesh : Mesh, style : VertexLabelStyle) {
     glDisableVertexAttribArray(0);
 }
 
-// @Cleanup :OnlyRenderMeshType:
-render_polyline :: (polyline : geom.Renderable_Polyline2, style : VertexLabelStyle) {
-
-    if !polyline.visible {
-        return;
-    }
-
-    assert(polyline.is_dirty == false);
-
-    glUseProgram(polyline_shader);
-
-    line_color_loc := glGetUniformLocation(polyline_shader, "line_color");
-    glUniform4f(line_color_loc, polyline.line_color.x, polyline.line_color.y, polyline.line_color.z, polyline.line_color.w);
-    point_size_loc := glGetUniformLocation(polyline_shader, "point_size");
-    glUniform1f(point_size_loc, xx style.point_size);
-
-    glBindVertexArray(polyline_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, polyline.vbo);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, false, size_of(polyline.Point), null);
-
-    last_line_width: float;
-    glGetFloatv(GL_LINE_WIDTH, xx *last_line_width);
-    defer glLineWidth(last_line_width);
-    glLineWidth(xx style.line_width); // 1, 2, 3... See also glEnable(GL_LINE_SMOOTH);
-
-    glDrawArrays(GL_LINE_STRIP, 0, xx polyline.points.count);
-    glEnable(GL_PROGRAM_POINT_SIZE);
-    glDrawArrays(GL_POINTS, 0, xx polyline.points.count);
-
-    glDisableVertexAttribArray(0);
-}
-
-render_polyline_soup :: (soup : geom.Renderable_Polyline_Soup2, style : VertexLabelStyle) {
-
-    if !soup.visible {
-        return;
-    }
-
-    assert(soup.is_dirty == false);
-
-    glUseProgram(polyline_shader);
-
-    line_color_loc := glGetUniformLocation(polyline_shader, "line_color");
-    glUniform4f(line_color_loc, soup.line_color.x, soup.line_color.y, soup.line_color.z, soup.line_color.w);
-    point_size_loc := glGetUniformLocation(polyline_shader, "point_size");
-    glUniform1f(point_size_loc, xx style.point_size);
-
-    glBindVertexArray(polyline_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, soup.vbo);
-
-    last_line_width: float;
-    glGetFloatv(GL_LINE_WIDTH, xx *last_line_width);
-    defer glLineWidth(last_line_width);
-    glLineWidth(xx style.line_width); // 1, 2, 3... See also glEnable(GL_LINE_SMOOTH);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, false, size_of(soup.Point), null);
-
-    offset := 0;
-    for polyline : soup.polylines {
-        glDrawArrays(GL_LINE_STRIP, xx offset, xx polyline.points.count);
-        glEnable(GL_PROGRAM_POINT_SIZE);
-        glDrawArrays(GL_POINTS, xx offset, xx polyline.points.count);
-        offset += polyline.points.count;
-    }
-
-    glDisableVertexAttribArray(0);
-}
-
-
-render_vertex_labels :: (points : []Vector2, style : VertexLabelStyle, label_index_offset : int = 0) {
+render_vertex_labels :: (points : []Vector3, style : VertexLabelStyle, label_index_offset : int = 0) {
     glEnable(GL_BLEND);
     defer glDisable(GL_BLEND);
     glDisable(GL_CULL_FACE);
@@ -277,13 +233,6 @@ main :: () {
         glBindVertexArray(0);
     }
 
-    // Setup line shader
-    {
-        vert :: #run read_entire_file("source/shaders/polyline.vert");
-        frag :: #run read_entire_file("source/shaders/polyline.frag");
-        polyline_shader = get_shader_program(vert, frag);
-    }
-
     // Setup mesh shader
     {
         vert :: #run read_entire_file("source/shaders/mesh.vert");
@@ -309,6 +258,7 @@ main :: () {
     array_add(*geometries, test_soup);
     */
 
+    /*
     test_mesh : geom.Mesh;
     {
         array_add(*test_mesh.vertices, .{0, 0, 0});
@@ -327,7 +277,7 @@ main :: () {
         geom.buffer_mesh(*test_mesh);
         print("mesh %\n", test_mesh);
     }
-
+    */
 
     vertex_label_style : VertexLabelStyle;
 
@@ -339,19 +289,9 @@ main :: () {
 
         projection_from_model := projection_from_view * view_from_world * world_from_model;
 
-        {
-        // @TODO Remove this
-        glUseProgram(polyline_shader);
-        mvp_loc := glGetUniformLocation(polyline_shader, "mvp");
+        glUseProgram(mesh_shader);
+        mvp_loc := glGetUniformLocation(mesh_shader, "mvp");
         glUniformMatrix4fv(mvp_loc, 1, GL_TRUE, *projection_from_model._11);
-        // print("exit(0) at %:%\n", #location().fully_pathed_filename, #location().line_number); exit(0);
-        }
-
-        {
-            glUseProgram(mesh_shader);
-            mvp_loc := glGetUniformLocation(mesh_shader, "mvp");
-            glUniformMatrix4fv(mvp_loc, 1, GL_TRUE, *projection_from_model._11);
-        }
     }
 
 
@@ -419,8 +359,8 @@ main :: () {
                     dropped := to_string(event.drop.file);
 
                     skip := false;
-                    for geometries {
-                        if it.filename == dropped {
+                    for entities {
+                        if it.mesh && it.mesh.fully_pathed_filename == dropped {
                             skip = true;
                             break;
                         }
@@ -429,41 +369,24 @@ main :: () {
                     if skip {
                         print("Skipped file: '%' (already loaded)\n", dropped);
                     } else {
-                        obj := load_obj(dropped);
+                        entity := New(Entity);
+                        entity.type = .MESH;
+                        // entity.ui = ...
+                        // entity.id = ...
+
+                        load_obj(dropped, *entity.mesh);
+                        // FIXME
+                        // if !success {
+                        //     print("Skipped file: '%' (only 2D polylines with constant z are supported)\n", dropped);
+                        //     continue;
+                        // }
                         print("Loaded file: '%'\n", dropped);
 
-                        soup2, success := to_Polyline_Soup2(obj);
-                        defer array_free(soup2.polylines);
-
-                        if !success {
-                            print("Skipped file: '%' (only 2D polylines with constant z are supported)\n", dropped);
-                            continue;
-                        }
-
-                        if soup2.polylines.count == {
-                            case 0; {
-                                continue;
-                            }
-
-                            case 1; {
-                                renderable := New(geom.Renderable_Polyline2);
-                                renderable.filename = dropped;
-                                array_copy(*renderable.geometry.points, soup2.polylines[0].points);
-                                geom.buffer_polyline(renderable);
-                                array_add(*geometries, renderable);
-                            }
-
-                            case; {
-                                renderable := New(geom.Renderable_Polyline_Soup2);
-                                renderable.filename = dropped;
-                                array_copy(*renderable.geometry.polylines, soup2.polylines);
-                                for soup2.polylines {
-                                    array_copy(*renderable.geometry.polylines[it_index].points, soup2.polylines[it_index].points);
-                                }
-                                geom.buffer_polyline_soup(renderable);
-                                array_add(*geometries, renderable);
-                            }
-                        }
+                        entity.mesh.fully_pathed_filename = dropped;
+                        geom.buffer_mesh(entity.mesh);
+                        array_add(*entities, entity);
+                        // print("entities %\n", entities);
+                        // for entities print("entity [%] %\n", it_index, <<it);
 
                         fit_on_screen();
                     }
@@ -497,34 +420,19 @@ main :: () {
                 return to_c_string(concatenate(label, tprint("##%", ptr)));
             }
 
-            for geometries {
-                if #complete it.type == {
-                    // @Cleanup duplication
-                    case geom.Renderable_Geometry_Type.POLYLINE2;
-                        p := cast(*geom.Renderable_Polyline2) it;
-                        ImGui.Checkbox(imgui_label(path_filename(it.filename), xx it), *it.visible);
-                        ImGui.SameLine();
-                        ImGui.ColorEdit3(imgui_label("", it), p.line_color.component, ImGui.ColorEditFlags.NoInputs);
-                        ImGui.SameLine();
+            for entities {
+                if it.mesh {
+                    ImGui.Checkbox(imgui_label(path_filename(it.mesh.fully_pathed_filename), it), *it.mesh.visible);
+                    ImGui.SameLine();
+                    ImGui.ColorEdit3(imgui_label("", it), it.mesh.color.component, ImGui.ColorEditFlags.NoInputs);
+                    ImGui.SameLine();
 
-                        if ImGui.Button(imgui_label("Remove", it), size=*make_vector2(0, 0)) {
-                            glDeleteBuffers(1, *it.vbo);
-                            free(it);
-                            remove it;
-                        }
-
-                    case geom.Renderable_Geometry_Type.POLYLINE_SOUP2;
-                        p := cast(*geom.Renderable_Polyline_Soup2) it;
-                        ImGui.Checkbox(imgui_label(path_filename(it.filename), xx it), *it.visible);
-                        ImGui.SameLine();
-                        ImGui.ColorEdit3(imgui_label("", it), p.line_color.component, ImGui.ColorEditFlags.NoInputs);
-                        ImGui.SameLine();
-
-                        if ImGui.Button(imgui_label("Remove", it), size=*make_vector2(0, 0)) {
-                            glDeleteBuffers(1, *it.vbo);
-                            free(it);
-                            remove it;
-                        }
+                    if ImGui.Button(imgui_label("Remove", it), size=*make_vector2(0, 0)) {
+                        glDeleteBuffers(1, *it.mesh.vbo);
+                        glDeleteBuffers(1, *it.mesh.ibo);
+                        free(it);
+                        remove it;
+                    }
                 }
             }
 
@@ -568,8 +476,8 @@ main :: () {
             projection_from_view := make_orthographic_projection_matrix(*camera);
             projection_from_model := projection_from_view * view_from_world * world_from_model;
 
-            glUseProgram(polyline_shader);
-            mvp_loc := glGetUniformLocation(polyline_shader, "mvp");
+            glUseProgram(mesh_shader);
+            mvp_loc := glGetUniformLocation(mesh_shader, "mvp");
             glUniformMatrix4fv(mvp_loc, 1, GL_TRUE, *projection_from_model._11);
         }
 
@@ -586,32 +494,20 @@ main :: () {
 
         #if false {
             debug_print_active_uniforms(text_shader);
-            debug_print_active_uniforms(polyline_shader);
+            debug_print_active_uniforms(mesh_shader);
         }
 
         // Rendering
         glViewport(0, 0, xx imgui_io.DisplaySize.x, xx imgui_io.DisplaySize.y);
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-        for geometries {
-            if it.visible {
-                if #complete it.type == {
-                    case .POLYLINE2;
-                        polyline := cast(*geom.Renderable_Polyline2) it;
-                        render_polyline(<< polyline, vertex_label_style);
-                        render_vertex_labels(polyline.points, vertex_label_style);
-                    case .POLYLINE_SOUP2;
-                        soup := cast(*geom.Renderable_Polyline_Soup2) it;
-                        render_polyline_soup(<< soup, vertex_label_style);
-                        offset := 0;
-                        for polyline : soup.polylines {
-                            render_vertex_labels(polyline.points, vertex_label_style, offset);
-                            offset += polyline.points.count;
-                        }
-                }
+        for entities {
+            if it.mesh && it.mesh.visible {
+                render_mesh(<<it.mesh, vertex_label_style);
+                render_vertex_labels(it.mesh.vertices, vertex_label_style);
             }
         }
-        render_mesh(test_mesh, vertex_label_style);
+
         ImGui.Render();
 
         if false { // @Cleanup: remove this
@@ -650,20 +546,13 @@ main :: () {
 fit_on_screen :: () {
     overall_bounds : geom.AxisBox2;
     geom.init(*overall_bounds);
-    for geometries {
-        if it.visible {
-            if #complete it.type == {
-                case .POLYLINE2;
-                    shape := cast(*geom.Renderable_Polyline2)it;
-                    bounds := geom.bounding_box(shape);
-                    geom.expand(*overall_bounds, *bounds);
-                case .POLYLINE_SOUP2;
-                    shape := cast(*geom.Renderable_Polyline_Soup2)it;
-                    bounds := geom.bounding_box(shape);
-                    geom.expand(*overall_bounds, *bounds);
-            }
+    for entities {
+        if it.mesh && it.mesh.visible {
+            bounds := geom.bounding_box(<<it.mesh);
+            geom.expand(*overall_bounds, *bounds);
         }
     }
+
     geom.offset(*overall_bounds, 0.05 * geom.extents(*overall_bounds));
     update_to_fit_on_screen(*camera, *overall_bounds);
 }
@@ -689,7 +578,7 @@ cycle_line_style :: (using style : *VertexLabelStyle) {
 
 debug_print_active_uniforms :: (shader : GLuint) {
     max_length: GLint;
-    glGetProgramiv(polyline_shader, GL_ACTIVE_UNIFORM_MAX_LENGTH, *max_length);
+    glGetProgramiv(mesh_shader, GL_ACTIVE_UNIFORM_MAX_LENGTH, *max_length);
     name := alloc_string(max_length);
     defer free(name);
     // print("GL_ACTIVE_UNIFORM_MAX_LENGTH = %\n", max_length);
