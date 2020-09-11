@@ -119,30 +119,34 @@ load_obj :: (filename : string, result : **Mesh) {
     // for result.indices print("indices: %\n", it);
 }
 
-// FIXME
-// FIXME
-// FIXME
-// FIXME
-// FIXME
-// FIXME
-// FIXME
-// FIXME
-// FIXME
-// FIXME
-// FIXME
-// FIXME
+to_Mesh :: (shape : Polyline_Soup2) -> *Mesh, bool {
+    mesh := New(Mesh);
 
-to_Mesh :: (shape : Polyline_Soup2, mesh : **Mesh) {
-    assert(<<mesh != null);
+    print("shape %\n", shape);
+    for pl : shape.polylines for pl print("[%] %\n", it_index, it);
 
-    index := 0;
     for polyline : shape.polylines {
-        for point : polyline.points {
-            array_add(*(<<mesh).vertices, make_vector3(point.x, point.y, 0));
-            array_add(*(<<mesh).indices, xx index);
-            index += 1;
+        if polyline.points.count < 2 continue;
+
+        for polyline.points {
+            array_add(*mesh.vertices, make_vector3(it.x, it.y, 0));
+        }
+
+        for 0..polyline.points.count - 1 {
+            array_add(*mesh.indices, xx it);
+            array_add(*mesh.indices, xx (it + 1));
         }
     }
+
+    if mesh.vertices.count < 2 || mesh.indices.count < 2 {
+        free(mesh);
+        return null, false;
+    }
+
+    print("shape %\n", shape);
+    for pl : shape.polylines for pl print("[%] %\n", it_index, it);
+
+    return mesh, true;
 }
 
 // TODO Make APIs consistent: pass in the polying soup memory to fill

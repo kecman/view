@@ -73,8 +73,7 @@ tmp_offset :: (args : []string) {
         // TODO Make this a make_Polyline_Soup2_Entity() function
         entity := New(Polyline_Soup2_Entity);
         entity.type = .POLYLINE_SOUP2;
-        entity.mesh = New(Mesh);
-        to_Mesh(offset, *entity.mesh);
+        entity.mesh = to_Mesh(offset);
         geom.buffer_mesh(entity.mesh);
         // entity.ui = ...
         // entity.id = ...
