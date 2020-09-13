@@ -1,3 +1,7 @@
+
+Debug offseting the polyline soup test file, the mesh renders in a screwed up way
+
+
 [x] Implement pan with the holding down the middle button
 [x] Implement zoom with the scroll wheel
 [x] Sync pan with mouse cursor

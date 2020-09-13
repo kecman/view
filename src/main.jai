@@ -180,8 +180,8 @@ main :: () {
         projection := orthographic_projection_matrix(0.0, xx current_window_width, 0.0, xx current_window_height, -1.0, 1.0);
         mvp := projection;
 
-        vert :: #run read_entire_file("source/shaders/text.vert");
-        frag :: #run read_entire_file("source/shaders/text.frag");
+        vert :: #run read_entire_file("src/shaders/text.vert");
+        frag :: #run read_entire_file("src/shaders/text.frag");
         text_shader = get_shader_program(vert, frag);
 
         glUseProgram(text_shader);
@@ -204,8 +204,8 @@ main :: () {
 
     // Setup mesh shader
     {
-        vert :: #run read_entire_file("source/shaders/mesh.vert");
-        frag :: #run read_entire_file("source/shaders/mesh.frag");
+        vert :: #run read_entire_file("src/shaders/mesh.vert");
+        frag :: #run read_entire_file("src/shaders/mesh.frag");
         mesh_shader = get_shader_program(vert, frag);
     }
 
