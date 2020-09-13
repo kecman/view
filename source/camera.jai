@@ -83,7 +83,7 @@ update_camera :: (camera : *Camera, delta_time : float, mouse : *MouseState) {
     if mouse.right_down {
         increment = xx -0.03 * mouse.velocity_px.y;
     } else {
-        increment = mouse.wheel;
+        increment = -mouse.wheel;
     }
     camera.top += increment;
     camera.bottom -= increment;

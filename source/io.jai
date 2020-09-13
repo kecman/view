@@ -33,17 +33,15 @@ make_vector3i :: (x : int, y : int, z : int) -> Vector3i {
     return v;
 }
 
-load_obj :: (filename : string, result : **Mesh) {
+load_obj :: (filename : string) -> Mesh {
 
-    if !<<result {
-        <<result = New(Mesh);
-    }
+    result : Mesh;
 
     handler: Text_File_Handler;
     handler.do_version_number = false;
     defer deinit(*handler);
 
-    start_file(*handler, "load_obj", filename, "load_obj_polyine2", false);
+    start_file(*handler, "load_obj", filename, "load_obj", false);
     if handler.failed {
         print("Error (%:%): Unable to find my own executable?!\n", #file, #line); // @Cleanup proper logging
         exit(1);
@@ -88,7 +86,7 @@ load_obj :: (filename : string, result : **Mesh) {
                     error(handler, tprint("Expected 2d or 3d vertex coordinates, got dim=%.\n", dim)); // @Incomplete test this
                     continue;
                 }
-                array_add(*(<<result).vertices, vertex);
+                array_add(*result.vertices, vertex);
             case "vn"; // @Incomplete
             case "vt"; // @Incomplete
             case "l";
@@ -98,16 +96,16 @@ load_obj :: (filename : string, result : **Mesh) {
                     continue;
                 }
 
-                if (<<result).geometry_format == .UNKNOWN {
-                    (<<result).geometry_format = .LINES;
-                } else if (<<result).geometry_format != .LINES {
-                    error(handler, "Expected consistent geometry format, got %, wanted %.\n", Geometry_Format.LINES, (<<result).geometry_format);
+                if result.geometry_format == .UNKNOWN {
+                    result.geometry_format = .LINES;
+                } else if result.geometry_format != .LINES {
+                    error(handler, "Expected consistent geometry format, got %, wanted %.\n", Geometry_Format.LINES, result.geometry_format);
                     continue;
                 }
 
                 // obj indices are 1-based
-                array_add(*(<<result).indices, cast(u32)segment.x - 1);
-                array_add(*(<<result).indices, cast(u32)segment.y - 1);
+                array_add(*result.indices, cast(u32)segment.x - 1);
+                array_add(*result.indices, cast(u32)segment.y - 1);
             case "f"; // @Incomplete
             case;
                 error(handler, "Unexpected '%'.\n", rhs);
@@ -117,13 +115,13 @@ load_obj :: (filename : string, result : **Mesh) {
 
     // for result.vertices print("vertices: %\n", it);
     // for result.indices print("indices: %\n", it);
+    return result;
 }
 
-to_Mesh :: (shape : Polyline_Soup2) -> *Mesh, bool {
-    mesh := New(Mesh);
+to_Mesh :: (shape : Polyline_Soup2) -> Mesh, bool #must {
+    // print_Polyline_Soup2(shape);
 
-    print("shape %\n", shape);
-    for pl : shape.polylines for pl print("[%] %\n", it_index, it);
+    mesh : Mesh;
 
     for polyline : shape.polylines {
         if polyline.points.count < 2 continue;
@@ -139,17 +137,18 @@ to_Mesh :: (shape : Polyline_Soup2) -> *Mesh, bool {
     }
 
     if mesh.vertices.count < 2 || mesh.indices.count < 2 {
-        free(mesh);
-        return null, false;
+        // @Cleanup: don't allocate if we don't get a mesh, also we can just assign the arrays
+        // :Cleanup_Construction_Destruction:
+        array_free(mesh.vertices);
+        array_free(mesh.indices);
+        return mesh, false;
     }
 
-    print("shape %\n", shape);
-    for pl : shape.polylines for pl print("[%] %\n", it_index, it);
+    // print_Mesh(mesh);
 
     return mesh, true;
 }
 
-// TODO Make APIs consistent: pass in the polying soup memory to fill
 to_Polyline_Soup2 :: (mesh : Mesh) -> Polyline_Soup2, bool #must {
     result : Polyline_Soup2;
 

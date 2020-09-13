@@ -36,6 +36,12 @@ buffer_mesh :: (mesh : *Mesh) {
     }
 }
 
+print_Mesh :: (mesh : Mesh) {
+    print("print_Mesh %\n", mesh);
+    for mesh.vertices print("- vtx[%] %\n", it_index, it);
+    for mesh.indices  print("- idx[%] %\n", it_index, it);
+}
+
 bounding_box :: (using mesh : Mesh) -> AxisBox2 #must {
     // :OnlyRenderMeshType: @Cleanup implement this properly
     for mesh.vertices if it.z != mesh.vertices[0].z assert(false);

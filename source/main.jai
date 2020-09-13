@@ -42,26 +42,26 @@ Entity :: struct {
         MESH;
         FLOAT;
     }
-
     type : Entity_Type = .UNKNOWN;
 
-    mesh : *Mesh = null;
-    ui : (entity : *Entity) -> void = null;
     id : string;
 }
 
 Polyline_Soup2_Entity :: struct {
     using base : Entity;
     shape : geom.Polyline_Soup2;
+    mesh : Mesh; // for rendering
 }
 
 Polygon_Soup2_Entity :: struct {
     using base : Entity;
     shape : geom.Polygon_Soup2;
+    mesh : Mesh; // for rendering
 }
 
 Mesh_Entity :: struct {
     using base : Entity;
+    mesh : Mesh; // for rendering
 }
 
 entities : [..]*Entity;
@@ -319,11 +319,10 @@ main :: () {
     // clear_color := make_vector4(87./256, 194./256, 248./256, 1.00); // light blue
     clear_color := make_vector4(170./256, 170./256, 170./256, 1.00); // light grey
 
-
-            cursor_text := alloc_string(16);
-            defer free(cursor_text);
-            // cursor_text.data[cursor_text.count] = 0;
-            // cursor_text:="hello";
+    // cursor_text := alloc_string(16);
+    // defer free(cursor_text);
+    // cursor_text.data[cursor_text.count] = 0;
+    // cursor_text:="hello";
 
     // Main loop
     done := false;
@@ -336,9 +335,10 @@ main :: () {
         while SDL_PollEvent(*event) {
             ImGui_ImplSdl_ProcessEvent(*event);
             if event.type == {
-                case SDL_QUIT;
+                case SDL_QUIT; {
                     done = true;
-                case SDL_KEYUP;
+                }
+                case SDL_KEYUP; {
                     if event.key.keysym.sym == SDLK_ESCAPE done = true;
                     if event.key.keysym.sym == SDLK_r fit_on_screen();
                     if event.key.keysym.sym == SDLK_v cycle_vertex_label_style(*vertex_label_style);
@@ -354,42 +354,70 @@ main :: () {
                         if SDL_GetModState() & KMOD_SHIFT amount = 15;
                         camera.up_direction.xy = rotate(camera.up_direction.xy, to_radians(-amount));
                     }
-
-                case SDL_DROPFILE;
+                }
+                case SDL_DROPFILE; {
                     dropped := to_string(event.drop.file);
 
                     skip := false;
                     for entities {
-                        if it.mesh && it.mesh.fully_pathed_filename == dropped {
-                            skip = true;
-                            break;
+                        if #complete it.type == {
+                        case .POLYLINE_SOUP2; {
+                            entity := cast(*Polyline_Soup2_Entity)it;
+                            if entity.mesh.fully_pathed_filename == dropped {
+                                skip = true;
+                                break;
+                            }
+                        }
+                        case .POLYGON_SOUP2; {
+                            entity := cast(*Polygon_Soup2_Entity)it;
+                            if entity.mesh.fully_pathed_filename == dropped {
+                                skip = true;
+                                break;
+                            }
+                        }
+                        case .MESH; {
+                            entity := cast(*Mesh_Entity)it;
+                            if entity.mesh.fully_pathed_filename == dropped {
+                                skip = true;
+                                break;
+                            }
+                        }
+                        case .UNKNOWN; {}
+                        case .FLOAT; {}
                         }
                     }
-
                     if skip {
                         print("Skipped file: '%' (already loaded)\n", dropped);
-                    } else {
-                        entity := New(Entity);
-                        entity.type = .MESH;
-                        // entity.ui = ...
-                        // entity.id = ...
-
-                        load_obj(dropped, *entity.mesh);
-                        // FIXME
-                        // if !success {
-                        //     print("Skipped file: '%' (only 2D polylines with constant z are supported)\n", dropped);
-                        //     continue;
-                        // }
-                        print("Loaded file: '%'\n", dropped);
-
-                        entity.mesh.fully_pathed_filename = dropped;
-                        geom.buffer_mesh(entity.mesh);
-                        array_add(*entities, entity);
-                        // print("entities %\n", entities);
-                        // for entities print("entity [%] %\n", it_index, <<it);
-
-                        fit_on_screen();
+                        continue;
                     }
+
+                    mesh := load_obj(dropped);
+                    if mesh.geometry_format != .LINES {
+                        print("Skipped file: '%' (only 2D polylines with constant z are supported)\n", dropped);
+                        // :Cleanup_Construction_Destruction:
+                        array_free(mesh.vertices);
+                        array_free(mesh.indices);
+                        continue; // @Incomplete: support polygon types using wkt format
+                    }
+
+                    // :Cleanup_Construction_Destruction:
+                    // entity := make_entity_Polygon_Soup2(mesh, );
+                    entity := New(Polyline_Soup2_Entity);
+                    entity.type = .POLYLINE_SOUP2;
+                    entity.mesh = mesh;
+                    // entity.id = ...
+                    geom.buffer_mesh(*entity.mesh);
+                    entity.mesh.fully_pathed_filename = dropped;
+                    ok : bool;
+                    entity.shape, ok = to_Polyline_Soup2(mesh);
+                    assert(ok);
+
+                    print("Loaded file: '%'\n", dropped);
+
+                    array_add(*entities, entity);
+
+                    fit_on_screen();
+                }
             }
         }
         ImGui_ImplSdl_NewFrame(window);
@@ -421,15 +449,16 @@ main :: () {
             }
 
             for entities {
-                if it.mesh {
-                    ImGui.Checkbox(imgui_label(path_filename(it.mesh.fully_pathed_filename), it), *it.mesh.visible);
+                mesh := get_mesh(it);
+                if mesh {
+                    ImGui.Checkbox(imgui_label(path_filename(mesh.fully_pathed_filename), it), *mesh.visible);
                     ImGui.SameLine();
-                    ImGui.ColorEdit3(imgui_label("", it), it.mesh.color.component, ImGui.ColorEditFlags.NoInputs);
+                    ImGui.ColorEdit3(imgui_label("", it), mesh.color.component, ImGui.ColorEditFlags.NoInputs);
                     ImGui.SameLine();
 
                     if ImGui.Button(imgui_label("Remove", it), size=*make_vector2(0, 0)) {
-                        glDeleteBuffers(1, *it.mesh.vbo);
-                        glDeleteBuffers(1, *it.mesh.ibo);
+                        glDeleteBuffers(1, *mesh.vbo);
+                        glDeleteBuffers(1, *mesh.ibo);
                         free(it);
                         remove it;
                     }
@@ -502,9 +531,10 @@ main :: () {
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
         for entities {
-            if it.mesh && it.mesh.visible {
-                render_mesh(<<it.mesh, vertex_label_style);
-                render_vertex_labels(it.mesh.vertices, vertex_label_style);
+            mesh := get_mesh(it);
+            if mesh && mesh.visible {
+                render_mesh(<<mesh, vertex_label_style);
+                render_vertex_labels(mesh.vertices, vertex_label_style);
             }
         }
 
@@ -543,12 +573,36 @@ main :: () {
 
 #scope_file
 
+get_mesh :: (base : *Entity) -> *Mesh {
+    if #complete base.type == {
+    case .POLYLINE_SOUP2; {
+        entity := cast(*Polyline_Soup2_Entity)base;
+        return *entity.mesh;
+    }
+    case .POLYGON_SOUP2; {
+        entity := cast(*Polygon_Soup2_Entity)base;
+        return *entity.mesh;
+    }
+    case .MESH; {
+        entity := cast(*Mesh_Entity)base;
+        return *entity.mesh;
+    }
+    case .UNKNOWN; {
+        return null;
+    }
+    case .FLOAT; {
+        return null;
+    }
+    }
+}
+
 fit_on_screen :: () {
     overall_bounds : geom.AxisBox2;
     geom.init(*overall_bounds);
     for entities {
-        if it.mesh && it.mesh.visible {
-            bounds := geom.bounding_box(<<it.mesh);
+        mesh := get_mesh(it);
+        if mesh && mesh.visible {
+            bounds := geom.bounding_box(<<mesh);
             geom.expand(*overall_bounds, *bounds);
         }
     }

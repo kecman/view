@@ -53,6 +53,16 @@ polygon_soup_free_and_reset :: (shape : *$T/Polygon_Soup) {
     array_reset(*shape.polygons);
 }
 
+print_Polyline_Soup2 :: (shape : Polyline_Soup2) {
+    print("%\n", shape);
+    for l, li : shape.polylines {
+        print("- line[%] %\n", li, l);
+        for p, pi : l.points {
+            print("-- point[%] %\n", pi, p);
+        }
+    }
+}
+
 bounding_box :: (using polyline : *$T/Polyline) -> AxisBox(T.Point) #must {
     box : AxisBox(T.Point);
     init(*box);

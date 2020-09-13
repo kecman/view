@@ -4,11 +4,13 @@ Command_Info :: struct {
 }
 
 // Ideas:
-// - load to load files (loading files by drag and drop should effectively run this command)
-// - save to save files
-// - session_save to write all commands in the session
-// - session_load to change  all commands in the session
-// - undo to undo previous command
+// - save_obj <filename>, load_obj <filename> to load files (loading files by drag and drop should effectively run this command)
+// - save_wkt <filename>, load_wkt <filename> to load files (loading files by drag and drop should effectively run this command)
+// - save_session <filename>, load_session <session> to write all commands in the session
+// - make_float/make_xform/make_mesh
+// - xform <id> <transform>
+// - edit <id> to popup inspection ui
+// - undo/redo
 command_list : [..]Command_Info;
 
 init_commands :: () {
@@ -53,17 +55,21 @@ tmp_offset :: (args : []string) {
         }
     }
 
+    // @CompilerBug: I don't see the entities global in gdb here??
+
     if entities.count > geometry_index {
-        console_add_log("# offsetting % by % and returning boundaries", geometry_index, offset_radius);
         it := entities[geometry_index];
 
-        if !it.mesh return;
+        if it.type != .POLYLINE_SOUP2 {
+            console_add_log("[error] offset not supported for entity type %", it.type);
+            return; // @Incomplete support polygons
+        }
 
-        shape, success := to_Polyline_Soup2(<<it.mesh);
+        console_add_log("# offsetting % by % and returning boundaries", geometry_index, offset_radius);
 
-        if !success return;
+        polyline_soup2_entity := cast(*Polyline_Soup2_Entity) it;
 
-        offset_polygon := BoostPolygon.offset(*shape, offset_radius);
+        offset_polygon := BoostPolygon.offset(*polyline_soup2_entity.shape, offset_radius);
         if offset_polygon.polygons.count == 0 {
             console_add_log("# result is empty"); // offsetting a line with a negative value gives nothing
             return;
@@ -71,16 +77,20 @@ tmp_offset :: (args : []string) {
         offset := BoostPolygon.clockwise_boundaries(*offset_polygon);
 
         // TODO Make this a make_Polyline_Soup2_Entity() function
+        // :Cleanup_Construction_Destruction:
         entity := New(Polyline_Soup2_Entity);
         entity.type = .POLYLINE_SOUP2;
-        entity.mesh = to_Mesh(offset);
-        geom.buffer_mesh(entity.mesh);
-        // entity.ui = ...
-        // entity.id = ...
-        array_copy(*entity.shape.polylines, offset.polylines);
-        for shape.polylines {
-            array_copy(*entity.shape.polylines[it_index].points, offset.polylines[it_index].points);
-        }
+        ok : bool;
+        entity.mesh, ok = to_Mesh(offset);
+        geom.buffer_mesh(*entity.mesh);
+        entity.shape = offset;
+
+        // // entity.id = ...
+        // array_copy(*entity.shape.polylines, offset.polylines);
+        // for polyline_soup2_entity.shape.polylines {
+        //     array_copy(*entity.shape.polylines[it_index].points, offset.polylines[it_index].points);
+        // }
+
         array_add(*entities, entity);
 
     } else {
