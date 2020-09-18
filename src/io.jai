@@ -123,17 +123,21 @@ to_Mesh :: (shape : Polyline_Soup2) -> Mesh, bool #must {
 
     mesh : Mesh;
 
+    index_offset := 0;
     for polyline : shape.polylines {
         if polyline.points.count < 2 continue;
 
-        for polyline.points {
-            array_add(*mesh.vertices, make_vector3(it.x, it.y, 0));
+        point := polyline.points[0];
+        array_add(*mesh.vertices, make_vector3(point.x, point.y, 0));
+
+        for segment_index : 0..polyline.points.count-2 {
+            point = polyline.points[segment_index + 1];
+            array_add(*mesh.vertices, make_vector3(point.x, point.y, 0));
+            array_add(*mesh.indices, xx (index_offset + segment_index));
+            array_add(*mesh.indices, xx (index_offset + segment_index  + 1));
         }
 
-        for 0..polyline.points.count - 1 {
-            array_add(*mesh.indices, xx it);
-            array_add(*mesh.indices, xx (it + 1));
-        }
+        index_offset += polyline.points.count;
     }
 
     if mesh.vertices.count < 2 || mesh.indices.count < 2 {
