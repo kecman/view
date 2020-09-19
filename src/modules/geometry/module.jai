@@ -25,3 +25,4 @@ vector_dimension :: (T : Type, loc := #caller_location) -> int {
 }
 
 #import "Math";
+#import "GL";
