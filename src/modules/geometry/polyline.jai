@@ -21,14 +21,17 @@ polyline_soup_free_and_reset :: (shape : *$T/Polyline_Soup) {
     array_reset(*shape.polylines);
 }
 
-print_Polyline_Soup2 :: (shape : Polyline_Soup2) {
-    print("%\n", shape);
-    for l, li : shape.polylines {
-        print("- line[%] %\n", li, l);
-        for p, pi : l.points {
-            print("-- point[%] %\n", pi, p);
+is_empty :: (polyline : $T/Polyline) -> bool #must {
+    return polyline.points.count < 2;
+}
+
+is_empty :: (polyline_soup : $T/Polyline_Soup) -> bool #must {
+    for polyline_soup.polylines {
+        if !is_empty(it) {
+            return false;
         }
     }
+    return true;
 }
 
 bounding_box :: (using polyline : *$T/Polyline) -> AxisBox(T.Point) #must {
@@ -48,6 +51,16 @@ bounding_box :: (using polyline_soup : *$T/Polyline_Soup) -> AxisBox(T.Point) #m
         expand(*box, *polyline_box);
     }
     return box;
+}
+
+print_Polyline_Soup2 :: (shape : Polyline_Soup2) {
+    print("%\n", shape);
+    for l, li : shape.polylines {
+        print("- line[%] %\n", li, l);
+        for p, pi : l.points {
+            print("-- point[%] %\n", pi, p);
+        }
+    }
 }
 
 #scope_file

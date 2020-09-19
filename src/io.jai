@@ -119,13 +119,19 @@ load_obj :: (filename : string) -> Mesh {
 }
 
 to_Mesh :: (shape : Polyline_Soup2) -> Mesh, bool #must {
-    // print_Polyline_Soup2(shape);
-
     mesh : Mesh;
+
+    if is_empty(shape) {
+        return mesh, false;
+    }
+
+    mesh.geometry_format = .LINES;
 
     index_offset := 0;
     for polyline : shape.polylines {
-        if polyline.points.count < 2 continue;
+        if is_empty(polyline) {
+            continue;
+        }
 
         point := polyline.points[0];
         array_add(*mesh.vertices, make_vector3(point.x, point.y, 0));
@@ -139,16 +145,6 @@ to_Mesh :: (shape : Polyline_Soup2) -> Mesh, bool #must {
 
         index_offset += polyline.points.count;
     }
-
-    if mesh.vertices.count < 2 || mesh.indices.count < 2 {
-        // @Cleanup: don't allocate if we don't get a mesh, also we can just assign the arrays
-        // :Cleanup_Construction_Destruction:
-        array_free(mesh.vertices);
-        array_free(mesh.indices);
-        return mesh, false;
-    }
-
-    // print_Mesh(mesh);
 
     return mesh, true;
 }
@@ -209,6 +205,45 @@ to_Polyline_Soup2 :: (mesh : Mesh) -> Polyline_Soup2, bool #must {
     }
 
     return result, true;
+}
+
+to_Mesh :: (shape : Polygon_Soup2) -> Mesh, bool #must {
+    result : Mesh;
+
+    result.geometry_format = .TRIANGLES;
+
+    convex : Polygon_Soup2 = BoostPolygon.convex_decomposition(*shape);
+
+    mesh_index := 0;
+    for convex.polygons {
+        assert(it.inner_rings.count == 0); // @TODO return false and cleanup
+        for i : 0..2 {
+            point := it.outer_ring.points[i];
+            array_add(*result.vertices, make_vector3(point.x, point.y, 0));
+            array_add(*result.indices, xx mesh_index);
+            mesh_index += 1;
+        }
+        if it.outer_ring.points.count == 5 {
+            //assert(it.outer_ring.points.count == 5); // @TODO return false and cleanup
+            for i : 2..4 {
+                point := it.outer_ring.points[i];
+                array_add(*result.vertices, make_vector3(point.x, point.y, 0));
+                array_add(*result.indices, xx mesh_index);
+                mesh_index += 1;
+            }
+        }
+    }
+
+    return result, true;
+}
+
+// @TODO only really needed to load polygon objs, but we should just do that with wkt files instead
+to_Polygon_Soup2 :: (mesh : Mesh) -> Polygon_Soup2, bool #must {
+    result : Polygon_Soup2;
+    // make each triangle into a polygon
+    // boolean union triangles? (this should be a parameter)
+    // not very nice at all but I guess it works
+    return result, false;
 }
 
 #scope_file

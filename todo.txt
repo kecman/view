@@ -17,6 +17,7 @@ Complete
 [x] Port the imgui 1.53 console to jai and use it to call the offset function
 
 Plan
+[ ] Cleanup construction/destruction: make functions to do that
 [ ] Support polygons and polygon soups, and do convex decomposition for rendering
 [ ] Support loading wkt file format
 [ ] Support 3D mesh rendering

@@ -71,7 +71,14 @@ render_mesh :: (mesh : Mesh, style : VertexLabelStyle) {
     defer glLineWidth(last_line_width);
     glLineWidth(xx style.line_width); // 1, 2, 3... See also glEnable(GL_LINE_SMOOTH);
 
-    glDrawElements(GL_LINES, xx mesh.indices.count, GL_UNSIGNED_INT, null); // @FIXME Make this match the geometry type
+    if #complete mesh.geometry_format == {
+        case .POINTS;
+        case .UNKNOWN;
+        case .LINES;
+            glDrawElements(GL_LINES, xx mesh.indices.count, GL_UNSIGNED_INT, null);
+        case .TRIANGLES;
+            glDrawElements(GL_TRIANGLES, xx mesh.indices.count, GL_UNSIGNED_INT, null);
+    }
     glEnable(GL_PROGRAM_POINT_SIZE);
     glDrawArrays(GL_POINTS, 0, xx mesh.vertices.count);
 

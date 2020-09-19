@@ -66,13 +66,24 @@ tmp_offset :: (args : []string) {
             console_add_log("# result is empty"); // offsetting a line with a negative value gives nothing
             return;
         }
+
+        ok : bool;
+
+        {
+            entity := New(Polygon_Soup2_Entity);
+            entity.type = .POLYGON_SOUP2;
+            entity.mesh, ok = to_Mesh(offset_polygon);
+            geom.buffer_mesh(*entity.mesh);
+            entity.shape = offset_polygon;
+            array_add(*entities, entity);
+        }
+
         offset := BoostPolygon.clockwise_boundaries(*offset_polygon);
 
         // TODO Make this a make_Polyline_Soup2_Entity() function
         // :Cleanup_Construction_Destruction:
         entity := New(Polyline_Soup2_Entity);
         entity.type = .POLYLINE_SOUP2;
-        ok : bool;
         entity.mesh, ok = to_Mesh(offset);
         geom.buffer_mesh(*entity.mesh);
         entity.shape = offset;
