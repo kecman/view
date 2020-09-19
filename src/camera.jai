@@ -49,7 +49,6 @@ init_camera :: () {
 }
 
 update_camera :: (camera : *Camera, delta_time : float, mouse : *MouseState) {
-    k_max_drag_angle_degrees : float : 20; // @Unused
 
     camera.aspect_ratio_horizontal_over_vertical = cast(float) current_window_width / cast(float) current_window_height;
     aspect := camera.aspect_ratio_horizontal_over_vertical;
@@ -74,7 +73,7 @@ update_camera :: (camera : *Camera, delta_time : float, mouse : *MouseState) {
 
     // Rotate with middle down
     if mouse.middle_down {
-        // @FIXME: This screws up panning
+        // @FIXME This screws up panning
         camera.up_direction.xy = rotate(camera.up_direction.xy, 0.01 * mouse.velocity_px.y);
     }
 
@@ -132,7 +131,7 @@ update_to_fit_on_screen :: (using camera : *Camera, world_box : *geom.AxisBox2) 
     camera.left = min(camera.left, -aspect * 0.1);;
 }
 
-// @Cleanup: use Math.make_look_at_matrix here
+// @Cleanup use Math.make_look_at_matrix here
 make_look_at_matrix :: (using camera : *Camera) -> Matrix4 #must {
     f := normalize_or_z_axis(look_position - eye_position);
     s := normalize_or_z_axis(cross(f, up_direction));

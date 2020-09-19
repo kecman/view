@@ -5,7 +5,7 @@
 
 #load "vendor/imgui_sdl_gl.jai";
 
-geom :: #import "geometry"; // @Cleanup simnpler if this isn't a module
+geom :: #import "geometry"; // @Cleanup just load this
 #import "BoostPolygon";
 
 #load "io.jai";
@@ -214,18 +214,6 @@ main :: () {
         glGenVertexArrays(1, *polyline_vao);
         glGenVertexArrays(1, *mesh_vao);
     }
-
-    /*
-    test_soup := New(geom.Renderable_Polyline_Soup2);
-    defer free(test_soup);
-    {
-        using test_soup.geometry;
-        array_add(*polylines, geom.to_polyline(*geom.make_axis_box(make_vector2(-10, -10), make_vector2(10, 10))));
-        array_add(*polylines, geom.to_polyline(*geom.make_axis_box(make_vector2(-50, -50), make_vector2(50, 50))));
-    }
-    geom.buffer_polyline_soup(test_soup);
-    array_add(*geometries, test_soup);
-    */
 
     /*
     test_mesh : geom.Mesh;

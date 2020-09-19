@@ -1,6 +1,4 @@
-
-Debug offseting the polyline soup test file, the mesh renders in a screwed up way
-
+# Plan
 
 [x] Implement pan with the holding down the middle button
 [x] Implement zoom with the scroll wheel
@@ -18,17 +16,20 @@ Debug offseting the polyline soup test file, the mesh renders in a screwed up wa
 [x] Draw polyline soups
 [x] Support polyline soup obj files
 [x] Port the imgui 1.53 console to jai and use it to call the offset function
-[ ] :OnlyRenderMeshType: Refactor to only render the Mesh type, remove the annoying per-geometry type rendering, polyline/polygon types are only for interfacing with Boost Polygon and implementing your own polygon algorithms
+[-] :OnlyRenderMeshType: Refactor to only render the Mesh type
 [ ] Hash filename to colours
-[ ] Make the polygon/polyline types use slices, not dynamic arrays, put allocators in the top level, 
+[ ] Make the polygon/polyline types use slices, not dynamic arrays, put allocators in the top level
 [ ] Autogenerate the console registering code to add commands to the console
 [ ] Command list:
-  - [ ] 3.14 # result is a float
-  - [ ] wkt "s" # result is a shape described by "s"
-  - [ ] assign x # assigns x to the previous result
-  - [ ] offset x r # offsets x by r and creates a new result
-  - [ ] load path/to/file.obj # load given file
-  - [ ] run path/to/script.txt # run the commands in a given script
+  [ ] save_obj <filename>, load_obj <filename> to load files (loading files by drag and drop should effectively run this command)
+  [ ] save_wkt <filename>, load_wkt <filename> to load files (loading files by drag and drop should effectively run this command)
+  [ ] save_session <filename>, load_session <session> to write all commands in the session
+  [ ] make_float/make_xform/make_mesh
+  [ ] xform <id> <transform>
+  [ ] edit <id> to popup inspection ui
+  [ ] assign x # assigns x to the previous result?
+  [ ] undo/redo
+  
 [ ] Rename project to polyline calculator?
 [ ] Sort by time loaded
 [ ] Distribution stuff, how to make this a single executable? statically link?
@@ -38,12 +39,10 @@ Debug offseting the polyline soup test file, the mesh renders in a screwed up wa
 [ ] Load from command line?
 [ ] Custom key-bindings and sensitivity of parameters, dynamically generate UI for this? and save to the text file
 
-[ ] Understand and use context
-  [ ] Watch the https://youtu.be/ciGQCP6HgqI video
-  [ ] Understand and use logging
-  [ ] Understand and use assertions
-  [ ] Understand and use allocaters
-[ ] Build system stuff: build_debug and build_release
+[ ] Understand and use context stuff (logging, assertions, allocators), watch https://youtu.be/ciGQCP6HgqI
+[ ] Build/test stuff
+  [ ] build_debug and build_release with proper llvm options
+  [ ] use @test to tag/run tests
 
 [ ] Give each polyline a number 1-9 then pressing that number before some modifier for colour/vertex etc only modifies that one, number 0 means everything?
 [ ] Optionally mesh the inside of the polyline
@@ -66,88 +65,11 @@ Debug offseting the polyline soup test file, the mesh renders in a screwed up wa
 [ ] Fix orbit/rotation location when many files are loaded but some aren't visible
 [ ] Cleanup buffer_ids in openGL?
 
-# bugs
+[ ] Look at Hash_Table. It stores an array slice (`entries : []Entry;`), not a dynamic array [..], and has a separate allocator, should do the same for Polygon types
+[ ] Just log warnings and ignore the context allocator if it's not malloc, or create a new polygon allocated with malloc if passing to c
+[ ] Extend the imgui_inspector example to allow you to drag+drop jai files and have show you all the types in the file
+
+# Bugs
 
 [ ] Fix memory leaks, need to use a new version of valgrind for --keep-debuginfo=yes option but it seems like getting to show line numbers properly isn't working
-
-# boost polygon bindings
-
-[ ] Look at how Hash_Table is implemented by storing an `entries : []Entry;` array, not a dynamic array [..], and then having the allocator stuff separate, I should do the same for Polygon types
-[ ] Just log warnings and ignore the context allocator if it's not malloc, or create a new polygon allocated with malloc if passing to c
-
-Present & Explain
------------------
-
-Provide the source code to follow along
-Make a proper debug/release build for llvm
-Practice explaining the compile loop
-Mention that searching with <ident> :: is easy
-Make a quick demo program with the syntax for basic things, but not trivial things:
-  AxisBox and Polyline types
-Demo with size of types, which store constants
-Demo iterators on polylines, segment iterator, point iterator etc, stuff from boost geometry
-Demo something with testing, maybe have a build target for that?
-Demo tests using @test, make it work like the @PrintLike thing. You don't need to register them anywhere
-Demo console registering with @ConsoleCommand
-
-Make sure you can explain the context stuff, including logging and allocation
-
-If you've ever played his games, there are many ideas in them and they're all coupled and consistent. The game is kinda about exploring all the interactions
-
-do not read the JaiPrimer
-
-Having a single code declaration and simple syntax makes it so easy to grep your code, so you don't need a frikkin IDE to be able to jump to definition. And your computer runs much faster.
-
-Error messages and compile times alone are the best!
-
-Joy of programming: prevents burnout
-
-Questions
-Is there a const concept?
-Can you debug at compile time ie while running bytecode?
-
-
-
-Put this on github, and then make a github io page
-
-Very different philosophy RE how to program, everything very simple. Makes *some* things inconvenient, but no the hard things e.g.,
-- initialising things is a bit annoying, you need to declare+init right now. 
-- operator overloading limited, so longer function names, and simple imports/namespaces (no adl) mean sometimes annoying to use
-
-
-
-
-## Misc ideas
-
-- Extend the imgui_inspector example to allow you to drag+drop jai files and have show you all the types in the file
-- @Bug ImGui bindings for unix don't write declare CreateContext arguments #c_call
-
-
-
-
-
-## snippets
-
-
-                        if soup2.polylines.count == {
-                            case 0; {
-                                continue;
-                            }
-
-                            case 1; {
-                                renderable := New(geom.Renderable_Polyline2);
-                                renderable.filename = dropped;
-                                array_copy(*renderable.geometry.points, soup2.polylines[0].points);
-                                geom.buffer_polyline(renderable);
-                                array_add(*geometries, renderable);
-                            }
-
-                            case; {
-                                renderable := New(geom.Renderable_Polyline_Soup2);
-                                renderable.filename = dropped;
-                                array_copy(*renderable.geometry.polylines, soup2.polylines);
-                                for soup2.polylines {
-                                    array_copy(*renderable.geometry.polylines[it_index].points, soup2.polylines[it_index].points);
-                                }
-                                geom.buffer_polyline_soup(renderable);
-                                array_add(*geometries, renderable);
+[ ] ImGui bindings for unix don't write declare CreateContext arguments #c_call

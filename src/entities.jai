@@ -27,7 +27,7 @@ Polygon_Soup2_Entity :: struct {
 
 Mesh_Entity :: struct {
     using base : Entity;
-    mesh : Mesh; // for rendering
+    mesh : Mesh;
 }
 
 get_mesh :: (base : *Entity) -> *Mesh {

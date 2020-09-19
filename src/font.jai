@@ -14,12 +14,6 @@ Char :: struct {
 // @Speed We're generating a unique texture id per glyph.
 chars : Table(u32, Char);
 
-// 
-// Seems Josh uses stb_truetype for his own stuff, giving you an entire texture atlas for free.
-// It will make sense to switch to that as opposed to what I'm doing now, which
-// is assigning an unique texture id per glyph.
-// -abner 1/16/2018
-//
 init_font :: () {
     // FreeType Init
     ft : *FT_Library;

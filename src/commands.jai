@@ -3,14 +3,6 @@ Command_Info :: struct {
     procedure : ([] string) -> void;
 }
 
-// Ideas:
-// - save_obj <filename>, load_obj <filename> to load files (loading files by drag and drop should effectively run this command)
-// - save_wkt <filename>, load_wkt <filename> to load files (loading files by drag and drop should effectively run this command)
-// - save_session <filename>, load_session <session> to write all commands in the session
-// - make_float/make_xform/make_mesh
-// - xform <id> <transform>
-// - edit <id> to popup inspection ui
-// - undo/redo
 command_list : [..]Command_Info;
 
 init_commands :: () {
@@ -23,7 +15,7 @@ init_commands :: () {
 
 #scope_file
 
-// @FIXME: We're offsetting polylines and getting polyline boundaries which is really 2 separate operations
+// @Cleanup We're offsetting polylines and getting polyline boundaries which is really 2 separate operations
 
 tmp_offset :: (args : []string) {
     if args.count != 2 {
@@ -55,7 +47,7 @@ tmp_offset :: (args : []string) {
         }
     }
 
-    // @CompilerBug: I don't see the entities global in gdb here??
+    // @CompilerBug I don't see the entities global in gdb here??
 
     if entities.count > geometry_index {
         it := entities[geometry_index];

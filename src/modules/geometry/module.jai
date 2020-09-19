@@ -2,7 +2,6 @@
 #load "polyline.jai";
 #load "polygon.jai";
 #load "mesh.jai";
-#load "rendering.jai";
 
 to_radians :: (degrees : float) -> float {
     scale :: PI / 180;
