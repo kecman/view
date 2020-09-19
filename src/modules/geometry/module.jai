@@ -1,5 +1,6 @@
 #load "axis_box.jai";
 #load "polyline.jai";
+#load "polygon.jai";
 #load "mesh.jai";
 #load "rendering.jai";
 
