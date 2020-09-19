@@ -1,5 +1,4 @@
-# Plan
-
+Complete
 [x] Implement pan with the holding down the middle button
 [x] Implement zoom with the scroll wheel
 [x] Sync pan with mouse cursor
@@ -16,60 +15,63 @@
 [x] Draw polyline soups
 [x] Support polyline soup obj files
 [x] Port the imgui 1.53 console to jai and use it to call the offset function
+
+Plan
+[ ] Support polygons and polygon soups, and do convex decomposition for rendering
+[ ] Support loading wkt file format
+[ ] Support 3D mesh rendering
+[ ] Cleanup text rendering, it's so slow right now!
 [-] :OnlyRenderMeshType: Refactor to only render the Mesh type
 [ ] Hash filename to colours
 [ ] Make the polygon/polyline types use slices, not dynamic arrays, put allocators in the top level
 [ ] Autogenerate the console registering code to add commands to the console
-[ ] Command list:
-  [ ] save_obj <filename>, load_obj <filename> to load files (loading files by drag and drop should effectively run this command)
-  [ ] save_wkt <filename>, load_wkt <filename> to load files (loading files by drag and drop should effectively run this command)
-  [ ] save_session <filename>, load_session <session> to write all commands in the session
-  [ ] make_float/make_xform/make_mesh
-  [ ] xform <id> <transform>
-  [ ] edit <id> to popup inspection ui
-  [ ] assign x # assigns x to the previous result?
-  [ ] undo/redo
-  
 [ ] Rename project to polyline calculator?
 [ ] Sort by time loaded
 [ ] Distribution stuff, how to make this a single executable? statically link?
-[ ] Support polygons and polygon soups, and do convex decomposition for rendering
 [ ] Write * to indicate an identical first and last point
 [ ] Mode line showing the style info etc
-[ ] Load from command line?
 [ ] Custom key-bindings and sensitivity of parameters, dynamically generate UI for this? and save to the text file
-
 [ ] Understand and use context stuff (logging, assertions, allocators), watch https://youtu.be/ciGQCP6HgqI
-[ ] Build/test stuff
-  [ ] build_debug and build_release with proper llvm options
-  [ ] use @test to tag/run tests
-
 [ ] Give each polyline a number 1-9 then pressing that number before some modifier for colour/vertex etc only modifies that one, number 0 means everything?
-[ ] Optionally mesh the inside of the polyline
 [ ] Alternate segment colours (two draw calls?)
 [ ] Auto pick distinct colours
 [ ] Toggle fullscreen/maximise
 [ ] Some kind of ui cooldown for removing files? So that you don't loose track of what's being deleted
 [ ] If file is hovered in the list then make it flash to white and back, and draw it lastt 
 [ ] Make orbitting/rotatoin work based on the relation between the cursor position and the CoM of the visible shape? or orbit location
-
 [ ] Dont distort geometry in non-square viewports
 [ ] Zoom to origin
 [ ] Show grid lines and label
-[ ] Move polylines
+[ ] Transform entities
 [ ] Boost polygon bindings and a nice way to play around with the functions in a scripting way
 [ ] Transparent imgui window so UI is like Fusion?
 [ ] Compiled at time in Window, after version?
 [ ] Distribute shaders with source for hot loading/editing them. Pass them lots of unused data then
-
 [ ] Fix orbit/rotation location when many files are loaded but some aren't visible
 [ ] Cleanup buffer_ids in openGL?
-
 [ ] Look at Hash_Table. It stores an array slice (`entries : []Entry;`), not a dynamic array [..], and has a separate allocator, should do the same for Polygon types
 [ ] Just log warnings and ignore the context allocator if it's not malloc, or create a new polygon allocated with malloc if passing to c
 [ ] Extend the imgui_inspector example to allow you to drag+drop jai files and have show you all the types in the file
 
-# Bugs
+Command list
+[ ] save_obj <filename>, load_obj <filename> to load files (loading files by drag and drop should effectively run this command)
+[ ] save_wkt <filename>, load_wkt <filename> to load files (loading files by drag and drop should effectively run this command)
+[ ] save_session <filename>, load_session <session> to write all commands in the session
+[ ] make_float/make_xform/make_mesh
+[ ] xform <id> <transform>
+[ ] edit <id> to popup inspection ui
+[ ] assign x # assigns x to the previous result?
+[ ] undo/redo
 
+Boost Polygon bindings
+[ ] Improve API, these accept pointers because the c++ functions take const-ref args
+[ ] Can these declarations have notes? Check Preload.jai?
+[ ] Write a function to print in wkt format? simpler custom format?
+
+Build/test stuff
+[ ] build_debug and build_release with proper llvm options
+[ ] use @test to tag/run tests
+
+Bugs
 [ ] Fix memory leaks, need to use a new version of valgrind for --keep-debuginfo=yes option but it seems like getting to show line numbers properly isn't working
 [ ] ImGui bindings for unix don't write declare CreateContext arguments #c_call
