@@ -15,6 +15,7 @@ Mesh :: struct {
     is_dirty := true;
     fully_pathed_filename : string;
     visible : bool = true;
+    wireframe : bool = false;
     color : Vector4;
 
     // @Cleanup Store array slices and put the allocator on the Mesh

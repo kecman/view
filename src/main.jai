@@ -64,12 +64,25 @@ render_mesh :: (mesh : Mesh, style : VertexLabelStyle) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ibo);
 
     glEnableVertexAttribArray(0);
+    defer glDisableVertexAttribArray(0);
+
     glVertexAttribPointer(0, 3, GL_FLOAT, false, size_of(Vector3), null);
 
     last_line_width: float;
     glGetFloatv(GL_LINE_WIDTH, xx *last_line_width);
     defer glLineWidth(last_line_width);
+
     glLineWidth(xx style.line_width); // 1, 2, 3... See also glEnable(GL_LINE_SMOOTH);
+
+    last_polygon_mode: [2]GLuint;
+    glGetIntegerv(GL_POLYGON_MODE, xx last_polygon_mode.data);
+    defer glPolygonMode(GL_FRONT_AND_BACK, last_polygon_mode[0]);
+    
+    if mesh.wireframe {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    } else {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
 
     if #complete mesh.geometry_format == {
         case .POINTS;
@@ -79,10 +92,9 @@ render_mesh :: (mesh : Mesh, style : VertexLabelStyle) {
         case .TRIANGLES;
             glDrawElements(GL_TRIANGLES, xx mesh.indices.count, GL_UNSIGNED_INT, null);
     }
+
     glEnable(GL_PROGRAM_POINT_SIZE);
     glDrawArrays(GL_POINTS, 0, xx mesh.vertices.count);
-
-    glDisableVertexAttribArray(0);
 }
 
 render_vertex_labels :: (points : []Vector3, style : VertexLabelStyle, label_index_offset : int = 0) {
@@ -417,9 +429,10 @@ main :: () {
                 if mesh {
                     ImGui.Checkbox(imgui_label(path_filename(mesh.fully_pathed_filename), it), *mesh.visible);
                     ImGui.SameLine();
-                    ImGui.ColorEdit3(imgui_label("", it), mesh.color.component, ImGui.ColorEditFlags.NoInputs);
+                    ImGui.ColorEdit3(imgui_label("##color", it), mesh.color.component, ImGui.ColorEditFlags.NoInputs);
                     ImGui.SameLine();
-
+                    ImGui.Checkbox(imgui_label("##wireframe", it), *mesh.wireframe);
+                    ImGui.SameLine();
                     if ImGui.Button(imgui_label("Remove", it), size=*make_vector2(0, 0)) {
                         glDeleteBuffers(1, *mesh.vbo);
                         glDeleteBuffers(1, *mesh.ibo);

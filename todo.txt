@@ -17,6 +17,12 @@ Complete
 [x] Port the imgui 1.53 console to jai and use it to call the offset function
 
 Plan
+
+Fix bug with polyline offsetting (problem with clockwise_boundaries? perhaps should be using boundaries instead)
+from output of print_Polygon_Soup (looks correct) and print_Polyline_Soup (looks broken) I think the bug is in clockwise_boundaries returning a bad result
+
+[ ] Implement a debug macro/Code thing which prints the variable name followed by it's value
+[ ] Implement recursive print_recursive function to recurse into arrays/structs etc
 [ ] Cleanup construction/destruction: make functions to do that
 [ ] Support polygons and polygon soups, and do convex decomposition for rendering
 [ ] Support loading wkt file format

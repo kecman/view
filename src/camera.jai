@@ -55,7 +55,7 @@ update_camera :: (camera : *Camera, delta_time : float, mouse : *MouseState) {
     camera.fov_vertical_radians = 2 * atan2(camera.top, camera.eye_position.z);
 
     // Pan with left down
-    if mouse.left_down {
+    if mouse.left_down || mouse.middle_down {
         // Convert mouse velocity from pixels/frame into view coords/frame
         ndc_per_frame : Vector2;
         ndc_per_frame.x = (2 * mouse.velocity_px.x) / cast(float)current_window_width * (camera.right - camera.left) / 2;
@@ -71,11 +71,14 @@ update_camera :: (camera : *Camera, delta_time : float, mouse : *MouseState) {
         camera.look_position.y += increment.y;
     }
 
-    // Rotate with middle down
-    if mouse.middle_down {
-        // @FIXME This screws up panning
-        camera.up_direction.xy = rotate(camera.up_direction.xy, 0.01 * mouse.velocity_px.y);
+    #if false { // maybe hold shift to do this and have middle button pan
+        // Rotate with middle down
+        if mouse.middle_down {
+            // @FIXME This screws up panning
+            camera.up_direction.xy = rotate(camera.up_direction.xy, 0.01 * mouse.velocity_px.y);
+        }
     }
+
 
     // Zoom with right down or scrolling
     increment : float = 0;

@@ -53,12 +53,14 @@ bounding_box :: (using polyline_soup : *$T/Polyline_Soup) -> AxisBox(T.Point) #m
     return box;
 }
 
-print_Polyline_Soup2 :: (shape : Polyline_Soup2) {
-    print("%\n", shape);
+print_Polyline_Soup :: (shape : $T/Polyline_Soup, print_points := false) {
+    print("print_Polyline_Soup: \n%\n", shape);
     for l, li : shape.polylines {
         print("- line[%] %\n", li, l);
-        for p, pi : l.points {
-            print("-- point[%] %\n", pi, p);
+        if print_points {
+            for p, pi : l.points {
+                print("-- point[%] %\n", pi, p);
+            }
         }
     }
 }

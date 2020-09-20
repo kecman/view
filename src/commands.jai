@@ -67,6 +67,8 @@ tmp_offset :: (args : []string) {
             return;
         }
 
+        print_Polygon_Soup(offset_polygon);
+
         ok : bool;
 
         {
@@ -79,6 +81,8 @@ tmp_offset :: (args : []string) {
         }
 
         offset := BoostPolygon.clockwise_boundaries(*offset_polygon);
+
+        print_Polyline_Soup(offset);
 
         // TODO Make this a make_Polyline_Soup2_Entity() function
         // :Cleanup_Construction_Destruction:

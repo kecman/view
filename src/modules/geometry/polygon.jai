@@ -30,3 +30,11 @@ polygon_soup_free_and_reset :: (shape : *$T/Polygon_Soup) {
     for * shape.polygons polygon_free_and_reset(it);
     array_reset(*shape.polygons);
 }
+
+print_Polygon_Soup :: (shape : $T/Polygon_Soup) {
+    print("print_Polygon_Soup2:\n %\n", shape);
+    for shape.polygons {
+        print("  outer_ring\n %\n", it.outer_ring);
+        for it.inner_rings print("  inner_ring[%]\n %\n", it_index, it);
+    }
+}
