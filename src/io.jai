@@ -210,27 +210,34 @@ to_Polyline_Soup2 :: (mesh : Mesh) -> Polyline_Soup2, bool #must {
 to_Mesh :: (shape : Polygon_Soup2) -> Mesh, bool #must {
     result : Mesh;
 
-    result.geometry_format = .TRIANGLES;
-
     convex : Polygon_Soup2 = BoostPolygon.convex_decomposition(*shape);
+
+    for convex.polygons {
+        if it.inner_rings.count != 0 {
+            return result, false;
+        }
+    }
+
+    result.geometry_format = .TRIANGLES;
 
     mesh_index := 0;
     for convex.polygons {
-        assert(it.inner_rings.count == 0); // @TODO return false and cleanup
-        for i : 0..2 {
-            point := it.outer_ring.points[i];
-            array_add(*result.vertices, make_vector3(point.x, point.y, 0));
-            array_add(*result.indices, xx mesh_index);
-            mesh_index += 1;
-        }
-        if it.outer_ring.points.count == 5 {
-            //assert(it.outer_ring.points.count == 5); // @TODO return false and cleanup
-            for i : 2..4 {
-                point := it.outer_ring.points[i];
-                array_add(*result.vertices, make_vector3(point.x, point.y, 0));
-                array_add(*result.indices, xx mesh_index);
-                mesh_index += 1;
-            }
+        i := 0;
+        j := 1;
+        k := 2;
+        while k < it.outer_ring.points.count {
+            pi := it.outer_ring.points[i];
+            pj := it.outer_ring.points[j];
+            pk := it.outer_ring.points[k];
+            array_add(*result.vertices, make_vector3(pi.x, pi.y, 0));
+            array_add(*result.vertices, make_vector3(pj.x, pj.y, 0));
+            array_add(*result.vertices, make_vector3(pk.x, pk.y, 0));
+            array_add(*result.indices, xx (mesh_index + 0));
+            array_add(*result.indices, xx (mesh_index + 1));
+            array_add(*result.indices, xx (mesh_index + 2));
+            j += 1;
+            k += 1;
+            mesh_index += 3;
         }
     }
 

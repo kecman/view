@@ -31,10 +31,24 @@ polygon_soup_free_and_reset :: (shape : *$T/Polygon_Soup) {
     array_reset(*shape.polygons);
 }
 
-print_Polygon_Soup :: (shape : $T/Polygon_Soup) {
+print_Polygon_Soup :: (shape : $T/Polygon_Soup, print_points : bool = false) {
     print("print_Polygon_Soup2:\n %\n", shape);
     for shape.polygons {
         print("  outer_ring\n %\n", it.outer_ring);
-        for it.inner_rings print("  inner_ring[%]\n %\n", it_index, it);
+        for it.inner_rings {
+            print("  inner_ring[%]\n %\n", it_index, it);
+        }
+        if print_points {
+            print("  outer_ring points: ");
+            for it.outer_ring.points {
+                print("[%] %,", it_index, it);
+            }
+            for it.inner_rings {
+                print("\n  inner_ring[%] points: ", it_index);
+                for it.points {
+                    print("[%] %,", it_index, it);
+                }
+            }
+        }
     }
 }
