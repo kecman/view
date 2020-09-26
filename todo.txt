@@ -17,6 +17,7 @@ Complete
 [x] Port the imgui 1.53 console to jai and use it to call the offset function
 
 Plan
+[ ] Command history and tab completion
 [ ] Implement a debug macro/Code thing which prints the variable name followed by it's value
 [ ] Implement recursive print_recursive function to recurse into arrays/structs etc
 [ ] Cleanup construction/destruction: make functions to do that
