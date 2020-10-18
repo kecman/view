@@ -634,3 +634,9 @@ debug_callback :: (source: GLenum, type: GLenum, id: GLuint, severity: GLenum, l
         print("userParam: %\n", userParam);
     }
 }
+
+#import "Compiler";
+// #run compiler_set_type_info_flags(GL_Procedures, .PROCEDURES_ARE_VOID_POINTERS);
+// #run compiler_set_type_info_flags(ImGui, .PROCEDURES_ARE_VOID_POINTERS);
+#run compiler_set_type_info_flags(GL_Procedures, .NO_SIZE_COMPLAINT);
+#run compiler_set_type_info_flags(ImGui, .NO_SIZE_COMPLAINT);
