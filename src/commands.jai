@@ -1,27 +1,89 @@
-Command_Info :: struct {
-    name : string;
-    procedure : ([] string) -> void;
-}
-
-command_list : [..]Command_Info;
-
+// @Incomplete generate this with metaprogram
 init_commands :: () {
     {
         info : Command_Info;
         info.name = "offset";
         info.procedure = tmp_offset;
-        array_add(*command_list, info);
+        array_add(*console.commands, info);
     }
 
     {
         info : Command_Info;
         info.name = "clockwise_boundaries";
         info.procedure = tmp_clockwise_boundaries;
-        array_add(*command_list, info);
+        array_add(*console.commands, info);
+    }
+
+    {
+        info : Command_Info;
+        info.name = "history";
+        info.procedure = command_history_boiler_plate;
+        array_add(*console.commands, info);
+    }
+
+    {
+        info : Command_Info;
+        info.name = "clear";
+        info.procedure = command_clear_boiler_plate;
+        array_add(*console.commands, info);
+    }
+
+    {
+        info := array_add(*console.commands);
+        info.name = "help";
+        info.procedure = command_help_boiler_plate;
     }
 }
 
 #scope_file
+
+command_history :: () {
+    for console.history {
+        console_add_log(" %", it);
+    }
+} @ConsoleCommand
+
+command_clear :: () {
+    console_clear_log();
+} @ConsoleCommand
+
+command_help :: () {
+    console_add_log("# Available commands:");
+    for console.commands {
+        console_add_log("#  %", it.name); // @Incomplete write usage here too, or write the procedure parameters
+    }
+} @ConsoleCommand
+
+
+// @Incomplete generate boiler plate functions via metaprogram
+
+
+command_history_boiler_plate :: (args : []string) {
+    if args.count != 0 {
+        console_add_log("[error] expected no arguments");
+        return;
+    }
+
+    command_history();
+}
+
+command_clear_boiler_plate :: (args : []string) {
+    if args.count != 0 {
+        console_add_log("[error] expected no arguments");
+        return;
+    }
+
+    command_clear();
+}
+
+command_help_boiler_plate :: (args : []string) {
+    if args.count != 0 {
+        console_add_log("[error] expected no arguments");
+        return;
+    }
+
+    command_help();
+}
 
 get_geometry_index :: (arg : string) -> int, bool #must {
 
@@ -39,6 +101,7 @@ get_geometry_index :: (arg : string) -> int, bool #must {
     return result, true;
 }
 
+// @Incomplete Separate into boiler plate and an actual command (with @ConsoleCommand note)
 tmp_clockwise_boundaries :: (args : []string) {
     if args.count != 1 {
         console_add_log("[error] expected exactly 1 argument");
@@ -76,6 +139,7 @@ tmp_clockwise_boundaries :: (args : []string) {
     array_add(*entities, entity);
 }
 
+// @Incomplete Separate into boiler plate and an actual command (with @ConsoleCommand note)
 tmp_offset :: (args : []string) {
     if args.count != 2 {
         console_add_log("[error] expected exactly 2 arguments");

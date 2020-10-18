@@ -1,10 +1,15 @@
 #load "commands.jai";
 
+Command_Info :: struct {
+    name : string;
+    procedure : ([] string) -> void;
+}
+
 Console :: struct {
-    // history : [..]string;
-    // history_position : int = -1; // -1: new line, 0..History.Size-1 browsing history.
-    commands : [..]string;
-    items : [..]string;
+    history : [..]string; // different to items in that command feedback is not stored in the history
+    history_position : int = -1; // -1: new line, 0..history.count-1 browsing history
+    commands : [..]Command_Info;
+    items : [..]string; // @Cleanup this could better be called 'log'
     input_buffer : [256]u8;
 }
 
@@ -22,10 +27,25 @@ console_add_log :: (format_string: string, args: .. Any) {
 } @PrintLike
 
 console_clear_log :: () {
-    for console.items {
-        free(it);
-    }
+    for console.items free(it);
     array_reset(*console.items);
+}
+
+console_add_history :: (format_string: string, args: .. Any) {
+    builder: String_Builder;
+    defer free_buffers(*builder);
+
+    print_to_builder(*builder, format_string, ..args);
+
+    text := builder_to_string(*builder);
+
+    // @Incomplete find first match and delete it so the history is unique
+    array_add(*console.history, text);
+} @PrintLike
+
+console_clear_history :: () {
+    for console.history free(it);
+    array_reset(*console.history);
 }
 
 console_execute_command :: (command : string) {
@@ -47,17 +67,19 @@ console_execute_command :: (command : string) {
     }
 
     found_command := false;
-    for command_list {
+    for console.commands {
         if it.name == args[0] {
 
             // Strip the procedure name from the argument list
             args.data += 1;
             args.count -= 1;
 
+            console_add_history("%", command);
             console_add_log("%", command);
             it.procedure(args);
 
             found_command = true;
+            break;
         }
     }
 
@@ -70,7 +92,7 @@ console_draw :: () {
     ImGui.SetNextWindowSize(*make_vector2(520, 600), .FirstUseEver);
     ImGui.Begin("console"); // TODO if !Begin should close
 
-    ImGui.TextWrapped("Enter 'HELP' for help, press TAB to use text completion.");
+    ImGui.TextWrapped("Enter 'help' for help, press TAB for text completion, press UP/DOWN to navigate history.");
     ImGui.SameLine();
 
     if (ImGui.SmallButton("Clear")) {
@@ -112,9 +134,12 @@ console_draw :: () {
 
     {
         using ImGui.InputTextFlags; // @Question this using is here due to: "Operator '|' does not work on this type. (Left type of the attempted binary operation: unary '.' dereference; right type: unary '.' dereference)"
-        if (ImGui.InputText("", console.input_buffer.data, console.input_buffer.count, EnterReturnsTrue | AlwaysInsertMode)) {
+
+        // console passed as user data but it's a global so...
+        // if (ImGui.InputText("", console.input_buffer.data, console.input_buffer.count, EnterReturnsTrue | AlwaysInsertMode)) {
+        if (ImGui.InputText("", console.input_buffer.data, console.input_buffer.count, EnterReturnsTrue | CallbackCompletion | CallbackHistory, text_edit_callback, *console)) {
             defer console.input_buffer[0] = 0; // Wipe input after processing
-            console_execute_command(to_string(console.input_buffer));
+            console_execute_command(to_string(console.input_buffer.data, str_length(console.input_buffer.data)));
         }
 
         // Keeping auto focus on the input box after command is entered
@@ -130,6 +155,23 @@ console_draw :: () {
 }
 
 #scope_file
+
+text_edit_callback :: (data : *ImGui.TextEditCallbackData) -> int #c_call {
+    new_context : Context;
+    push_context new_context {
+        console_add_log("# cursor: %, selection: %-%", data.CursorPos, data.SelectionStart, data.SelectionEnd);
+        if data.EventFlag == {
+            case .CallbackCompletion; {
+                console_add_log("# CallbackCompletion");
+            }
+            case .CallbackHistory; {
+                console_add_log("# CallbackHistory");
+                console_add_log("# %", console.items);
+            }
+        }
+    }
+    return 0;
+}
 
 #import "Basic";
 #import "String";

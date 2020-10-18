@@ -18,6 +18,8 @@ Complete
 
 Plan
 [ ] Command history and tab completion
+[ ] Show points in the specific entity, not on the mesh, so this works better with polygons
+[ ] Transparency with order as it is in the entity list
 [ ] Implement a debug macro/Code thing which prints the variable name followed by it's value
 [ ] Implement recursive print_recursive function to recurse into arrays/structs etc
 [ ] Cleanup construction/destruction: make functions to do that
