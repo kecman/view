@@ -401,7 +401,7 @@ main :: () {
         {
             ImGui.SetNextWindowPos(pos=*make_vector2(10, 10), pivot=*make_vector2(0,0));
             ImGui.Begin("", *show_ui, ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar);
-            ImGui.ColorEdit3("Background Color", clear_color.component, ImGui.ColorEditFlags.NoInputs);
+            ImGui.ColorEdit4("Background Color", clear_color.component, ImGui.ColorEditFlags.NoInputs);
 
             #if false {
                 if ImGui.Button("Demo Window", size=*make_vector2(0,0)) show_demo_window ^= true;
@@ -429,7 +429,7 @@ main :: () {
                 if mesh {
                     ImGui.Checkbox(imgui_label(path_filename(mesh.fully_pathed_filename), it), *mesh.visible);
                     ImGui.SameLine();
-                    ImGui.ColorEdit3(imgui_label("##color", it), mesh.color.component, ImGui.ColorEditFlags.NoInputs);
+                    ImGui.ColorEdit4(imgui_label("##color", it), mesh.color.component, ImGui.ColorEditFlags.NoInputs);
                     ImGui.SameLine();
                     ImGui.Checkbox(imgui_label("##wireframe", it), *mesh.wireframe);
                     ImGui.SameLine();

@@ -1,3 +1,7 @@
+[ ] Remove the corner rounding on the ui
+[ ] Implement sliding to show/hide the terminal
+[ ] Scroll to the bottom of the terminal
+
 Complete
 [x] Implement pan with the holding down the middle button
 [x] Implement zoom with the scroll wheel
@@ -81,3 +85,15 @@ Build/test stuff
 Bugs
 [ ] Fix memory leaks, need to use a new version of valgrind for --keep-debuginfo=yes option but it seems like getting to show line numbers properly isn't working
 [ ] ImGui bindings for unix don't write declare CreateContext arguments #c_call
+
+Ideas:
+- show code for a UI widget using the metaprogram?
+
+Script to build imgui as a library:
+
+    # Build a static and dynamic library and copy to jai project.
+    # Note: Using -fno-exceptions since without it linker called by Jai can't find _Unwind_Resume
+    gcc -fno-exceptions -Wall -c *.cpp
+    ar rcs ImGui.a *.o
+    gcc -fno-exceptions -shared -fPIC -Wall -o ImGui.so  imgui.cpp imgui_draw.cpp imgui_demo.cpp 
+    cp ImGui.a ImGui.so ~/Dropbox/jai/modules/ImGui/linux/.

@@ -137,6 +137,7 @@ console_draw :: () {
 
         // console passed as user data but it's a global so...
         // if (ImGui.InputText("", console.input_buffer.data, console.input_buffer.count, EnterReturnsTrue | AlwaysInsertMode)) {
+
         if (ImGui.InputText("", console.input_buffer.data, console.input_buffer.count, EnterReturnsTrue | CallbackCompletion | CallbackHistory, text_edit_callback, *console)) {
             defer console.input_buffer[0] = 0; // Wipe input after processing
             console_execute_command(to_string(console.input_buffer.data, str_length(console.input_buffer.data)));
@@ -156,17 +157,88 @@ console_draw :: () {
 
 #scope_file
 
-text_edit_callback :: (data : *ImGui.TextEditCallbackData) -> int #c_call {
+print_location :: (loc := #caller_location) {
+    print("Location in Jai source: %:%\n", loc.fully_pathed_filename, loc.line_number);
+}
+
+#import "String";
+
+text_edit_callback :: (data : *ImGui.TextEditCallbackData) -> s32 #c_call {
+
     new_context : Context;
     push_context new_context {
-        console_add_log("# cursor: %, selection: %-%", data.CursorPos, data.SelectionStart, data.SelectionEnd);
+
         if data.EventFlag == {
             case .CallbackCompletion; {
-                console_add_log("# CallbackCompletion");
+                // Locate beginning of current word
+                word_end := data.Buf + data.CursorPos;
+                word_start := word_end;
+                while word_start > data.Buf {
+                    c := <<(word_start - 1);
+                    if (c == #char " " || c == #char "\t" || c == #char "," || c == #char ";")
+                        break;
+                    word_start -= 1;
+                }
+
+                current_word := to_string(word_start, word_end - word_start);
+
+                // Build a list of candidates // @TODO Use temporary allocator here
+                candidates : [..]string;
+                for console.commands {
+                    if begins_with_nocase(it.name, current_word) {
+                        array_add(*candidates, it.name);
+                    }
+                }
+
+                if candidates.count == 0 {
+                    // No match
+                } else if candidates.count == 1 {
+                    // Single match. Delete the beginning of the word and replace it entirely so we've got nice casing
+                    data.DeleteChars(data, xx (word_start - data.Buf), xx (word_end - word_start));
+                    data.InsertChars(data, data.CursorPos, temp_c_string(candidates[0]));
+                    data.InsertChars(data, data.CursorPos, " ");
+                } else {
+                    // Multiple matches. Complete as much as we can
+
+                    cursor : s32 = xx (word_end - word_start);
+                    while true {
+                        cursor_character := to_upper(candidates[0][cursor]);
+
+                        all_candidates_match := true;
+                        for candidate, candidate_index : candidates {
+                            if !all_candidates_match {
+                                break;
+                            }
+
+                            if cursor == candidate.count || cursor_character != to_upper(candidate[cursor]) {
+                                all_candidates_match = false;
+                            }
+                        }
+
+                        if !all_candidates_match {
+                            break;
+                        }
+
+                        cursor += 1;
+                    }
+
+                    if cursor > 0 {
+                        data.DeleteChars(data, xx (word_start - data.Buf), xx (word_end - word_start));
+                        tmp := temp_c_string(candidates[0]);
+                        data.InsertChars(data, data.CursorPos, tmp, tmp + cursor);
+                    }
+
+                    // List matches
+                    console_add_log("# Matching commands:");
+                    for candidate : candidates {
+                        console_add_log("#  %", candidate);
+                    }
+                }
             }
+
             case .CallbackHistory; {
                 console_add_log("# CallbackHistory");
-                console_add_log("# %", console.items);
+                console_add_log("# %", console.history); // @Incomplete make this unique
             }
         }
     }
