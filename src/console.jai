@@ -39,7 +39,13 @@ console_add_history :: (format_string: string, args: .. Any) {
 
     text := builder_to_string(*builder);
 
-    // @Incomplete find first match and delete it so the history is unique
+    // Insert into history. First find match and delete it so it can be pushed to the back.
+    for console.history {
+        if equal_nocase(text, it) {
+            remove it;
+            break;
+        }
+    }
     array_add(*console.history, text);
 } @PrintLike
 
@@ -48,8 +54,12 @@ console_clear_history :: () {
     array_reset(*console.history);
 }
 
-console_execute_command :: (command : string) {
-    if !eat_spaces(command).count {
+console_execute_command :: (_command : string) {
+    console.history_position = -1;
+
+    command := eat_trailing_spaces(_command);
+    command = eat_spaces(command);
+    if !command.count {
         return;
     }
 
@@ -158,7 +168,7 @@ console_draw :: () {
 #scope_file
 
 print_location :: (loc := #caller_location) {
-    print("Location in Jai source: %:%\n", loc.fully_pathed_filename, loc.line_number);
+    print("%:%\n", loc.fully_pathed_filename, loc.line_number);
 }
 
 #import "String";
@@ -237,11 +247,49 @@ text_edit_callback :: (data : *ImGui.TextEditCallbackData) -> s32 #c_call {
             }
 
             case .CallbackHistory; {
-                console_add_log("# CallbackHistory");
-                console_add_log("# %", console.history); // @Incomplete make this unique
+
+                // Example of HISTORY
+                prev_history_position := console.history_position;
+                if data.EventKey == .UpArrow {
+                    if console.history_position == -1 {
+                        console.history_position = console.history.count - 1;
+                    } else if console.history_position > 0 {
+                        console.history_position -= 1;
+                    }
+                } else if data.EventKey == .DownArrow {
+                    if console.history_position != -1 {
+                        console.history_position += 1;
+                        if console.history_position >= console.history.count {
+                            console.history_position = -1;
+                        }
+                    }
+                }
+
+                // A better implementation would preserve the data on the current input line along with cursor position.
+                if prev_history_position != console.history_position {
+
+                    if console.history_position >= 0 {
+                        item := console.history[console.history_position];
+                        data.CursorPos = xx item.count;
+                        memcpy(data.Buf, item.data, item.count);
+                        data.Buf[item.count] = 0;
+                        data.BufTextLen = xx item.count;
+                    } else {
+                        data.CursorPos = 0;
+                        data.Buf[0] = 0;
+                        data.BufTextLen = 0;
+                    }
+
+                    assert(str_length(data.Buf) == data.BufTextLen);
+
+                    data.SelectionStart = data.CursorPos;
+                    data.SelectionEnd = data.CursorPos;
+                    data.BufDirty = true;
+                }
             }
         }
     }
+
     return 0;
 }
 

@@ -39,7 +39,7 @@ init_commands :: () {
 
 command_history :: () {
     for console.history {
-        console_add_log(" %", it);
+        console_add_log("# % %", it_index, it);
     }
 } @ConsoleCommand
 
