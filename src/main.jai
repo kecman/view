@@ -424,9 +424,12 @@ main :: () {
                 return to_c_string(concatenate(label, tprint("##%", ptr)));
             }
 
+            entity_to_remove := -1;
             for entities {
                 mesh := get_mesh(it);
                 if mesh {
+                    ImGui.Text("%", it_index);
+                    ImGui.SameLine();
                     ImGui.Checkbox(imgui_label(path_filename(mesh.fully_pathed_filename), it), *mesh.visible);
                     ImGui.SameLine();
                     ImGui.ColorEdit4(imgui_label("##color", it), mesh.color.component, ImGui.ColorEditFlags.NoInputs);
@@ -434,12 +437,18 @@ main :: () {
                     ImGui.Checkbox(imgui_label("##wireframe", it), *mesh.wireframe);
                     ImGui.SameLine();
                     if ImGui.Button(imgui_label("Remove", it), size=*make_vector2(0, 0)) {
-                        glDeleteBuffers(1, *mesh.vbo);
-                        glDeleteBuffers(1, *mesh.ibo);
-                        free(it);
-                        remove it;
+                        entity_to_remove = it_index;
+                        break;
                     }
                 }
+            }
+
+            if entity_to_remove >= 0 && entity_to_remove < entities.count {
+                mesh := get_mesh(entities[entity_to_remove]);
+                glDeleteBuffers(1, *mesh.vbo);
+                glDeleteBuffers(1, *mesh.ibo);
+                free(entities[entity_to_remove]);
+                array_ordered_remove_by_index(*entities, entity_to_remove);
             }
 
             // @FIXME

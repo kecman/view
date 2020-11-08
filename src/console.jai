@@ -9,7 +9,7 @@ Console :: struct {
     history : [..]string; // different to items in that command feedback is not stored in the history
     history_position : int = -1; // -1: new line, 0..history.count-1 browsing history
     commands : [..]Command_Info;
-    items : [..]string; // @Cleanup this could better be called 'log'
+    log : [..]string;
     input_buffer : [256]u8;
 }
 
@@ -23,12 +23,12 @@ console_add_log :: (format_string: string, args: .. Any) {
 
     text := builder_to_string(*builder);
 
-    array_add(*console.items, text);
+    array_add(*console.log, text);
 } @PrintLike
 
 console_clear_log :: () {
-    for console.items free(it);
-    array_reset(*console.items);
+    for console.log free(it);
+    array_reset(*console.log);
 }
 
 console_add_history :: (format_string: string, args: .. Any) {
@@ -128,7 +128,7 @@ console_draw :: () {
     }
 
     ImGui.PushStyleVar(.ItemSpacing, *ImVec2.{4,1}); // Tighten spacing
-    for item : console.items {
+    for item : console.log {
         assert(item.count != 0);
         col := ImVec4.{1., 1., 1., 1.};
         if begins_with(item, "#") {
