@@ -40,12 +40,12 @@ deinit_entity :: (base : *Entity) {
         case .POLYLINE_SOUP2; {
             entity := cast(*Polyline_Soup2_Entity)base;
             deinit_mesh(*entity.mesh);
-            polyline_soup_free_and_reset(*entity.shape); // deinit_polyline_soup2(*entity.shape);
+            deinit_polyline_soup(*entity.shape);
         }
         case .POLYGON_SOUP2; {
             entity := cast(*Polygon_Soup2_Entity)base;
             deinit_mesh(*entity.mesh);
-            polygon_soup_free_and_reset(*entity.shape); // deinit_polygon_soup2(*entity.shape);
+            deinit_polygon_soup(*entity.shape);
         }
         case .MESH; {
             entity := cast(*Mesh_Entity)base;

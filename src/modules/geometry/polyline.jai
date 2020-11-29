@@ -8,7 +8,7 @@ Polyline :: struct (Point : Type) #modify check_vector(Point) {
     points : [..]Point;
 }
 
-polyline_free_and_reset :: (shape : *$T/Polyline) {
+deinit_polyline :: (shape : *$T/Polyline) {
     array_reset(*shape.points);
 }
 
@@ -16,8 +16,8 @@ Polyline_Soup :: struct (Point : Type) #modify check_vector(Point) {
     polylines : [..]Polyline(Point);
 }
 
-polyline_soup_free_and_reset :: (shape : *$T/Polyline_Soup) {
-    for * shape.polylines polyline_free_and_reset(it);
+deinit_polyline_soup :: (shape : *$T/Polyline_Soup) {
+    for * shape.polylines deinit_polyline(it);
     array_reset(*shape.polylines);
 }
 
