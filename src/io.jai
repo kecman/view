@@ -33,7 +33,10 @@ make_vector3i :: (x : int, y : int, z : int) -> Vector3i {
     return v;
 }
 
+// @Incomplete use the temp allocator for all intermediate allocation? see the memory management how_to
 load_obj :: (filename : string) -> Mesh {
+
+    // http://paulbourke.net/dataformats/obj/
 
     result : Mesh;
 
@@ -69,6 +72,7 @@ load_obj :: (filename : string) -> Mesh {
                     _, expect_empty := break_by_spaces(str_z);
                     vector.z = string_to_float(str_z);
                     if expect_empty {
+                        // handler.failed = true; // @Incomplete set the failed flag in error cases
                         return vector, -1;
                     }
                     return vector, 3;
@@ -76,6 +80,53 @@ load_obj :: (filename : string) -> Mesh {
                 return vector, 2;
             }
             return vector, 1;
+        }
+
+        Triangle :: struct {
+            indices : Vector3i = .{-1, -1, -1};
+            texture : Vector3i = .{-1, -1, -1};
+            normal : Vector3i = .{-1, -1, -1};
+        }
+
+        parse_triangle :: (handler : *Text_File_Handler, str : string) -> Triangle {
+            t : Triangle;
+
+            if count(str, "/") == 0 {
+                ok := scan2(str, "% % %", *t.indices.x, *t.indices.y, *t.indices.z);
+                if !ok error(<< handler, "Invalid 'f' line\n");
+
+                return t;
+            }
+
+            if count(str, "//") == 3 {
+                ok := scan2(str, "%//% %//% %//%", *t.indices.x, *t.normal.x,
+                                                   *t.indices.y, *t.normal.y,
+                                                   *t.indices.z, *t.normal.z);
+                if !ok error(<< handler, "Invalid 'f' line\n");
+
+                for 0..2 {
+                    if t.normal.component[it] != t.indices.component[it] {
+                        msg := tprint("Expected identical normal and vertex indices, got % != %\n", t.normal.component[it], t.indices.component[it]);
+                        error(<< handler, msg);
+                    }
+                }
+
+                return t;
+            }
+
+            ok := scan2(str, "%/%/% %/%/% %/%/%", *t.indices.x, *t.texture.x, *t.normal.x,
+                                                  *t.indices.y, *t.texture.y, *t.normal.y,
+                                                  *t.indices.z, *t.texture.z, *t.normal.z);
+            if !ok error(<< handler, "Invalid 'f' line\n");
+
+            for 0..2 {
+                if t.normal.component[it] != t.indices.component[it] {
+                    msg := tprint("Expected identical normal and vertex indices, got % != %\n", t.normal.component[it], t.indices.component[it]);
+                    error(<< handler, msg);
+                }
+            }
+
+            return t;
         }
 
         if key_name == {
@@ -88,6 +139,12 @@ load_obj :: (filename : string) -> Mesh {
                 }
                 array_add(*result.vertices, vertex);
             case "vn"; // @Incomplete
+                normal, dim := parse_upto_3d(*handler, rhs);
+                if dim != 3 {
+                    error(handler, tprint("Expected 3d normal, got dim=%.\n", dim));
+                    continue;
+                }
+                array_add(*result.normals, normal);
             case "vt"; // @Incomplete
             case "l";
                 segment, dim := parse_upto_3d(*handler, rhs);
@@ -107,6 +164,19 @@ load_obj :: (filename : string) -> Mesh {
                 array_add(*result.indices, cast(u32)segment.x - 1);
                 array_add(*result.indices, cast(u32)segment.y - 1);
             case "f"; // @Incomplete
+                triangle := parse_triangle(*handler, rhs);
+
+                if result.geometry_format == .UNKNOWN {
+                    result.geometry_format = .TRIANGLES;
+                } else if result.geometry_format != .TRIANGLES {
+                    error(handler, "Expected consistent geometry format, got %, wanted %.\n", Geometry_Format.TRIANGLES, result.geometry_format);
+                    continue;
+                }
+
+                // obj indices are 1-based
+                array_add(*result.indices, cast(u32)triangle.indices.x - 1);
+                array_add(*result.indices, cast(u32)triangle.indices.y - 1);
+                array_add(*result.indices, cast(u32)triangle.indices.z - 1);
             case;
                 error(handler, "Unexpected '%'.\n", rhs);
                 continue;

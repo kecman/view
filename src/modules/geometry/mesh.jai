@@ -12,7 +12,7 @@ Mesh :: struct {
     vbo : GLuint;
     ibo : GLuint;
 
-    is_dirty := true;
+    is_buffered := false;
     fully_pathed_filename : string;
     visible : bool = true;
     wireframe : bool = false;
@@ -20,11 +20,12 @@ Mesh :: struct {
 
     // @Cleanup Store array slices and put the allocator on the Mesh
     vertices :  [..]Vector3;
+    normals :  [..]Vector3;
     indices : [..]u32;
 }
 
 buffer_mesh :: (mesh : *Mesh) {
-    if mesh.is_dirty {
+    if !mesh.is_buffered {
         if !mesh.vbo glGenBuffers(1, *mesh.vbo);
         glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
         glBufferData(GL_ARRAY_BUFFER, size_of(Vector3) * mesh.vertices.count, mesh.vertices.data, GL_STATIC_DRAW);
@@ -33,8 +34,25 @@ buffer_mesh :: (mesh : *Mesh) {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ibo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, size_of(u32) * mesh.indices.count, mesh.indices.data, GL_STATIC_DRAW);
 
-        mesh.is_dirty = false;
+        mesh.is_buffered = true;
     }
+}
+
+deinit_mesh :: (mesh : *Mesh) {
+    if mesh.is_buffered {
+        glDeleteBuffers(1, *mesh.vbo);
+        glDeleteBuffers(1, *mesh.ibo);
+        mesh.vbo = 0;
+        mesh.ibo = 0;
+        mesh.is_buffered = false;
+    }
+
+    // Attention: array_reset frees memory and zeros members
+    array_reset(*mesh.vertices);
+    array_reset(*mesh.normals);
+    array_reset(*mesh.indices);
+
+    mesh.geometry_format = .UNKNOWN;
 }
 
 print_Mesh :: (mesh : Mesh) {

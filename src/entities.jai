@@ -9,8 +9,6 @@ Entity :: struct {
         FLOAT;
     }
     type : Entity_Type = .UNKNOWN;
-
-    id : string;
 }
 
 Polyline_Soup2_Entity :: struct {
@@ -18,6 +16,12 @@ Polyline_Soup2_Entity :: struct {
     shape : geom.Polyline_Soup2;
     mesh : Mesh; // for rendering
 }
+
+//init_polyline_soup2_entity :: (this : *Polyline_Soup2_Entity, ) {
+//}
+//
+//deinit_polyline_soup2_entity :: (shape : *Polyline_Soup2_Entity) {
+//}
 
 Polygon_Soup2_Entity :: struct {
     using base : Entity;

@@ -50,7 +50,7 @@ render_mesh :: (mesh : Mesh, style : VertexLabelStyle) {
         return;
     }
 
-    assert(mesh.is_dirty == false);
+    assert(mesh.is_buffered);
 
     glUseProgram(mesh_shader);
 
@@ -368,31 +368,38 @@ main :: () {
                     }
 
                     mesh := load_obj(dropped);
-                    if mesh.geometry_format != .LINES {
-                        print("Skipped file: '%' (only 2D polylines with constant z are supported)\n", dropped);
-                        // :Cleanup_Construction_Destruction:
-                        array_free(mesh.vertices);
-                        array_free(mesh.indices);
-                        continue; // @Incomplete: support polygon types using wkt format
+                    if #complete mesh.geometry_format == {
+                        case .LINES;
+                            // :Cleanup_Construction_Destruction:
+                            // entity := make_entity_Polygon_Soup2(mesh, );
+                            entity := New(Polyline_Soup2_Entity);
+                            entity.type = .POLYLINE_SOUP2;
+                            entity.mesh = mesh;
+                            geom.buffer_mesh(*entity.mesh);
+                            entity.mesh.fully_pathed_filename = dropped;
+                            ok : bool;
+                            entity.shape, ok = to_Polyline_Soup2(mesh);
+                            assert(ok);
+
+                            array_add(*entities, entity);
+                            print("Loaded file: '%'\n", dropped);
+                            fit_on_screen();
+
+                        case .TRIANGLES;
+
+
+
+                        case .POINTS; #through;
+                        case .UNKNOWN; #through;
+                        case;
+                            print("Skipped file: '%' (unsupported geometry type %)\n", dropped, mesh.geometry_format);
+                            // :Cleanup_Construction_Destruction:
+                            array_free(mesh.vertices);
+                            array_free(mesh.indices);
+                            continue; // @Incomplete: support polygon types using wkt format
                     }
 
-                    // :Cleanup_Construction_Destruction:
-                    // entity := make_entity_Polygon_Soup2(mesh, );
-                    entity := New(Polyline_Soup2_Entity);
-                    entity.type = .POLYLINE_SOUP2;
-                    entity.mesh = mesh;
-                    // entity.id = ...
-                    geom.buffer_mesh(*entity.mesh);
-                    entity.mesh.fully_pathed_filename = dropped;
-                    ok : bool;
-                    entity.shape, ok = to_Polyline_Soup2(mesh);
-                    assert(ok);
 
-                    print("Loaded file: '%'\n", dropped);
-
-                    array_add(*entities, entity);
-
-                    fit_on_screen();
                 }
             }
         }
@@ -444,6 +451,7 @@ main :: () {
             }
 
             if entity_to_remove >= 0 && entity_to_remove < entities.count {
+                // :Cleanup_Construction_Destruction:
                 mesh := get_mesh(entities[entity_to_remove]);
                 glDeleteBuffers(1, *mesh.vbo);
                 glDeleteBuffers(1, *mesh.ibo);

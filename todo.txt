@@ -19,9 +19,9 @@ Complete
 [x] Draw polyline soups
 [x] Support polyline soup obj files
 [x] Port the imgui 1.53 console to jai and use it to call the offset function
+[x] Command history and tab completion
 
 Plan
-[ ] Command history and tab completion
 [ ] Show points in the specific entity, not on the mesh, so this works better with polygons
 [ ] Transparency with order as it is in the entity list
 [ ] Implement a debug macro/Code thing which prints the variable name followed by it's value

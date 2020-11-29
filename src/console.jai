@@ -64,6 +64,7 @@ console_execute_command :: (_command : string) {
     }
 
     args : [..]string;
+    args.allocator = __temporary_allocator;
     {
         remainder := command;
         remainder = eat_spaces(remainder);
