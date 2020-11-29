@@ -22,6 +22,9 @@ Complete
 [x] Command history and tab completion
 
 Plan
+[ ] :Cleanup_Construction_Destruction:
+  [ ] Cleanup memory management for jai types (entities > meshes > shapes)
+  [ ] Cleanup memory management for things returned by boost polygon module, should copy them on jai side and add a function to the bindings which free the mesh
 [ ] Show points in the specific entity, not on the mesh, so this works better with polygons
 [ ] Transparency with order as it is in the entity list
 [ ] Implement a debug macro/Code thing which prints the variable name followed by it's value

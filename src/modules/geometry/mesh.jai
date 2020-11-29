@@ -34,16 +34,20 @@ buffer_mesh :: (mesh : *Mesh) {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ibo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, size_of(u32) * mesh.indices.count, mesh.indices.data, GL_STATIC_DRAW);
 
+        // @FIXME: Send normals!
+
         mesh.is_buffered = true;
     }
 }
 
 deinit_mesh :: (mesh : *Mesh) {
     if mesh.is_buffered {
-        glDeleteBuffers(1, *mesh.vbo);
-        glDeleteBuffers(1, *mesh.ibo);
+        if !mesh.vbo glDeleteBuffers(1, *mesh.vbo);
         mesh.vbo = 0;
+
+        if !mesh.ibo glDeleteBuffers(1, *mesh.ibo);
         mesh.ibo = 0;
+
         mesh.is_buffered = false;
     }
 

@@ -115,7 +115,7 @@ tmp_clockwise_boundaries :: (args : []string) {
     it := entities[geometry_index];
 
     if it.type != .POLYGON_SOUP2 {
-        console_add_log("[error] offset not supported for entity type %", it.type);
+        console_add_log("[error] clockwise_boundaries not supported for entity type %", it.type);
         return;
     }
 

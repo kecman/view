@@ -17,11 +17,6 @@ Polyline_Soup2_Entity :: struct {
     mesh : Mesh; // for rendering
 }
 
-//init_polyline_soup2_entity :: (this : *Polyline_Soup2_Entity, ) {
-//}
-//
-//deinit_polyline_soup2_entity :: (shape : *Polyline_Soup2_Entity) {
-//}
 
 Polygon_Soup2_Entity :: struct {
     using base : Entity;
@@ -32,6 +27,30 @@ Polygon_Soup2_Entity :: struct {
 Mesh_Entity :: struct {
     using base : Entity;
     mesh : Mesh;
+}
+
+
+//init_entity :: (this : *Polyline_Soup2_Entity) {}
+
+deinit_entity :: (base : *Entity) {
+    if #complete base.type == {
+        case .POLYLINE_SOUP2; {
+            entity := cast(*Polyline_Soup2_Entity)base;
+            deinit_mesh(*entity.mesh);
+            polyline_soup_free_and_reset(*entity.shape); // deinit_polyline_soup2(*entity.shape);
+        }
+        case .POLYGON_SOUP2; {
+            entity := cast(*Polygon_Soup2_Entity)base;
+            deinit_mesh(*entity.mesh);
+            polygon_soup_free_and_reset(*entity.shape); // deinit_polygon_soup2(*entity.shape);
+        }
+        case .MESH; {
+            entity := cast(*Mesh_Entity)base;
+            deinit_mesh(*entity.mesh);
+        }
+        case .UNKNOWN;
+        case .FLOAT;
+    }
 }
 
 get_mesh :: (base : *Entity) -> *Mesh {

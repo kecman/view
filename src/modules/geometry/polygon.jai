@@ -12,6 +12,7 @@ ring_free_and_reset :: (shape : *$T/Ring) {
 }
 
 Polygon :: struct (Point : Type) #modify check_vector(Point) {
+    // @Cleanup: consider explicitly storing the allocator and storing slices, see e.g., Hash_Table.jai
     outer_ring : Ring(Point);
     inner_rings : [..]Ring(Point);
 }

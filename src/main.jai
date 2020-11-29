@@ -336,30 +336,10 @@ main :: () {
 
                     skip := false;
                     for entities {
-                        if #complete it.type == {
-                        case .POLYLINE_SOUP2; {
-                            entity := cast(*Polyline_Soup2_Entity)it;
-                            if entity.mesh.fully_pathed_filename == dropped {
-                                skip = true;
-                                break;
-                            }
-                        }
-                        case .POLYGON_SOUP2; {
-                            entity := cast(*Polygon_Soup2_Entity)it;
-                            if entity.mesh.fully_pathed_filename == dropped {
-                                skip = true;
-                                break;
-                            }
-                        }
-                        case .MESH; {
-                            entity := cast(*Mesh_Entity)it;
-                            if entity.mesh.fully_pathed_filename == dropped {
-                                skip = true;
-                                break;
-                            }
-                        }
-                        case .UNKNOWN; {}
-                        case .FLOAT; {}
+                        mesh := get_mesh(it);
+                        if mesh && mesh.fully_pathed_filename == dropped {
+                            skip = true;
+                            break;
                         }
                     }
                     if skip {
@@ -385,21 +365,14 @@ main :: () {
                             print("Loaded file: '%'\n", dropped);
                             fit_on_screen();
 
-                        case .TRIANGLES;
-
-
-
+                        case .TRIANGLES; #through;
                         case .POINTS; #through;
                         case .UNKNOWN; #through;
                         case;
                             print("Skipped file: '%' (unsupported geometry type %)\n", dropped, mesh.geometry_format);
-                            // :Cleanup_Construction_Destruction:
-                            array_free(mesh.vertices);
-                            array_free(mesh.indices);
+                            deinit_mesh(*mesh);
                             continue; // @Incomplete: support polygon types using wkt format
                     }
-
-
                 }
             }
         }
@@ -451,10 +424,7 @@ main :: () {
             }
 
             if entity_to_remove >= 0 && entity_to_remove < entities.count {
-                // :Cleanup_Construction_Destruction:
-                mesh := get_mesh(entities[entity_to_remove]);
-                glDeleteBuffers(1, *mesh.vbo);
-                glDeleteBuffers(1, *mesh.ibo);
+                deinit_entity(entities[entity_to_remove]);
                 free(entities[entity_to_remove]);
                 array_ordered_remove_by_index(*entities, entity_to_remove);
             }
