@@ -127,13 +127,11 @@ tmp_clockwise_boundaries :: (args : []string) {
         return;
     }
 
-    // TODO Make this a make_Polyline_Soup2_Entity() function
-    // :Cleanup_Construction_Destruction:
+    mesh, ok := to_Mesh(boundary);
+    assert(ok);
+
     entity := New(Polyline_Soup2_Entity);
-    entity.type = .POLYLINE_SOUP2;
-    ok : bool;
-    entity.mesh, ok = to_Mesh(boundary);
-    geom.buffer_mesh(*entity.mesh);
+    entity.mesh = mesh;
     entity.shape = boundary;
 
     array_add(*entities, entity);
@@ -179,12 +177,11 @@ tmp_offset :: (args : []string) {
         return;
     }
 
-    entity := New(Polygon_Soup2_Entity);
-    entity.type = .POLYGON_SOUP2;
-    ok : bool;
-    entity.mesh, ok = to_Mesh(offset_polygon);
-    geom.buffer_mesh(*entity.mesh);
-    entity.shape = offset_polygon;
+    mesh, ok := to_Mesh(offset_polygon);
+    assert(ok);
 
+    entity := New(Polygon_Soup2_Entity);
+    entity.mesh = mesh;
+    entity.shape = offset_polygon;
     array_add(*entities, entity);
 }

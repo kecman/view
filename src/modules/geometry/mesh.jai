@@ -12,7 +12,7 @@ Mesh :: struct {
     vbo : GLuint;
     ibo : GLuint;
 
-    is_buffered := false;
+    is_dirty := true;
     fully_pathed_filename : string;
     visible : bool = true;
     wireframe : bool = false;
@@ -25,7 +25,7 @@ Mesh :: struct {
 }
 
 buffer_mesh :: (mesh : *Mesh) {
-    if !mesh.is_buffered {
+    if mesh.is_dirty {
         if !mesh.vbo glGenBuffers(1, *mesh.vbo);
         glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
         glBufferData(GL_ARRAY_BUFFER, size_of(Vector3) * mesh.vertices.count, mesh.vertices.data, GL_STATIC_DRAW);
@@ -36,20 +36,17 @@ buffer_mesh :: (mesh : *Mesh) {
 
         // @FIXME: Send normals!
 
-        mesh.is_buffered = true;
+        mesh.is_dirty = false;
     }
 }
 
 deinit_mesh :: (mesh : *Mesh) {
-    if mesh.is_buffered {
-        if !mesh.vbo glDeleteBuffers(1, *mesh.vbo);
-        mesh.vbo = 0;
+    if !mesh.vbo glDeleteBuffers(1, *mesh.vbo);
+    if !mesh.ibo glDeleteBuffers(1, *mesh.ibo);
 
-        if !mesh.ibo glDeleteBuffers(1, *mesh.ibo);
-        mesh.ibo = 0;
-
-        mesh.is_buffered = false;
-    }
+    mesh.vbo = 0;
+    mesh.ibo = 0;
+    mesh.is_dirty = true;
 
     // Attention: array_reset frees memory and zeros members
     array_reset(*mesh.vertices);
@@ -57,6 +54,7 @@ deinit_mesh :: (mesh : *Mesh) {
     array_reset(*mesh.indices);
 
     mesh.geometry_format = .UNKNOWN;
+    free(mesh.fully_pathed_filename.data);
 }
 
 print_Mesh :: (mesh : Mesh) {

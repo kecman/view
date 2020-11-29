@@ -50,7 +50,7 @@ render_mesh :: (mesh : Mesh, style : VertexLabelStyle) {
         return;
     }
 
-    assert(mesh.is_buffered);
+    assert(!mesh.is_dirty);
 
     glUseProgram(mesh_shader);
 
@@ -332,7 +332,7 @@ main :: () {
                     }
                 }
                 case SDL_DROPFILE; {
-                    dropped := to_string(event.drop.file);
+                    dropped := to_string(event.drop.file); // @Cleanup event.drop.file should be free'd using SDL_free
 
                     skip := false;
                     for entities {
@@ -348,20 +348,17 @@ main :: () {
                     }
 
                     mesh := load_obj(dropped);
+
                     if #complete mesh.geometry_format == {
                         case .LINES;
-                            // :Cleanup_Construction_Destruction:
-                            // entity := make_entity_Polygon_Soup2(mesh, );
-                            entity := New(Polyline_Soup2_Entity);
-                            entity.type = .POLYLINE_SOUP2;
-                            entity.mesh = mesh;
-                            geom.buffer_mesh(*entity.mesh);
-                            entity.mesh.fully_pathed_filename = dropped;
-                            ok : bool;
-                            entity.shape, ok = to_Polyline_Soup2(mesh);
+                            shape, ok := to_Polyline_Soup2(mesh);
                             assert(ok);
 
+                            entity := New(Polyline_Soup2_Entity);
+                            entity.mesh = mesh;
+                            entity.shape = shape;
                             array_add(*entities, entity);
+
                             print("Loaded file: '%'\n", dropped);
                             fit_on_screen();
 

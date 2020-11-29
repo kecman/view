@@ -39,6 +39,7 @@ load_obj :: (filename : string) -> Mesh {
     // http://paulbourke.net/dataformats/obj/
 
     result : Mesh;
+    result.fully_pathed_filename = filename;
 
     handler: Text_File_Handler;
     handler.do_version_number = false;
@@ -58,75 +59,6 @@ load_obj :: (filename : string) -> Mesh {
         if !rhs {
             error(handler, "Expected a space after the key specifier.\n");
             continue;
-        }
-
-        // @TODO Make this nd and maybe also pass the string_to_number function (consider using procedure_of_call?)
-        parse_upto_3d :: (handler : *Text_File_Handler, str : string) -> (vector : Vector3 #must, dim : int) {
-            vector : Vector3;
-            str_x, str_yz := break_by_spaces(str);
-            vector.x = string_to_float(str_x);
-            if str_yz {
-                str_y, str_z := break_by_spaces(str_yz);
-                vector.y = string_to_float(str_y);
-                if str_z {
-                    _, expect_empty := break_by_spaces(str_z);
-                    vector.z = string_to_float(str_z);
-                    if expect_empty {
-                        // handler.failed = true; // @Incomplete set the failed flag in error cases
-                        return vector, -1;
-                    }
-                    return vector, 3;
-                }
-                return vector, 2;
-            }
-            return vector, 1;
-        }
-
-        Triangle :: struct {
-            indices : Vector3i = .{-1, -1, -1};
-            texture : Vector3i = .{-1, -1, -1};
-            normal : Vector3i = .{-1, -1, -1};
-        }
-
-        parse_triangle :: (handler : *Text_File_Handler, str : string) -> Triangle {
-            t : Triangle;
-
-            if count(str, "/") == 0 {
-                ok := scan2(str, "% % %", *t.indices.x, *t.indices.y, *t.indices.z);
-                if !ok error(<< handler, "Invalid 'f' line\n");
-
-                return t;
-            }
-
-            if count(str, "//") == 3 {
-                ok := scan2(str, "%//% %//% %//%", *t.indices.x, *t.normal.x,
-                                                   *t.indices.y, *t.normal.y,
-                                                   *t.indices.z, *t.normal.z);
-                if !ok error(<< handler, "Invalid 'f' line\n");
-
-                for 0..2 {
-                    if t.normal.component[it] != t.indices.component[it] {
-                        msg := tprint("Expected identical normal and vertex indices, got % != %\n", t.normal.component[it], t.indices.component[it]);
-                        error(<< handler, msg);
-                    }
-                }
-
-                return t;
-            }
-
-            ok := scan2(str, "%/%/% %/%/% %/%/%", *t.indices.x, *t.texture.x, *t.normal.x,
-                                                  *t.indices.y, *t.texture.y, *t.normal.y,
-                                                  *t.indices.z, *t.texture.z, *t.normal.z);
-            if !ok error(<< handler, "Invalid 'f' line\n");
-
-            for 0..2 {
-                if t.normal.component[it] != t.indices.component[it] {
-                    msg := tprint("Expected identical normal and vertex indices, got % != %\n", t.normal.component[it], t.indices.component[it]);
-                    error(<< handler, msg);
-                }
-            }
-
-            return t;
         }
 
         if key_name == {
@@ -183,8 +115,11 @@ load_obj :: (filename : string) -> Mesh {
         }
     }
 
+    buffer_mesh(*result);
+
     // for result.vertices print("vertices: %\n", it);
     // for result.indices print("indices: %\n", it);
+
     return result;
 }
 
@@ -215,6 +150,8 @@ to_Mesh :: (shape : Polyline_Soup2) -> Mesh, bool #must {
 
         index_offset += polyline.points.count;
     }
+
+    buffer_mesh(*mesh);
 
     return mesh, true;
 }
@@ -311,6 +248,8 @@ to_Mesh :: (shape : Polygon_Soup2) -> Mesh, bool #must {
         }
     }
 
+    buffer_mesh(*result);
+
     return result, true;
 }
 
@@ -324,6 +263,75 @@ to_Polygon_Soup2 :: (mesh : Mesh) -> Polygon_Soup2, bool #must {
 }
 
 #scope_file
+
+// @TODO Make this nd and maybe also pass the string_to_number function (consider using procedure_of_call?)
+parse_upto_3d :: (handler : *Text_File_Handler, str : string) -> (vector : Vector3 #must, dim : int) {
+    vector : Vector3;
+    str_x, str_yz := break_by_spaces(str);
+    vector.x = string_to_float(str_x);
+    if str_yz {
+        str_y, str_z := break_by_spaces(str_yz);
+        vector.y = string_to_float(str_y);
+        if str_z {
+            _, expect_empty := break_by_spaces(str_z);
+            vector.z = string_to_float(str_z);
+            if expect_empty {
+                // handler.failed = true; // @Incomplete set the failed flag in error cases
+                return vector, -1;
+            }
+            return vector, 3;
+        }
+        return vector, 2;
+    }
+    return vector, 1;
+}
+
+Triangle :: struct {
+    indices : Vector3i = .{-1, -1, -1};
+    texture : Vector3i = .{-1, -1, -1};
+    normal : Vector3i = .{-1, -1, -1};
+}
+
+parse_triangle :: (handler : *Text_File_Handler, str : string) -> Triangle {
+    t : Triangle;
+
+    if count(str, "/") == 0 {
+        ok := scan2(str, "% % %", *t.indices.x, *t.indices.y, *t.indices.z);
+        if !ok error(<< handler, "Invalid 'f' line\n");
+
+        return t;
+    }
+
+    if count(str, "//") == 3 {
+        ok := scan2(str, "%//% %//% %//%", *t.indices.x, *t.normal.x,
+                                           *t.indices.y, *t.normal.y,
+                                           *t.indices.z, *t.normal.z);
+        if !ok error(<< handler, "Invalid 'f' line\n");
+
+        for 0..2 {
+            if t.normal.component[it] != t.indices.component[it] {
+                msg := tprint("Expected identical normal and vertex indices, got % != %\n", t.normal.component[it], t.indices.component[it]);
+                error(<< handler, msg);
+            }
+        }
+
+        return t;
+    }
+
+    ok := scan2(str, "%/%/% %/%/% %/%/%", *t.indices.x, *t.texture.x, *t.normal.x,
+                                          *t.indices.y, *t.texture.y, *t.normal.y,
+                                          *t.indices.z, *t.texture.z, *t.normal.z);
+    if !ok error(<< handler, "Invalid 'f' line\n");
+
+    for 0..2 {
+        if t.normal.component[it] != t.indices.component[it] {
+            msg := tprint("Expected identical normal and vertex indices, got % != %\n", t.normal.component[it], t.indices.component[it]);
+            error(<< handler, msg);
+        }
+    }
+
+    return t;
+}
 
 #import "Text_File_Handler";
 #import "Basic";
