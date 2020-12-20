@@ -1,3 +1,6 @@
+// Based on https://github.com/prideout/par/blob/master/par_shapes.h
+// par_shapes is distributed under the MIT license. Copyright (c) 2019 Philip Rideout
+
 #import "Basic";
 
 #if 1 {
@@ -6,6 +9,54 @@ test :: ()
     cylinder := par_shapes_create_cylinder(8, 5);
     par_shapes_export(cylinder, "debug_cylinder.obj");
     par_shapes_free_mesh(cylinder);
+
+
+
+    // @TODO add disks to cones, merge axes with cones
+    axis :: (axis_length : float) {
+        axis_radius := axis_length / 100;
+        cone_radius := axis_radius * 3;
+        cone_length := axis_radius * 10;
+        origin_radius := axis_radius * 2;
+
+        x_axis := par_shapes_create_cylinder(32, 1);
+        par_shapes_scale(x_axis, axis_radius, axis_radius, axis_length);
+        par_shapes_rotate(x_axis, PI/2, Vector3.{0, 1, 0});
+        par_shapes_export(x_axis, "debug_x_axis.obj");
+        x_cone := par_shapes_create_cone(32, 1);
+        par_shapes_scale(x_cone, cone_radius, cone_radius, cone_length);
+        par_shapes_translate(x_cone, make_vector3(0, 0, axis_length));
+        par_shapes_rotate(x_cone, PI/2, Vector3.{0, 1, 0});
+        par_shapes_export(x_cone, "debug_x_cone.obj");
+        par_shapes_free_mesh(x_cone);
+
+        y_axis := par_shapes_create_cylinder(32, 1);
+        par_shapes_scale(y_axis, axis_radius, axis_radius, axis_length);
+        par_shapes_rotate(y_axis, -PI/2, Vector3.{1, 0, 0});
+        par_shapes_export(y_axis, "debug_y_axis.obj");
+        y_cone := par_shapes_create_cone(32, 1);
+        par_shapes_scale(y_cone, cone_radius, cone_radius, cone_length);
+        par_shapes_translate(y_cone, make_vector3(0, 0,axis_length));
+        par_shapes_rotate(y_cone, -PI/2, Vector3.{1, 0, 0});
+        par_shapes_export(y_cone, "debug_y_cone.obj");
+        par_shapes_free_mesh(y_cone);
+
+        z_axis := par_shapes_create_cylinder(32, 1);
+        par_shapes_scale(z_axis, axis_radius, axis_radius, axis_length);
+        par_shapes_export(z_axis, "debug_z_axis.obj");
+        z_cone := par_shapes_create_cone(32, 1);
+        par_shapes_scale(z_cone, cone_radius, cone_radius, cone_length);
+        par_shapes_translate(z_cone, make_vector3(0, 0, axis_length));
+        par_shapes_export(z_cone, "debug_z_cone.obj");
+        par_shapes_free_mesh(z_cone);
+
+        origin := par_shapes_create_parametric_sphere(32, 32);
+        par_shapes_scale(origin, origin_radius, origin_radius, origin_radius);
+        par_shapes_export(origin, "debug_origin.obj");
+    }
+
+    axis(1);
+
 
     cone := par_shapes_create_cone(8, 5);
     par_shapes_export(cone, "debug_cone.obj");
@@ -34,6 +85,16 @@ par_shapes_mesh :: struct
     normals : [..]Vector3;
     tcoords : [..]Vector2;
 };
+
+par_shapes_free_mesh :: (mesh : par_shapes_mesh) -> void
+{
+    array_free(mesh.points);
+    array_free(mesh.triangles);
+    array_free(mesh.normals);
+    array_free(mesh.tcoords);
+}
+
+// Generators ------------------------------------------------------------------
 
 // Create a parametric surface from a callback function that consumes a 2D
 // point in [0,1] and produces a 3D point.
@@ -182,13 +243,7 @@ par_shapes_create_parametric :: (fn : par_shapes_fn, slices : u32, stacks : u32,
     return mesh;
 }
 
-par_shapes_free_mesh :: (mesh : par_shapes_mesh) -> void
-{
-    array_free(mesh.points);
-    array_free(mesh.triangles);
-    array_free(mesh.normals);
-    array_free(mesh.tcoords);
-}
+// Queries ---------------------------------------------------------------------
 
 par_shapes_export :: (mesh : par_shapes_mesh, filename : string) -> void
 {
@@ -245,6 +300,90 @@ par_shapes_export :: (mesh : par_shapes_mesh, filename : string) -> void
     }
     file_close(*objfile);
 }
+
+// Transformations -------------------------------------------------------------
+
+par_shapes_translate :: (mesh : par_shapes_mesh, displacement : Vector3)
+{
+    for * mesh.points {
+        <<it += displacement;
+    }
+}
+
+// @TODO implement this using Math.jai
+par_shapes_rotate :: (mesh : par_shapes_mesh, radians : float, axis : Vector3) {
+    s := sin(radians);
+    c := cos(radians);
+    x := axis.x;
+    y := axis.y;
+    z := axis.z;
+    xy := x * y;
+    yz := y * z;
+    zx := z * x;
+    oneMinusC := 1 - c;
+
+    col0 : [3]float = ---;
+    col0[0] = (((x * x) * oneMinusC) + c);
+    col0[1] = ((xy * oneMinusC) + (z * s));
+    col0[2] = ((zx * oneMinusC) - (y * s));
+
+    col1 : [3]float = ---;
+    col1[0] = ((xy * oneMinusC) - (z * s));
+    col1[1] = (((y * y) * oneMinusC) + c);
+    col1[2] = ((yz * oneMinusC) + (x * s));
+
+    col2 : [3]float = ---;
+    col2[0] = ((zx * oneMinusC) + (y * s));
+    col2[1] = ((yz * oneMinusC) - (x * s));
+    col2[2] = (((z * z) * oneMinusC) + c);
+
+    for * point : mesh.points {
+        x := col0[0] * point.x + col1[0] * point.y + col2[0] * point.z;
+        y := col0[1] * point.x + col1[1] * point.y + col2[1] * point.z;
+        z := col0[2] * point.x + col1[2] * point.y + col2[2] * point.z;
+        point.x = x;
+        point.y = y;
+        point.z = z;
+    }
+
+    // @TODO @Bug is this rotating normals correctly??? No inverse transpose??
+    if mesh.normals.count {
+        for * normal : mesh.normals {
+            x := col0[0] * normal.x + col1[0] * normal.y + col2[0] * normal.z;
+            y := col0[1] * normal.x + col1[1] * normal.y + col2[1] * normal.z;
+            z := col0[2] * normal.x + col1[2] * normal.y + col2[2] * normal.z;
+            normal.x = x;
+            normal.y = y;
+            normal.z = z;
+        }
+    }
+}
+
+par_shapes_scale :: (mesh : par_shapes_mesh, x : float, y : float, z : float)
+{
+    for * point : mesh.points {
+        point.x *= x;
+        point.y *= y;
+        point.z *= z;
+    }
+
+    if mesh.normals.count && (x != y || x != z || y != z) {
+        x = 1 / x;
+        y = 1 / y;
+        z = 1 / z;
+        for * normal : mesh.normals {
+            normal.x *= x;
+            normal.y *= y;
+            normal.z *= z;
+            <<normal = normalize(<<normal);
+        }
+    }
+}
+
+
+// void par_shapes_merge(par_shapes_mesh* dst, par_shapes_mesh const* src);
+// void par_shapes_merge_and_free(par_shapes_mesh* dst, par_shapes_mesh* src);
+
 
 #scope_file
 
