@@ -1,5 +1,4 @@
-// Based on https://github.com/prideout/par/blob/master/par_shapes.h
-// par_shapes is distributed under the MIT license. Copyright (c) 2019 Philip Rideout
+// Based on https://github.com/prideout/par
 
 #import "Basic";
 
@@ -102,6 +101,14 @@ test :: ()
         sphere := par_shapes_create_parametric_sphere(8, 5);
         par_shapes_export(sphere, "debug_sphere.obj");
         par_shapes_free_mesh(sphere);
+
+        hemisphere := par_shapes_create_hemisphere(8, 5);
+        par_shapes_export(hemisphere, "debug_hemisphere.obj");
+        par_shapes_free_mesh(hemisphere);
+
+        torus := par_shapes_create_torus(16, 16, .2);
+        par_shapes_export(torus, "debug_torus.obj");
+        par_shapes_free_mesh(torus);
     }
 
     print("Done writing debug_*.obj meshes\n");
@@ -136,7 +143,7 @@ par_shapes_fn :: #type (uv : Vector2, userdata : *void) -> Vector3;
 
 par_shapes_create_cylinder :: (slices : u32, stacks : u32) -> par_shapes_mesh
 {
-    if (slices < 3 || stacks < 1) {
+    if slices < 3 || stacks < 1 {
         return .{};
     }
     return par_shapes_create_parametric(par_shapes__cylinder, slices, stacks, null);
@@ -144,7 +151,7 @@ par_shapes_create_cylinder :: (slices : u32, stacks : u32) -> par_shapes_mesh
 
 par_shapes_create_cone :: (slices : u32, stacks : u32) -> par_shapes_mesh
 {
-    if (slices < 3 || stacks < 1) {
+    if slices < 3 || stacks < 1 {
         return .{};
     }
     return par_shapes_create_parametric(par_shapes__cone, slices, stacks, null);
@@ -159,7 +166,7 @@ par_shapes_create_disk :: (slices : u32, stacks : u32) -> par_shapes_mesh
 
 par_shapes_create_parametric_sphere :: (slices : u32, stacks : u32) -> par_shapes_mesh
 {
-    if (slices < 3 || stacks < 3) {
+    if slices < 3 || stacks < 3 {
         return .{};
     }
     m := par_shapes_create_parametric(par_shapes__sphere, slices, stacks, null);
@@ -169,70 +176,32 @@ par_shapes_create_parametric_sphere :: (slices : u32, stacks : u32) -> par_shape
 
 par_shapes_create_plane :: (slices : u32, stacks : u32) -> par_shapes_mesh
 {
-    if (slices < 1 || stacks < 1) {
+    if slices < 1 || stacks < 1 {
         return .{};
     }
     return par_shapes_create_parametric(par_shapes__plane, slices, stacks, null);
 }
 
-/*
-
-par_shapes_mesh* par_shapes_create_hemisphere(int slices, int stacks)
+par_shapes_create_hemisphere :: (slices : u32, stacks : u32) -> par_shapes_mesh
 {
-    if (slices < 3 || stacks < 3) {
-        return 0;
+    if slices < 3 || stacks < 3 {
+        return .{};
     }
-    par_shapes_mesh* m = par_shapes_create_parametric(par_shapes__hemisphere,
-        slices, stacks, 0);
-    par_shapes_remove_degenerate(m, par_shapes__epsilon_degenerate_sphere);
+    m := par_shapes_create_parametric(par_shapes__hemisphere, slices, stacks, null);
+    // par_shapes_remove_degenerate(m, par_shapes__epsilon_degenerate_sphere);
     return m;
 }
 
-par_shapes_mesh* par_shapes_create_torus(int slices, int stacks, float radius)
+par_shapes_create_torus :: (slices : u32, stacks : u32, radius : float) -> par_shapes_mesh
 {
-    if (slices < 3 || stacks < 3) {
-        return 0;
+    if slices < 3 || stacks < 3 {
+        return .{};
     }
-    assert(radius <= 1.0 && "Use smaller radius to avoid self-intersection.");
-    assert(radius >= 0.1 && "Use larger radius to avoid self-intersection.");
-    void* userdata = (void*) &radius;
-    return par_shapes_create_parametric(par_shapes__torus, slices,
-        stacks, userdata);
+    assert(radius <= 1.0); // Use smaller radius to avoid self-intersection.
+    assert(radius >= 0.1); // Use larger radius to avoid self-intersection.
+    userdata := cast(*void) *radius;
+    return par_shapes_create_parametric(par_shapes__torus, slices, stacks, userdata);
 }
-
-par_shapes_mesh* par_shapes_create_klein_bottle(int slices, int stacks)
-{
-    if (slices < 3 || stacks < 3) {
-        return 0;
-    }
-    par_shapes_mesh* mesh = par_shapes_create_parametric(
-        par_shapes__klein, slices, stacks, 0);
-    int face = 0;
-    for (int stack = 0; stack < stacks; stack++) {
-        for (int slice = 0; slice < slices; slice++, face += 2) {
-            if (stack < 27 * stacks / 32) {
-                par_shapes_invert(mesh, face, 2);
-            }
-        }
-    }
-    par_shapes__compute_welded_normals(mesh);
-    return mesh;
-}
-
-par_shapes_mesh* par_shapes_create_trefoil_knot(int slices, int stacks,
-    float radius)
-{
-    if (slices < 3 || stacks < 3) {
-        return 0;
-    }
-    assert(radius <= 3.0 && "Use smaller radius to avoid self-intersection.");
-    assert(radius >= 0.5 && "Use larger radius to avoid self-intersection.");
-    void* userdata = (void*) &radius;
-    return par_shapes_create_parametric(par_shapes__trefoil, slices,
-        stacks, userdata);
-}
-
-*/
 
 par_shapes_create_parametric :: (fn : par_shapes_fn, slices : u32, stacks : u32, userdata : *void) -> par_shapes_mesh
 {
@@ -467,10 +436,6 @@ par_shapes_merge :: (dst : par_shapes_mesh, src : par_shapes_mesh)
     }
 }
 
-// void par_shapes_merge(par_shapes_mesh* dst, par_shapes_mesh const* src);
-// void par_shapes_merge_and_free(par_shapes_mesh* dst, par_shapes_mesh* src);
-
-
 #scope_file
 
 #import "Math";
@@ -503,77 +468,22 @@ par_shapes__plane :: (uv : Vector2, userdata : *void) -> Vector3
     return make_vector3(uv.x, uv.y, 0);
 }
 
-
-/*
-
-static void par_shapes__hemisphere(float const* uv, float* xyz, void* userdata)
+par_shapes__hemisphere :: (uv : Vector2, userdata : *void) -> Vector3
 {
-    float phi = uv[0] * PAR_PI;
-    float theta = uv[1] * PAR_PI;
-    xyz[0] = cosf(theta) * sinf(phi);
-    xyz[1] = sinf(theta) * sinf(phi);
-    xyz[2] = cosf(phi);
+    phi := uv.x * PI;
+    theta := uv.y * PI;
+    return make_vector3(cos(theta) * sin(phi), sin(theta) * sin(phi), cos(phi));
 }
 
-static void par_shapes__klein(float const* uv, float* xyz, void* userdata)
+par_shapes__torus :: (uv : Vector2, userdata : *void) -> Vector3
 {
-    float u = uv[0] * PAR_PI;
-    float v = uv[1] * 2 * PAR_PI;
-    u = u * 2;
-    if (u < PAR_PI) {
-        xyz[0] = 3 * cosf(u) * (1 + sinf(u)) + (2 * (1 - cosf(u) / 2)) *
-            cosf(u) * cosf(v);
-        xyz[2] = -8 * sinf(u) - 2 * (1 - cosf(u) / 2) * sinf(u) * cosf(v);
-    } else {
-        xyz[0] = 3 * cosf(u) * (1 + sinf(u)) + (2 * (1 - cosf(u) / 2)) *
-            cosf(v + PAR_PI);
-        xyz[2] = -8 * sinf(u);
-    }
-    xyz[1] = -2 * (1 - cosf(u) / 2) * sinf(v);
+    major := 1;
+    minor := << (cast(*float) userdata);
+    theta := uv.x * 2 * PI;
+    phi := uv.y * 2 * PI;
+    beta := major + minor * cos(phi);
+    return make_vector3(cos(theta) * beta, sin(theta) * beta, sin(phi) * minor);
 }
-
-
-static void par_shapes__torus(float const* uv, float* xyz, void* userdata)
-{
-    float major = 1;
-    float minor = *((float*) userdata);
-    float theta = uv[0] * 2 * PAR_PI;
-    float phi = uv[1] * 2 * PAR_PI;
-    float beta = major + minor * cosf(phi);
-    xyz[0] = cosf(theta) * beta;
-    xyz[1] = sinf(theta) * beta;
-    xyz[2] = sinf(phi) * minor;
-}
-
-static void par_shapes__trefoil(float const* uv, float* xyz, void* userdata)
-{
-    float minor = *((float*) userdata);
-    const float a = 0.5f;
-    const float b = 0.3f;
-    const float c = 0.5f;
-    const float d = minor * 0.1f;
-    const float u = (1 - uv[0]) * 4 * PAR_PI;
-    const float v = uv[1] * 2 * PAR_PI;
-    const float r = a + b * cos(1.5f * u);
-    const float x = r * cos(u);
-    const float y = r * sin(u);
-    const float z = c * sin(1.5f * u);
-    float q[3];
-    q[0] =
-        -1.5f * b * sin(1.5f * u) * cos(u) - (a + b * cos(1.5f * u)) * sin(u);
-    q[1] =
-        -1.5f * b * sin(1.5f * u) * sin(u) + (a + b * cos(1.5f * u)) * cos(u);
-    q[2] = 1.5f * c * cos(1.5f * u);
-    par_shapes__normalize3(q);
-    float qvn[3] = {q[1], -q[0], 0};
-    par_shapes__normalize3(qvn);
-    float ww[3];
-    par_shapes__cross3(ww, q, qvn);
-    xyz[0] = x + d * (qvn[0] * cos(v) + ww[0] * sin(v));
-    xyz[1] = y + d * (qvn[1] * cos(v) + ww[1] * sin(v));
-    xyz[2] = z + d * ww[2] * sin(v);
-}
-*/
 
 /*
 par_shapes__compute_welded_normals :: (m : par_shapes_mesh) -> void
@@ -670,39 +580,6 @@ par_shapes_mesh* par_shapes_weld(par_shapes_mesh const* mesh, float epsilon, PAR
     par_shapes_translate(clone, aabb[0], aabb[1], aabb[2]);
     return clone;
 }
-
-void par_shapes_translate(par_shapes_mesh* m, float x, float y, float z)
-{
-    float* points = m->points;
-    for (int i = 0; i < m->npoints; i++) {
-        *points++ += x;
-        *points++ += y;
-        *points++ += z;
-    }
-}
-
-void par_shapes_scale(par_shapes_mesh* m, float x, float y, float z)
-{
-    float* points = m->points;
-    for (int i = 0; i < m->npoints; i++) {
-        *points++ *= x;
-        *points++ *= y;
-        *points++ *= z;
-    }
-    float* n = m->normals;
-    if (n && (x != y || x != z || y != z)) {
-        x = 1.0f / x;
-        y = 1.0f / y;
-        z = 1.0f / z;
-        for (int i = 0; i < m->npoints; i++, n += 3) {
-            n[0] *= x;
-            n[1] *= y;
-            n[2] *= z;
-            par_shapes__normalize3(n);
-        }
-    }
-}
-
 
 void par_shapes_compute_aabb(par_shapes_mesh const* m, float* aabb)
 {
