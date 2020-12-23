@@ -29,6 +29,12 @@ test :: ()
         par_shapes_rotate(x_cone, PI/2, Vector3.{0, 1, 0});
         par_shapes_export(x_cone, "debug_x_cone.obj");
         par_shapes_free_mesh(x_cone);
+        x_cone_base := par_shapes_create_disk(32, 1);
+        par_shapes_scale(x_cone_base, cone_radius, cone_radius, cone_length);
+        par_shapes_translate(x_cone_base, make_vector3(0, 0, axis_length));
+        par_shapes_rotate(x_cone_base, PI/2, Vector3.{0, 1, 0});
+        par_shapes_export(x_cone_base, "debug_x_cone_cap.obj");
+        par_shapes_free_mesh(x_cone_base);
 
         y_axis := par_shapes_create_cylinder(32, 1);
         par_shapes_scale(y_axis, axis_radius, axis_radius, axis_length);
@@ -61,6 +67,10 @@ test :: ()
     cone := par_shapes_create_cone(8, 5);
     par_shapes_export(cone, "debug_cone.obj");
     par_shapes_free_mesh(cone);
+
+    disk := par_shapes_create_disk(8, 5);
+    par_shapes_export(disk, "debug_disk.obj");
+    par_shapes_free_mesh(disk);
 
     plane := par_shapes_create_plane(8, 5);
     par_shapes_export(plane, "debug_plane.obj");
@@ -114,6 +124,13 @@ par_shapes_create_cone :: (slices : u32, stacks : u32) -> par_shapes_mesh
         return .{};
     }
     return par_shapes_create_parametric(par_shapes__cone, slices, stacks, null);
+}
+
+par_shapes_create_disk :: (slices : u32, stacks : u32) -> par_shapes_mesh
+{
+    m := par_shapes_create_cone(slices, stacks);
+    par_shapes_scale(m, 1, 1, 0);
+    return m;
 }
 
 par_shapes_create_parametric_sphere :: (slices : u32, stacks : u32) -> par_shapes_mesh
@@ -367,10 +384,21 @@ par_shapes_scale :: (mesh : par_shapes_mesh, x : float, y : float, z : float)
         point.z *= z;
     }
 
-    if mesh.normals.count && (x != y || x != z || y != z) {
-        x = 1 / x;
-        y = 1 / y;
-        z = 1 / z;
+    if mesh.normals.count && !(x == y && x == z) {
+        x_zero := (x == 0);
+        y_zero := (y == 0);
+        z_zero := (z == 0);
+
+        if !x_zero && !y_zero && !z_zero {
+            x = 1. / x;
+            y = 1. / y;
+            z = 1. / z;
+        } else {
+            x = ifx x_zero && !y_zero && !z_zero then 1. else 0.;
+            y = ifx y_zero && !x_zero && !z_zero then 1. else 0.;
+            z = ifx z_zero && !x_zero && !y_zero then 1. else 0.;
+        }
+
         for * normal : mesh.normals {
             normal.x *= x;
             normal.y *= y;
@@ -389,6 +417,8 @@ par_shapes_scale :: (mesh : par_shapes_mesh, x : float, y : float, z : float)
 
 #import "Math";
 #import "File";
+
+// @TODO use automatic differentiation here??
 
 par_shapes__cylinder :: (uv : Vector2, userdata : *void) -> Vector3
 {
