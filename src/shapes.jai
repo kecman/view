@@ -5,10 +5,6 @@
 #if 1 {
 test :: ()
 {
-    cylinder := par_shapes_create_cylinder(8, 5);
-    par_shapes_export(cylinder, "debug_cylinder.obj");
-    par_shapes_free_mesh(cylinder);
-
     Triad_Parameters :: struct {
         axis_radius : float;
         cone_length : float;
@@ -86,6 +82,10 @@ test :: ()
     par_shapes_export(origin, "debug_origin.obj");
 
     #if 0 {
+        cylinder := par_shapes_create_cylinder(8, 5);
+        par_shapes_export(cylinder, "debug_cylinder.obj");
+        par_shapes_free_mesh(cylinder);
+
         cone := par_shapes_create_cone(8, 5);
         par_shapes_export(cone, "debug_cone.obj");
         par_shapes_free_mesh(cone);
