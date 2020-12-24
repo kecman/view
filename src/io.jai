@@ -2,36 +2,6 @@
 // ex1. All verts, l with xy only and no z, or const z => polyline|polylinesoup
 // Probably polyline2 should have a z height too
 
-Vector2i :: struct {
-    x, y: int;
-
-#place x;
-    component: [2] float = ---;
-}
-
-make_vector2i :: (x : int, y : int) -> Vector2i {
-    v: Vector2i = ---;
-    v.x, v.y = x, y;
-    return v;
-}
-
-Vector3i :: struct {
-    x, y, z: int;
-
-#place x;
-    xy: Vector2i = ---;
-#place y;
-    yz: Vector2i = ---;
-
-#place x;
-    component: [3] int = ---;
-}
-
-make_vector3i :: (x : int, y : int, z : int) -> Vector3i {
-    v: Vector3i = ---;
-    v.x, v.y, v.z = x, y, z;
-    return v;
-}
 
 // @Incomplete use the temp allocator for all intermediate allocation? see the memory management how_to
 load_obj :: (filename : string) -> Mesh {
@@ -106,9 +76,10 @@ load_obj :: (filename : string) -> Mesh {
                 }
 
                 // obj indices are 1-based
-                array_add(*result.indices, cast(u32)triangle.indices.x - 1);
-                array_add(*result.indices, cast(u32)triangle.indices.y - 1);
-                array_add(*result.indices, cast(u32)triangle.indices.z - 1);
+                // TODO assert no overflow
+                array_add(*result.indices, cast(u32)triangle.indices[0] - 1);
+                array_add(*result.indices, cast(u32)triangle.indices[1] - 1);
+                array_add(*result.indices, cast(u32)triangle.indices[2] - 1);
             case;
                 error(handler, "Unexpected '%'.\n", rhs);
                 continue;
@@ -287,30 +258,30 @@ parse_upto_3d :: (handler : *Text_File_Handler, str : string) -> (vector : Vecto
 }
 
 Triangle :: struct {
-    indices : Vector3i = .{-1, -1, -1};
-    texture : Vector3i = .{-1, -1, -1};
-    normal : Vector3i = .{-1, -1, -1};
+    indices : [3]int = .[-1, -1, -1];
+    texture : [3]int = .[-1, -1, -1];
+    normal :  [3]int = .[-1, -1, -1];
 }
 
 parse_triangle :: (handler : *Text_File_Handler, str : string) -> Triangle {
     t : Triangle;
 
     if count(str, "/") == 0 {
-        ok := scan2(str, "% % %", *t.indices.x, *t.indices.y, *t.indices.z);
+        ok := scan2(str, "% % %", *t.indices[0], *t.indices[1], *t.indices[2]);
         if !ok error(<< handler, "Invalid 'f' line\n");
 
         return t;
     }
 
     if count(str, "//") == 3 {
-        ok := scan2(str, "%//% %//% %//%", *t.indices.x, *t.normal.x,
-                                           *t.indices.y, *t.normal.y,
-                                           *t.indices.z, *t.normal.z);
+        ok := scan2(str, "%//% %//% %//%", *t.indices[0], *t.normal[0],
+                                           *t.indices[1], *t.normal[1],
+                                           *t.indices[2], *t.normal[2]);
         if !ok error(<< handler, "Invalid 'f' line\n");
 
         for 0..2 {
-            if t.normal.component[it] != t.indices.component[it] {
-                msg := tprint("Expected identical normal and vertex indices, got % != %\n", t.normal.component[it], t.indices.component[it]);
+            if t.normal[it] != t.indices[it] {
+                msg := tprint("Expected identical normal and vertex indices, got % != %\n", t.normal[it], t.indices[it]);
                 error(<< handler, msg);
             }
         }
@@ -318,14 +289,14 @@ parse_triangle :: (handler : *Text_File_Handler, str : string) -> Triangle {
         return t;
     }
 
-    ok := scan2(str, "%/%/% %/%/% %/%/%", *t.indices.x, *t.texture.x, *t.normal.x,
-                                          *t.indices.y, *t.texture.y, *t.normal.y,
-                                          *t.indices.z, *t.texture.z, *t.normal.z);
+    ok := scan2(str, "%/%/% %/%/% %/%/%", *t.indices[0], *t.texture[0], *t.normal[0],
+                                          *t.indices[1], *t.texture[1], *t.normal[1],
+                                          *t.indices[2], *t.texture[2], *t.normal[2]);
     if !ok error(<< handler, "Invalid 'f' line\n");
 
     for 0..2 {
-        if t.normal.component[it] != t.indices.component[it] {
-            msg := tprint("Expected identical normal and vertex indices, got % != %\n", t.normal.component[it], t.indices.component[it]);
+        if t.normal[it] != t.indices[it] {
+            msg := tprint("Expected identical normal and vertex indices, got % != %\n", t.normal[it], t.indices[it]);
             error(<< handler, msg);
         }
     }

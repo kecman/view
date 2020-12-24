@@ -19,9 +19,11 @@ Mesh :: struct {
     color : Vector4;
 
     // @Cleanup Store array slices and put the allocator on the Mesh
+    // @Cleanup Store vertices/normals as a flat array to better support 2D polylines? Maybe 'subclass' mesh with using
     vertices :  [..]Vector3;
     normals :  [..]Vector3;
     indices : [..]u32;
+    // @Incomplete tcoords?
 }
 
 buffer_mesh :: (mesh : *Mesh) {
@@ -48,7 +50,7 @@ deinit_mesh :: (mesh : *Mesh) {
     mesh.ibo = 0;
     mesh.is_dirty = true;
 
-    // Attention: array_reset frees memory and zeros members
+    // Note: array_reset frees memory and zeros members
     array_reset(*mesh.vertices);
     array_reset(*mesh.normals);
     array_reset(*mesh.indices);
@@ -65,7 +67,11 @@ print_Mesh :: (mesh : Mesh) {
 
 bounding_box :: (using mesh : Mesh) -> AxisBox2 #must {
     // :OnlyRenderMeshType: @Cleanup implement this properly
-    for mesh.vertices if it.z != mesh.vertices[0].z assert(false);
+    // for mesh.vertices {
+    //     if it.z != mesh.vertices[0].z {
+    //         assert(false);
+    //     }
+    // }
 
     box : AxisBox2;
     init(*box);

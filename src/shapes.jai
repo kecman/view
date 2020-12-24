@@ -6,17 +6,21 @@ par_shapes_mesh :: struct
 {
     // TODO use array views and a single allocator
     points : [..]Vector3;
-    triangles : [..][3]u32;
+    Triangle :: [3]u32;
+    triangles : [..]Triangle;
+
     normals : [..]Vector3;
     tcoords : [..]Vector2;
 };
 
-par_shapes_free_mesh :: (mesh : par_shapes_mesh) -> void
+// @Cleanup pass a pointer for clarity
+deinit :: (mesh : par_shapes_mesh) -> void
 {
-    array_free(mesh.points);
-    array_free(mesh.triangles);
-    array_free(mesh.normals);
-    array_free(mesh.tcoords);
+    // Note: array_reset frees memory and zeros members
+    array_reset(*mesh.points);
+    array_reset(*mesh.triangles);
+    array_reset(*mesh.normals);
+    array_reset(*mesh.tcoords);
 }
 
 // Generators ------------------------------------------------------------------
@@ -384,7 +388,7 @@ par_shapes__compute_welded_normals :: (m : par_shapes_mesh) -> void
         pdst[2] = pnormal[2];
     }
     PAR_FREE(weldmap);
-    par_shapes_free_mesh(welded);
+    deinit(welded);
 }
 
 void par_shapes_compute_normals(par_shapes_mesh* m)

@@ -8,6 +8,11 @@ to_radians :: (degrees : float) -> float {
     return degrees * scale;
 }
 
+to_degrees :: (radians : float) -> float {
+    scale :: 180 / PI;
+    return radians * scale;
+}
+
 #scope_module
 
 check_vector :: (T : Type, loc := #caller_location) {

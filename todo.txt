@@ -1,3 +1,5 @@
+Implement camera orbiting
+
 [ ] Remove the corner rounding on the ui
 [ ] Implement sliding to show/hide the terminal
 [ ] Scroll to the bottom of the terminal
@@ -64,6 +66,8 @@ Plan
 [ ] Look at Hash_Table. It stores an array slice (`entries : []Entry;`), not a dynamic array [..], and has a separate allocator, should do the same for Polygon types
 [ ] Just log warnings and ignore the context allocator if it's not malloc, or create a new polygon allocated with malloc if passing to c
 [ ] Extend the imgui_inspector example to allow you to drag+drop jai files and have show you all the types in the file
+[ ] Use automatic differentiation in shape generation
+
 
 Command list
 [ ] save_obj <filename>, load_obj <filename> to load files (loading files by drag and drop should effectively run this command)
