@@ -38,6 +38,17 @@ polyline_vao : GLuint;
 
 show_ui := true;    // Wish we could declare static variables inside functions.
 
+mouse : Mouse_State;
+
+Mouse_State :: struct {
+    position_px : Vector2;
+    delta_px : Vector2;
+    wheel : float;
+    left_down : bool;
+    right_down : bool;
+    middle_down : bool;
+}
+
 // @TODO move this into the polyine struct
 VertexLabelStyle :: struct {
     show_position := false;
@@ -130,15 +141,6 @@ render_vertex_labels :: (points : []Vector3, style : VertexLabelStyle, label_ind
 
         render_text_quad(text_shader, text, text_position_px.xy, scale, make_vector4(1., 1., 1., 1));
     }
-}
-
-MouseState :: struct {
-    position_px : Vector2;
-    delta_px : Vector2;
-    wheel : float;
-    left_down : bool;
-    right_down : bool;
-    middle_down : bool;
 }
 
 die :: (loc := #caller_location) {
@@ -458,16 +460,15 @@ main :: () {
             case .ResizeNWSE;    SDL_SetCursor(cursor_resize_nwse);
         }
 
-        mouse_state : MouseState;
-        mouse_state.position_px = make_vector2(imgui_io.MousePos.x, imgui_io.MousePos.y);
-        mouse_state.delta_px = make_vector2(imgui_io.MouseDelta.x, imgui_io.MouseDelta.y);
-        mouse_state.wheel = imgui_io.MouseWheel;
-        mouse_state.left_down = imgui_io.MouseDown[0];
-        mouse_state.right_down = imgui_io.MouseDown[1];
-        mouse_state.middle_down = imgui_io.MouseDown[2];
+        mouse.position_px = make_vector2(imgui_io.MousePos.x, imgui_io.MousePos.y);
+        mouse.delta_px = make_vector2(imgui_io.MouseDelta.x, imgui_io.MouseDelta.y);
+        mouse.wheel = imgui_io.MouseWheel;
+        mouse.left_down = imgui_io.MouseDown[0];
+        mouse.right_down = imgui_io.MouseDown[1];
+        mouse.middle_down = imgui_io.MouseDown[2];
 
         if !imgui_io.WantCaptureMouse {
-            update_camera(*camera, 1, mouse_state);
+            update_camera(*camera, 1);
         }
 
         {

@@ -4,15 +4,14 @@
 FONT_SIZE :: 58;
 ASCII_COUNT :: 128;
 
+chars : Table(u32, Char); // @Speed We're generating a unique texture id per glyph.
+
 Char :: struct {
     texture_id : GLuint;
     bearing    : Vector2;
     size       : Vector2;
     advance    : s32;
 }
-
-// @Speed We're generating a unique texture id per glyph.
-chars : Table(u32, Char);
 
 init_font :: () {
     // FreeType Init

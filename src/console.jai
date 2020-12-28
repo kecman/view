@@ -1,5 +1,7 @@
 #load "commands.jai";
 
+console : Console;
+
 Command_Info :: struct {
     name : string;
     procedure : ([] string) -> void;
@@ -12,8 +14,6 @@ Console :: struct {
     log : [..]string;
     input_buffer : [256]u8;
 }
-
-console : Console;
 
 console_add_log :: (format_string: string, args: .. Any) {
     builder: String_Builder;
@@ -171,8 +171,6 @@ console_draw :: () {
 print_location :: (loc := #caller_location) {
     print("%:%\n", loc.fully_pathed_filename, loc.line_number);
 }
-
-#import "String";
 
 text_edit_callback :: (data : *ImGui.TextEditCallbackData) -> s32 #c_call {
 

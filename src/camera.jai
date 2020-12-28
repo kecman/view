@@ -48,7 +48,7 @@ init_camera :: () {
     camera.far = 400;
 }
 
-update_camera :: (camera : *Camera, delta_time : float, mouse : MouseState) {
+update_camera :: (camera : *Camera, delta_time : float) {
 
     camera.aspect_ratio_horizontal_over_vertical = cast(float) current_window_width / cast(float) current_window_height;
     aspect := camera.aspect_ratio_horizontal_over_vertical;
