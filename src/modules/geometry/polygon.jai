@@ -7,6 +7,7 @@ Ring :: struct (Point : Type) #modify check_vector(Point) {
     points : [..]Point; // last point == first point
 }
 
+// @Cleanup: remove _postfix
 deinit_ring :: (shape : *$T/Ring) {
     array_reset(*shape.points);
 }

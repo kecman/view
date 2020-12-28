@@ -67,7 +67,7 @@ Plan
 [ ] Just log warnings and ignore the context allocator if it's not malloc, or create a new polygon allocated with malloc if passing to c
 [ ] Extend the imgui_inspector example to allow you to drag+drop jai files and have show you all the types in the file
 [ ] Use automatic differentiation in shape generation
-
+[ ] Implement a view cube
 
 Command list
 [ ] save_obj <filename>, load_obj <filename> to load files (loading files by drag and drop should effectively run this command)

@@ -14,9 +14,12 @@ geom :: #import "geometry"; // @Cleanup just load this
 #load "camera.jai";
 #load "console.jai";
 #load "entities.jai";
+#load "mesh_utils.jai";
 //#load "commands.jai"; // @CompilerBug? loading this here and console.jai causes:Error: Redeclaration of variable 'command_list'. but I think this should work? Hmmm
 
 //#import "Debug";
+
+// @TODO put all globals into an App struct
 
 INITIAL_WINDOW_WIDTH  : s32 : 1280;
 INITIAL_WINDOW_HEIGHT : s32 : 720;
@@ -130,6 +133,7 @@ render_vertex_labels :: (points : []Vector3, style : VertexLabelStyle, label_ind
 }
 
 MouseState :: struct {
+    // @Cleanup use imgui terms? e.g., s/velocity/delta/
     position_px : Vector2;
     velocity_px : Vector2;
     wheel :       float;
@@ -255,6 +259,8 @@ main :: () {
     }
     */
 
+    triad := make_axes_triad(10);
+
     vertex_label_style : VertexLabelStyle;
 
     {
@@ -359,14 +365,19 @@ main :: () {
                             entity.shape = shape;
                             array_add(*entities, entity);
 
-                            print("Loaded file: '%'\n", dropped);
+                            logprint("view","Loaded 2d polyline soup file: '%'\n", dropped);
                             fit_on_screen();
 
-                        case .TRIANGLES; #through;
+                        case .TRIANGLES;
+                            entity := New(Mesh_Entity);
+                            entity.mesh = mesh;
+                            array_add(*entities, entity);
+                            logprint("view", "Loaded triangle mesh file: '%'\n", dropped);
+
                         case .POINTS; #through;
                         case .UNKNOWN; #through;
                         case;
-                            print("Skipped file: '%' (unsupported geometry type %)\n", dropped, mesh.geometry_format);
+                            logprint("view", "Skipped file: '%' (unsupported geometry type %)\n", dropped, mesh.geometry_format);
                             deinit_mesh(*mesh);
                             continue; // @Incomplete: support polygon types using wkt format
                     }
@@ -490,6 +501,7 @@ main :: () {
         // Rendering
         glViewport(0, 0, xx imgui_io.DisplaySize.x, xx imgui_io.DisplaySize.y);
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+        glEnable(GL_DEPTH_TEST);
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
         for entities {
             mesh := get_mesh(it);
@@ -498,6 +510,11 @@ main :: () {
                 render_vertex_labels(mesh.vertices, vertex_label_style);
             }
         }
+
+        render_mesh(triad.origin, .{point_size=0, line_width=1});
+        render_mesh(triad.x_axis, .{point_size=0, line_width=1});
+        render_mesh(triad.y_axis, .{point_size=0, line_width=1});
+        render_mesh(triad.z_axis, .{point_size=0, line_width=1});
 
         ImGui.Render();
 
