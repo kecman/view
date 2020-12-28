@@ -48,7 +48,7 @@ init_camera :: () {
     camera.far = 400;
 }
 
-update_camera :: (camera : *Camera, delta_time : float, mouse : *MouseState) {
+update_camera :: (camera : *Camera, delta_time : float, mouse : MouseState) {
 
     camera.aspect_ratio_horizontal_over_vertical = cast(float) current_window_width / cast(float) current_window_height;
     aspect := camera.aspect_ratio_horizontal_over_vertical;
@@ -75,7 +75,7 @@ update_camera :: (camera : *Camera, delta_time : float, mouse : *MouseState) {
 
         // Shoot ray through pixel along the look vector to hit a plane through the look position with the same normal
         curr_pan_point := get_pan_position(mouse.position_px, world_from_projection, <<camera);
-        prev_pan_point := get_pan_position(mouse.position_px - mouse.velocity_px, world_from_projection, <<camera);
+        prev_pan_point := get_pan_position(mouse.position_px - mouse.delta_px, world_from_projection, <<camera);
         increment := -(curr_pan_point - prev_pan_point);
 
         camera.eye_position += increment;
@@ -83,10 +83,10 @@ update_camera :: (camera : *Camera, delta_time : float, mouse : *MouseState) {
     }
 
     // Orbit about the look position using left button. Mouse delta is zero when current or previous mouse positions were invalid
-    if mouse.left_down && (mouse.velocity_px.x != 0 || mouse.velocity_px.y != 0) {
+    if mouse.left_down && (mouse.delta_px.x != 0 || mouse.delta_px.y != 0) {
 
         // Note: mouse_prev = mouse_pos - mouse_delta
-        prev_arcball_vector := arcball_vector(to_ndc(mouse.position_px - mouse.velocity_px));
+        prev_arcball_vector := arcball_vector(to_ndc(mouse.position_px - mouse.delta_px));
         curr_arcball_vector := arcball_vector(to_ndc(mouse.position_px));
 
         arcball_axis4_ndc := make_vector4(cross_product(prev_arcball_vector, curr_arcball_vector), 1);
@@ -105,18 +105,10 @@ update_camera :: (camera : *Camera, delta_time : float, mouse : *MouseState) {
         camera.up_direction = rotate(camera.up_direction, q);
     }
 
-    #if false { // maybe hold shift to do this and have middle button pan
-        // Rotate with middle down
-        if mouse.middle_down {
-            // @FIXME This screws up panning
-            camera.up_direction.xy = rotate(camera.up_direction.xy, 0.01 * mouse.velocity_px.y);
-        }
-    }
-
     // Zoom with right down or scrolling
     increment : float = 0;
     if mouse.right_down {
-        increment = xx -0.03 * mouse.velocity_px.y;
+        increment = xx -0.03 * mouse.delta_px.y;
     } else {
         increment = -mouse.wheel;
     }

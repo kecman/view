@@ -133,12 +133,11 @@ render_vertex_labels :: (points : []Vector3, style : VertexLabelStyle, label_ind
 }
 
 MouseState :: struct {
-    // @Cleanup use imgui terms? e.g., s/velocity/delta/
     position_px : Vector2;
-    velocity_px : Vector2;
-    wheel :       float;
-    left_down :   bool;
-    right_down :  bool;
+    delta_px : Vector2;
+    wheel : float;
+    left_down : bool;
+    right_down : bool;
     middle_down : bool;
 }
 
@@ -461,14 +460,14 @@ main :: () {
 
         mouse_state : MouseState;
         mouse_state.position_px = make_vector2(imgui_io.MousePos.x, imgui_io.MousePos.y);
-        mouse_state.velocity_px = make_vector2(imgui_io.MouseDelta.x, imgui_io.MouseDelta.y);
+        mouse_state.delta_px = make_vector2(imgui_io.MouseDelta.x, imgui_io.MouseDelta.y);
         mouse_state.wheel = imgui_io.MouseWheel;
         mouse_state.left_down = imgui_io.MouseDown[0];
         mouse_state.right_down = imgui_io.MouseDown[1];
         mouse_state.middle_down = imgui_io.MouseDown[2];
 
         if !imgui_io.WantCaptureMouse {
-            update_camera(*camera, 1, *mouse_state);
+            update_camera(*camera, 1, mouse_state);
         }
 
         {
