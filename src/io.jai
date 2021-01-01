@@ -94,6 +94,49 @@ load_obj :: (filename : string) -> Mesh {
     return result;
 }
 
+save_obj :: (filename : string, mesh : Mesh) -> bool
+{
+    // @Cleanup Are we calling file_close in the right places?
+
+    objfile, success :=  file_open(filename, for_writing=true, keep_existing_content=false);
+    if !success {
+        return false;
+    }
+
+    if mesh.geometry_format == .TRIANGLES {
+        if mesh.normals.count {
+            for i : 0..mesh.vertices.count-1 {
+                px, py, pz := mesh.vertices[i].x, mesh.vertices[i].y, mesh.vertices[i].z;
+                nx, ny, nz := mesh.normals[i].x, mesh.normals[i].y, mesh.normals[i].z;
+                file_write(*objfile, tprint("v % % %\n", px, py, pz));
+                file_write(*objfile, tprint("vn % % %\n", nx, ny, nz));
+            }
+            for i : 0..(mesh.indices.count/3)-1 {
+                a := 1 + mesh.indices[3 * i + 0];
+                b := 1 + mesh.indices[3 * i + 1];
+                c := 1 + mesh.indices[3 * i + 2];
+                file_write(*objfile, tprint("f %//% %//% %//%\n", a, a, b, b, c, c));
+            }
+        } else {
+            for i : 0..mesh.vertices.count-1 {
+                file_write(*objfile, tprint("v % % %\n", mesh.vertices[i].x, mesh.vertices[i].y, mesh.vertices[i].z));
+            }
+            for i : 0..(mesh.indices.count/3)-1 {
+                a := 1 + mesh.indices[3 * i + 0];
+                b := 1 + mesh.indices[3 * i + 1];
+                c := 1 + mesh.indices[3 * i + 2];
+                file_write(*objfile, tprint("f % % %\n", a, b, c));
+            }
+        }
+    } else {
+        print("@Incomplete save_obj only supports TRIANGLE geometry format, got %\n", mesh.geometry_format);
+        return false;
+    }
+
+    file_close(*objfile);
+    return true;
+}
+
 to_Mesh :: (shape : Polyline_Soup2) -> Mesh, bool #must {
     mesh : Mesh;
 
