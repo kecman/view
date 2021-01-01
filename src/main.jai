@@ -38,17 +38,6 @@ polyline_vao : GLuint;
 
 show_ui := true;    // Wish we could declare static variables inside functions.
 
-mouse : Mouse_State;
-
-Mouse_State :: struct {
-    position_px : Vector2;
-    delta_px : Vector2;
-    wheel : float;
-    left_down : bool;
-    right_down : bool;
-    middle_down : bool;
-}
-
 // @TODO move this into the polyine struct
 VertexLabelStyle :: struct {
     show_position := false;
@@ -295,8 +284,6 @@ main :: () {
     // ImGui.StyleColorsLight();
     ImGui.StyleColorsDark();
 
-    imgui_io := ImGui.GetIO();
-
     show_demo_window := false;
     // clear_color := make_vector4(0.45, 0.55, 0.60, 1.00);
     // clear_color := make_vector4(87./256, 194./256, 248./256, 1.00); // light blue
@@ -394,10 +381,6 @@ main :: () {
 
             #if false {
                 if ImGui.Button("Demo Window", size=*make_vector2(0,0)) show_demo_window ^= true;
-                ImGui.Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0 / imgui_io.Framerate, imgui_io.Framerate);
-                w, h : s32;
-                SDL_GetWindowSize(window, *w, *h);
-                ImGui.Text(tprint("Window size %1x%2", w, h));
                 if show_demo_window {
                     ImGui.SetNextWindowPos(*make_vector2(650, 20), ImGui.Cond.FirstUseEver, *make_vector2(0,0));
                     ImGui.ShowDemoWindow(*show_demo_window);
@@ -413,11 +396,16 @@ main :: () {
                 return to_c_string(concatenate(label, tprint("##%", ptr)));
             }
 
+            ImGui.Text(" ");
+            ImGui.SameLine();
+            ImGui.Checkbox("World Axes", *triad.origin.visible);
+            set_visibility(*triad, triad.origin.visible);
+
             entity_to_remove := -1;
             for entities {
                 mesh := get_mesh(it);
                 if mesh {
-                    ImGui.Text("%", it_index);
+                    ImGui.Text(to_c_string(tprint("%", it_index)));
                     ImGui.SameLine();
                     ImGui.Checkbox(imgui_label(path_filename(mesh.fully_pathed_filename), it), *mesh.visible);
                     ImGui.SameLine();
@@ -460,14 +448,7 @@ main :: () {
             case .ResizeNWSE;    SDL_SetCursor(cursor_resize_nwse);
         }
 
-        mouse.position_px = make_vector2(imgui_io.MousePos.x, imgui_io.MousePos.y);
-        mouse.delta_px = make_vector2(imgui_io.MouseDelta.x, imgui_io.MouseDelta.y);
-        mouse.wheel = imgui_io.MouseWheel;
-        mouse.left_down = imgui_io.MouseDown[0];
-        mouse.right_down = imgui_io.MouseDown[1];
-        mouse.middle_down = imgui_io.MouseDown[2];
-
-        if !imgui_io.WantCaptureMouse {
+        if !io().WantCaptureMouse {
             update_camera(*camera, 1);
         }
 
@@ -499,7 +480,7 @@ main :: () {
         }
 
         // Rendering
-        glViewport(0, 0, xx imgui_io.DisplaySize.x, xx imgui_io.DisplaySize.y);
+        glViewport(0, 0, xx io().DisplaySize.x, xx io().DisplaySize.y); // @TODO Is DisplaySize updated with window resizing? Use current_window_height/width here?
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glEnable(GL_DEPTH_TEST);
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
@@ -532,7 +513,7 @@ main :: () {
             render_text_quad(text_shader,
                              text,
                              // make_vector2(25.0, WINDOW_HEIGHT - FONT_SIZE * scale),
-                             make_vector2(imgui_io.MousePos.x, current_window_height - imgui_io.MousePos.y),
+                             make_vector2(io().MousePos.x, current_window_height - io().MousePos.y),
                              scale,
                              make_vector4(1., 1., 1., 1));
         }

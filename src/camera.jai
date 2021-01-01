@@ -49,6 +49,9 @@ init_camera :: () {
 }
 
 update_camera :: (camera : *Camera, delta_time : float) {
+    if io().MouseDelta.x == 0 && io().MouseDelta.y == 0 {
+        return; // Mouse delta is zero when current or previous mouse positions were invalid
+    }
 
     camera.aspect_ratio_horizontal_over_vertical = cast(float) current_window_width / cast(float) current_window_height;
     aspect := camera.aspect_ratio_horizontal_over_vertical;
@@ -59,7 +62,7 @@ update_camera :: (camera : *Camera, delta_time : float) {
     world_from_projection := inverse(projection_from_view * view_from_world);
 
     // Pan with middle down.
-    if mouse.middle_down {
+    if io_mouse_middle_down() {
 
         get_pan_position :: (mouse_position_px : Vector2, transform : Matrix4, camera : Camera) -> Vector3 {
             plane := make_hyperplane3(unit_vector(camera.eye_position - camera.look_position), camera.look_position);
@@ -74,20 +77,22 @@ update_camera :: (camera : *Camera, delta_time : float) {
         }
 
         // Shoot ray through pixel along the look vector to hit a plane through the look position with the same normal
-        curr_pan_point := get_pan_position(mouse.position_px, world_from_projection, <<camera);
-        prev_pan_point := get_pan_position(mouse.position_px - mouse.delta_px, world_from_projection, <<camera);
+        curr_pan_point := get_pan_position(io().MousePos, world_from_projection, <<camera);
+        prev_pan_point := get_pan_position(io().MousePos - io().MouseDelta, world_from_projection, <<camera);
         increment := -(curr_pan_point - prev_pan_point);
 
         camera.eye_position += increment;
         camera.look_position += increment;
     }
 
-    // Orbit about the look position using left button. Mouse delta is zero when current or previous mouse positions were invalid
-    if mouse.left_down && (mouse.delta_px.x != 0 || mouse.delta_px.y != 0) {
+    // Orbit about the look position using left button
+    if io_mouse_left_down() {
 
         // Note: mouse_prev = mouse_pos - mouse_delta
-        prev_arcball_vector := arcball_vector(to_ndc(mouse.position_px - mouse.delta_px));
-        curr_arcball_vector := arcball_vector(to_ndc(mouse.position_px));
+        // @TODO make a sphere by using the window height/width
+        prev_arcball_vector := arcball_vector(to_ndc(io().MousePos - io().MouseDelta));
+        curr_arcball_vector := arcball_vector(to_ndc(io().MousePos));
+
 
         arcball_axis4_ndc := make_vector4(cross_product(prev_arcball_vector, curr_arcball_vector), 1);
         arcball_axis_world := (world_from_projection * arcball_axis4_ndc).xyz;
@@ -106,21 +111,23 @@ update_camera :: (camera : *Camera, delta_time : float) {
     }
 
     // Zoom with right down or scrolling
-    increment : float = 0;
-    if mouse.right_down {
-        increment = xx -0.03 * mouse.delta_px.y;
-    } else {
-        increment = -mouse.wheel;
-    }
-    camera.top += increment;
-    camera.bottom -= increment;
-    camera.right += aspect * increment;
-    camera.left -= aspect * increment;
+    {
+        increment : float = 0;
+        if io_mouse_right_down() {
+            increment = xx -0.03 * io().MouseDelta.y;
+        } else {
+            increment = -io().MouseWheel;
+        }
+        camera.top += increment;
+        camera.bottom -= increment;
+        camera.right += aspect * increment;
+        camera.left -= aspect * increment;
 
-    camera.top = max(camera.top, 0.1);
-    camera.bottom = min(camera.bottom, -0.1);
-    camera.right = max(camera.right, aspect * 0.1);
-    camera.left = min(camera.left, -aspect * 0.1);;
+        camera.top = max(camera.top, 0.1);
+        camera.bottom = min(camera.bottom, -0.1);
+        camera.right = max(camera.right, aspect * 0.1);
+        camera.left = min(camera.left, -aspect * 0.1);;
+    }
 
     // print("update_camera: %\n", << camera);
 }
@@ -187,6 +194,11 @@ make_orthographic_projection_matrix :: (using camera : *Camera) -> Matrix4 #must
     return orthographic_projection_matrix(left, right, bottom, top, near, far);
 }
 
+io :: () -> *ImGui.IO {return ImGui.GetIO(); }
+io_mouse_left_down :: () -> bool { return io().MouseDown[0]; }
+io_mouse_right_down :: () -> bool { return io().MouseDown[1]; }
+io_mouse_middle_down :: () -> bool { return io().MouseDown[2]; }
+
 #scope_file
 
 //
@@ -197,7 +209,7 @@ make_orthographic_projection_matrix :: (using camera : *Camera) -> Matrix4 #must
 //
 // See  https://en.wikibooks.org/wiki/OpenGL_Programming/Modern_OpenGL_Tutorial_Arcball
 arcball_vector :: (pos_ndc : Vector2) -> Vector3 {
-    using result := make_vector3(pos_ndc.x, pos_ndc.y, 0);
+    using result := make_vector3(pos_ndc, 0);
     d2 := x*x + y*y;
     if d2 <= 1. {
         z = sqrt(1. - d2);
@@ -216,7 +228,6 @@ to_ndc :: (position_px : Vector2) -> Vector2
     position_ndc.y *= -1; // (-1,-1) => bottom-left of screen, (+1,+1) => top-right of screen
     return position_ndc;
 }
-
 
 geom :: #import "geometry";
 #load "numeric.jai";

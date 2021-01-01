@@ -45,8 +45,8 @@ buffer_mesh :: (mesh : *Mesh) {
 }
 
 deinit_mesh :: (mesh : *Mesh) {
-    if !mesh.vbo glDeleteBuffers(1, *mesh.vbo);
-    if !mesh.ibo glDeleteBuffers(1, *mesh.ibo);
+    if mesh.vbo glDeleteBuffers(1, *mesh.vbo);
+    if mesh.ibo glDeleteBuffers(1, *mesh.ibo);
 
     mesh.vbo = 0;
     mesh.ibo = 0;
