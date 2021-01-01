@@ -11,7 +11,7 @@ AxisBox :: struct(Point : Type) {
 init :: (using box : *$T/AxisBox) {
     FLOAT32_NEGATIVE_INFINITY :: 0hFF800000; // @Cleanup: -FLOAT32_INFINITY?
 
-    dim :: 2;
+    dim :: #run vector_dimension(T.Point);
     for d : 0..dim-1 {
         min_point.component[d] = FLOAT32_INFINITY;
         max_point.component[d] = FLOAT32_NEGATIVE_INFINITY;
