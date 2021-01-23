@@ -1,9 +1,3 @@
-Implement camera orbiting
-
-[ ] Remove the corner rounding on the ui
-[ ] Implement sliding to show/hide the terminal
-[ ] Scroll to the bottom of the terminal
-
 Complete
 [x] Implement pan with the holding down the middle button
 [x] Implement zoom with the scroll wheel
@@ -23,8 +17,15 @@ Complete
 [x] Port the imgui 1.53 console to jai and use it to call the offset function
 [x] Command history and tab completion
 [x] Cleanup memory management for jai types (entities > meshes > shapes) :Cleanup_Construction_Destruction:
+[x] Implement camera orbiting
 
 Plan
+[ ] Fix viewport resizing
+[ ] 3D mesh shading and lights in the scene
+
+[ ] Remove the corner rounding on the ui
+[ ] Implement sliding to show/hide the terminal
+[ ] Scroll to the bottom of the terminal
 [ ] Cleanup memory management for things returned by boost polygon module, should copy them on jai side and add a function to the bindings which free the mesh :Cleanup_Construction_Destruction:
 [ ] Show points in the specific entity, not on the mesh, so this works better with polygons
 [ ] Transparency with order as it is in the entity list
@@ -33,7 +34,6 @@ Plan
 [ ] Cleanup construction/destruction: make functions to do that
 [ ] Support polygons and polygon soups, and do convex decomposition for rendering
 [ ] Support loading wkt file format
-[ ] Support 3D mesh rendering
 [ ] Cleanup text rendering, it's so slow right now!
 [-] :OnlyRenderMeshType: Refactor to only render the Mesh type
 [ ] Hash filename to colours
