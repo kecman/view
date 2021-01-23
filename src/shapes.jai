@@ -245,15 +245,13 @@ par_shapes_rotate :: (mesh : par_shapes_mesh, radians : float, axis : Vector3) {
     }
 
     // @TODO @Bug is this rotating normals correctly? No inverse transpose?
-    if mesh.normals.count {
-        for * normal : mesh.normals {
-            x := col0[0] * normal.x + col1[0] * normal.y + col2[0] * normal.z;
-            y := col0[1] * normal.x + col1[1] * normal.y + col2[1] * normal.z;
-            z := col0[2] * normal.x + col1[2] * normal.y + col2[2] * normal.z;
-            normal.x = x;
-            normal.y = y;
-            normal.z = z;
-        }
+    for * normal : mesh.normals {
+        x := col0[0] * normal.x + col1[0] * normal.y + col2[0] * normal.z;
+        y := col0[1] * normal.x + col1[1] * normal.y + col2[1] * normal.z;
+        z := col0[2] * normal.x + col1[2] * normal.y + col2[2] * normal.z;
+        normal.x = x;
+        normal.y = y;
+        normal.z = z;
     }
 }
 
@@ -265,7 +263,7 @@ par_shapes_scale :: (mesh : par_shapes_mesh, x : float, y : float, z : float)
         point.z *= z;
     }
 
-    if mesh.normals.count && !(x == y && x == z) {
+    if !(x == y && x == z) {
         x_zero := (x == 0);
         y_zero := (y == 0);
         z_zero := (z == 0);
