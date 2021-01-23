@@ -27,6 +27,10 @@ INITIAL_WINDOW_HEIGHT : s32 : 720;
 current_window_width := INITIAL_WINDOW_WIDTH;
 current_window_height := INITIAL_WINDOW_HEIGHT;
 
+current_window_aspect_ratio_width_over_height :: () -> float {
+    return cast(float) current_window_width / cast(float) current_window_height;
+}
+
 text_shader : GLuint;
 text_vao : GLuint;
 text_vbo : GLuint;
@@ -80,7 +84,7 @@ render_mesh :: (mesh : Mesh, style : VertexLabelStyle) {
     last_polygon_mode: [2]GLuint;
     glGetIntegerv(GL_POLYGON_MODE, xx last_polygon_mode.data);
     defer glPolygonMode(GL_FRONT_AND_BACK, last_polygon_mode[0]);
-    
+
     if mesh.wireframe {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     } else {
@@ -130,6 +134,17 @@ render_vertex_labels :: (points : []Vector3, style : VertexLabelStyle, label_ind
 
         render_text_quad(text_shader, text, text_position_px.xy, scale, make_vector4(1., 1., 1., 1));
     }
+}
+
+printv :: (a : Code) #expand {
+    get_ident_name :: (code : Code) -> string {
+        root := compiler_get_nodes(code);
+        assert(root.kind == .IDENT);
+        ident := cast(*Code_Ident) root;
+        return ident.name;
+    }
+
+    print("% = %\n", #run get_ident_name(a), #insert a);
 }
 
 die :: (loc := #caller_location) {
@@ -448,8 +463,9 @@ main :: () {
             case .ResizeNWSE;    SDL_SetCursor(cursor_resize_nwse);
         }
 
-        if !io().WantCaptureMouse {
-            update_camera(*camera, 1);
+        if ImGui.IsMouseClicked(0) {
+            mouse_down_pos = io().MousePos;
+            camera_at_mouse_down = camera;
         }
 
         {
@@ -484,6 +500,11 @@ main :: () {
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glEnable(GL_DEPTH_TEST);
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+        // Update after clearing viewport so we can debug visualise stuff
+        // @Cleanup: use delta_time argument?
+        update_camera(1);
+
         for entities {
             mesh := get_mesh(it);
             if mesh && mesh.visible {

@@ -25,6 +25,14 @@ Axes_Triad :: struct {
     origin : Mesh;
 }
 
+set_visibility :: (using triad : *Axes_Triad, visibility : bool)
+{
+    x_axis.visible = visibility;
+    y_axis.visible = visibility;
+    z_axis.visible = visibility;
+    origin.visible = visibility;
+}
+
 make_axes_triad :: (axis_length : float) -> Axes_Triad
 {
     par_shapes_triad := make_triad(axis_length);

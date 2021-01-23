@@ -1,13 +1,30 @@
 #import "Math";
 
-angle :: (a : Vector3, b : Vector3, $normalize : bool = false) -> float {
-    #if normalize {
-        a = normalize(a);
-        b = normalize(b);
+/*
+FLOAT_MACHINE_EPSILON :: 0.0001; // @FIXME
+
+almost_equal :: (a : float, b : float, epsilon : float = 10 * FLOAT_MACHINE_EPSILON, scale : float = 1.0) -> bool
+{
+    // exact comparison allows to handle infinities and prevents from getting FPE triggered by (inf - inf)
+    exactly_equal := (a == b);
+    return exactly_equal || (abs(a - b) < epsilon * (scale + abs(a) + abs(b)));
+}
+*/
+
+angle :: (a : Vector3, b : Vector3, normalize : bool = false) -> float
+{
+    if normalize {
+        // @Cleanup make this #if and use a = normalize(a), currently this looks like a @CompilerBug
+        normalize_or_z_axis(*a);
+        normalize_or_z_axis(*b);
+        // a = normalize(a);
+        // b = normalize(b);
     }
     // Following https://people.eecs.berkeley.edu/~wkahan/MathH110/Cross.pdf
     return 2 * atan2(length(a - b), length(a + b));
 }
+
+angle_unit :: #bake_arguments angle(normalize = false);
 
 /*
 Bivector3 :: struct {
