@@ -7,8 +7,7 @@ Ring :: struct (Point : Type) #modify check_vector(Point) {
     points : [..]Point; // last point == first point
 }
 
-// @Cleanup: remove _postfix
-deinit_ring :: (shape : *$T/Ring) {
+deinit :: (shape : *$T/Ring) {
     array_reset(*shape.points);
 }
 
@@ -18,9 +17,9 @@ Polygon :: struct (Point : Type) #modify check_vector(Point) {
     inner_rings : [..]Ring(Point);
 }
 
-deinit_polygon :: (shape : *$T/Polygon) {
-    deinit_ring(*shape.outer_ring);
-    for * shape.inner_rings deinit_ring(it);
+deinit :: (shape : *$T/Polygon) {
+    deinit(*shape.outer_ring);
+    for * shape.inner_rings deinit(it);
     array_reset(*shape.inner_rings);
 }
 
@@ -28,8 +27,8 @@ Polygon_Soup :: struct (Point : Type) #modify check_vector(Point) {
     polygons : [..]Polygon(Point);
 }
 
-deinit_polygon_soup :: (shape : *$T/Polygon_Soup) {
-    for * shape.polygons deinit_polygon(it);
+deinit :: (shape : *$T/Polygon_Soup) {
+    for * shape.polygons deinit(it);
     array_reset(*shape.polygons);
 }
 

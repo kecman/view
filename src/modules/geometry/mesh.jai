@@ -44,7 +44,7 @@ buffer_mesh :: (mesh : *Mesh) {
     }
 }
 
-deinit_mesh :: (mesh : *Mesh) {
+deinit :: (mesh : *Mesh) {
     if mesh.vbo glDeleteBuffers(1, *mesh.vbo);
     if mesh.ibo glDeleteBuffers(1, *mesh.ibo);
 
@@ -83,3 +83,6 @@ bounding_box :: (using mesh : Mesh) -> AxisBox2 #must {
     return box;
 }
 
+#scope_file
+
+#import "GL"; // needed since Mesh stores GLuint

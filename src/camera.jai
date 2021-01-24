@@ -115,7 +115,7 @@ update_camera :: (delta_time : float) {
                 par_shapes_translate(debug_mesh_ps, camera.look_position);
 
                 debug_mesh := to_Mesh(debug_mesh_ps);
-                defer deinit_mesh(*debug_mesh);
+                defer deinit(*debug_mesh);
                 buffer_mesh(*debug_mesh);
                 debug_mesh.wireframe = true;
                 debug_mesh.color = color;

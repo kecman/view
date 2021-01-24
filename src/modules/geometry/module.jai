@@ -28,6 +28,3 @@ vector_dimension :: (T : Type, loc := #caller_location) -> int {
     compiler_report_error(loc.fully_pathed_filename, loc.line_number, 0, "Expected Vector2 or Vector3");
     return -1;
 }
-
-#import "Math";
-#import "GL";

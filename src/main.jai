@@ -161,7 +161,10 @@ main :: () {
 
     SDL_Init(SDL_INIT_VIDEO);
 
-    window := SDL_CreateWindow(tprint("View v%", VIEW_VERSION_STRING).data, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);
+    window := SDL_CreateWindow(tprint("View v%", VIEW_VERSION_STRING).data,
+                               SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                               INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT,
+                               SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);
 
     // Check that the window was successfully created
     if window == null {
@@ -381,7 +384,7 @@ main :: () {
                         case .UNKNOWN; #through;
                         case;
                             logprint("view", "Skipped file: '%' (unsupported geometry type %)\n", dropped, mesh.geometry_format);
-                            deinit_mesh(*mesh);
+                            deinit(*mesh);
                             continue; // @Incomplete: support polygon types using wkt format
                     }
                 }
@@ -436,7 +439,7 @@ main :: () {
             }
 
             if entity_to_remove >= 0 && entity_to_remove < entities.count {
-                deinit_entity(entities[entity_to_remove]);
+                deinit(entities[entity_to_remove]);
                 free(entities[entity_to_remove]);
                 array_ordered_remove_by_index(*entities, entity_to_remove);
             }

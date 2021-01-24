@@ -35,21 +35,21 @@ Mesh_Entity :: struct {
     mesh : Mesh;
 }
 
-deinit_entity :: (base : *Entity) {
+deinit :: (base : *Entity) {
     if #complete base.type == {
         case .POLYLINE_SOUP2; {
             entity := cast(*Polyline_Soup2_Entity)base;
-            deinit_mesh(*entity.mesh);
-            deinit_polyline_soup(*entity.shape);
+            deinit(*entity.mesh);
+            deinit(*entity.shape);
         }
         case .POLYGON_SOUP2; {
             entity := cast(*Polygon_Soup2_Entity)base;
-            deinit_mesh(*entity.mesh);
-            deinit_polygon_soup(*entity.shape);
+            deinit(*entity.mesh);
+            deinit(*entity.shape);
         }
         case .MESH; {
             entity := cast(*Mesh_Entity)base;
-            deinit_mesh(*entity.mesh);
+            deinit(*entity.mesh);
         }
         case .UNKNOWN;
         case .FLOAT;
