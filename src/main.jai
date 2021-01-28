@@ -326,6 +326,33 @@ main :: () {
                 case SDL_QUIT; {
                     done = true;
                 }
+
+
+
+                case SDL_WINDOWEVENT;
+                    if event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED {
+
+                        // suppose f > 1
+                        // l - (fL - L)/2 = l + (1 - f)L/2
+                        // r + (fL - L)/2 = r - (1 - f)L/2
+                        // suppose f < 1
+                        // l + (L - fL)/2
+                        // r - (L - fL)/2
+
+                        width_scale := event.window.data1 / current_window_width;
+                        height_scale := event.window.data2 / current_window_height;
+                        current_window_width = event.window.data1;
+                        current_window_height = event.window.data2;
+
+                        printv(#code current_window_width);
+
+                        // camera_delta_rl := (1. - width_scale) * (camera.right - camera.left) / 2;
+                        // camera_delta_tb := (1. - height_scale) * (camera.top - camera.bottom) / 2;
+                        // camera.right -= camera.right - camera_delta_rl;
+                        // camera.left += camera.left - camera_delta_rl;
+                        // camera.top -= camera.top - camera_delta_tb;
+                        // camera.bottom += camera.bottom - camera_delta_tb;
+                    }
                 case SDL_KEYUP; {
                     if event.key.keysym.sym == SDLK_ESCAPE done = true;
                     if event.key.keysym.sym == SDLK_r fit_on_screen();
@@ -410,7 +437,7 @@ main :: () {
             if ImGui.Button("Cycle vertex style (V)", size=*make_vector2(0,0)) cycle_vertex_label_style(*vertex_label_style);
             if ImGui.Button("Cycle line style   (L)", size=*make_vector2(0,0)) cycle_line_style(*vertex_label_style);
 
-            imgui_label :: (label : string, ptr : *void) -> c_string {
+            imgui_label :: (label : string, ptr : *void) -> *u8 {
                 return to_c_string(concatenate(label, tprint("##%", ptr)));
             }
 
