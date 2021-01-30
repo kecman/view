@@ -40,7 +40,8 @@ mesh_vao : GLuint;
 polyline_shader : GLuint;
 polyline_vao : GLuint;
 
-show_ui := true;    // Wish we could declare static variables inside functions.
+show_ui := true;
+show_console_ui := true;
 
 // @TODO move this into the polyine struct
 VertexLabelStyle :: struct {
@@ -353,6 +354,15 @@ main :: () {
                         // camera.top -= camera.top - camera_delta_tb;
                         // camera.bottom += camera.bottom - camera_delta_tb;
                     }
+                case SDL_KEYDOWN; {
+                    if event.key.keysym.sym == SDLK_BACKQUOTE {
+                        if SDL_GetModState() & KMOD_CTRL {
+                            show_ui = !show_ui;
+                        } else {
+                            show_console_ui = !show_console_ui;
+                        }
+                    }
+                }
                 case SDL_KEYUP; {
                     if event.key.keysym.sym == SDLK_ESCAPE done = true;
                     if event.key.keysym.sym == SDLK_r fit_on_screen();
@@ -417,11 +427,13 @@ main :: () {
                 }
             }
         }
+
+        ImGui.GetStyle().WindowRounding = 0;
         ImGui_ImplSdl_NewFrame(window);
 
-        {
+        if show_ui {
             ImGui.SetNextWindowPos(pos=*make_vector2(10, 10), pivot=*make_vector2(0,0));
-            ImGui.Begin("", *show_ui, ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar);
+            ImGui.Begin("", flags = ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar);
             ImGui.ColorEdit4("Background Color", clear_color.component, ImGui.ColorEditFlags.NoInputs);
 
             #if false {
