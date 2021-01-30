@@ -18,12 +18,12 @@ Complete
 [x] Command history and tab completion
 [x] Cleanup memory management for jai types (entities > meshes > shapes) :Cleanup_Construction_Destruction:
 [x] Implement camera orbiting
+[x] Fix viewport resizing
+[x] Dont distort geometry in non-square viewports
+[x] Remove the corner rounding on the ui
 
 Plan
-[ ] Fix viewport resizing
 [ ] 3D mesh shading and lights in the scene
-
-[ ] Remove the corner rounding on the ui
 [ ] Implement sliding to show/hide the terminal
 [ ] Scroll to the bottom of the terminal
 [ ] Cleanup memory management for things returned by boost polygon module, should copy them on jai side and add a function to the bindings which free the mesh :Cleanup_Construction_Destruction:
@@ -53,7 +53,6 @@ Plan
 [ ] Some kind of ui cooldown for removing files? So that you don't loose track of what's being deleted
 [ ] If file is hovered in the list then make it flash to white and back, and draw it lastt 
 [ ] Make orbitting/rotatoin work based on the relation between the cursor position and the CoM of the visible shape? or orbit location
-[ ] Dont distort geometry in non-square viewports
 [ ] Zoom to origin
 [ ] Show grid lines and label
 [ ] Transform entities
