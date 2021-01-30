@@ -4,32 +4,32 @@ init_commands :: () {
         info : Command_Info;
         info.name = "offset";
         info.procedure = tmp_offset;
-        array_add(*console.commands, info);
+        array_add(*app.console.commands, info);
     }
 
     {
         info : Command_Info;
         info.name = "clockwise_boundaries";
         info.procedure = tmp_clockwise_boundaries;
-        array_add(*console.commands, info);
+        array_add(*app.console.commands, info);
     }
 
     {
         info : Command_Info;
         info.name = "history";
         info.procedure = command_history_boiler_plate;
-        array_add(*console.commands, info);
+        array_add(*app.console.commands, info);
     }
 
     {
         info : Command_Info;
         info.name = "clear";
         info.procedure = command_clear_boiler_plate;
-        array_add(*console.commands, info);
+        array_add(*app.console.commands, info);
     }
 
     {
-        info := array_add(*console.commands);
+        info := array_add(*app.console.commands);
         info.name = "help";
         info.procedure = command_help_boiler_plate;
     }
@@ -38,7 +38,7 @@ init_commands :: () {
 #scope_file
 
 command_history :: () {
-    for console.history {
+    for app.console.history {
         console_add_log("# % %", it_index, it);
     }
 } @ConsoleCommand
@@ -49,7 +49,7 @@ command_clear :: () {
 
 command_help :: () {
     console_add_log("# Available commands:");
-    for console.commands {
+    for app.console.commands {
         console_add_log("#  %", it.name); // @Incomplete write usage here too, or write the procedure parameters
     }
 } @ConsoleCommand

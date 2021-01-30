@@ -1,7 +1,5 @@
 #load "commands.jai";
 
-console : Console; // @Cleanup move to app
-
 Command_Info :: struct {
     name : string;
     procedure : ([] string) -> void;
@@ -23,12 +21,12 @@ console_add_log :: (format_string: string, args: .. Any) {
 
     text := builder_to_string(*builder);
 
-    array_add(*console.log, text);
+    array_add(*app.console.log, text);
 } @PrintLike
 
 console_clear_log :: () {
-    for console.log free(it);
-    array_reset(*console.log);
+    for app.console.log free(it);
+    array_reset(*app.console.log);
 }
 
 console_add_history :: (format_string: string, args: .. Any) {
@@ -40,22 +38,22 @@ console_add_history :: (format_string: string, args: .. Any) {
     text := builder_to_string(*builder);
 
     // Insert into history. First find match and delete it so it can be pushed to the back.
-    for console.history {
+    for app.console.history {
         if equal_nocase(text, it) {
             remove it;
             break;
         }
     }
-    array_add(*console.history, text);
+    array_add(*app.console.history, text);
 } @PrintLike
 
 console_clear_history :: () {
-    for console.history free(it);
-    array_reset(*console.history);
+    for app.console.history free(it);
+    array_reset(*app.console.history);
 }
 
 console_execute_command :: (_command : string) {
-    console.history_position = -1;
+    app.console.history_position = -1;
 
     command := eat_trailing_spaces(_command);
     command = eat_spaces(command);
@@ -78,7 +76,7 @@ console_execute_command :: (_command : string) {
     }
 
     found_command := false;
-    for console.commands {
+    for app.console.commands {
         if it.name == args[0] {
 
             // Strip the procedure name from the argument list
@@ -132,7 +130,7 @@ console_draw :: () {
     }
 
     ImGui.PushStyleVar(.ItemSpacing, *ImVec2.{4,1}); // Tighten spacing
-    for item : console.log {
+    for item : app.console.log {
         assert(item.count != 0);
         col := ImVec4.{1., 1., 1., 1.};
         if begins_with(item, "#") {
@@ -153,9 +151,9 @@ console_draw :: () {
         // if (ImGui.InputText("", console.input_buffer.data, console.input_buffer.count, EnterReturnsTrue | AlwaysInsertMode)) {
 
         ImGui.PushItemWidth(-1);
-        if (ImGui.InputText("", console.input_buffer.data, console.input_buffer.count, EnterReturnsTrue | CallbackCompletion | CallbackHistory, text_edit_callback, *console)) {
-            defer console.input_buffer[0] = 0; // Wipe input after processing
-            console_execute_command(to_string(console.input_buffer.data, str_length(console.input_buffer.data)));
+        if (ImGui.InputText("", app.console.input_buffer.data, app.console.input_buffer.count, EnterReturnsTrue | CallbackCompletion | CallbackHistory, text_edit_callback, *app.console)) {
+            defer app.console.input_buffer[0] = 0; // Wipe input after processing
+            console_execute_command(to_string(app.console.input_buffer.data, str_length(app.console.input_buffer.data)));
         }
         ImGui.PopItemWidth();
 
@@ -198,7 +196,7 @@ text_edit_callback :: (data : *ImGui.TextEditCallbackData) -> s32 #c_call {
 
                 // Build a list of candidates // @TODO Use temporary allocator here
                 candidates : [..]string;
-                for console.commands {
+                for app.console.commands {
                     if begins_with_nocase(it.name, current_word) {
                         array_add(*candidates, it.name);
                     }
@@ -252,7 +250,8 @@ text_edit_callback :: (data : *ImGui.TextEditCallbackData) -> s32 #c_call {
 
             case .CallbackHistory; {
 
-                // Example of HISTORY
+                using app;
+
                 prev_history_position := console.history_position;
                 if data.EventKey == .UpArrow {
                     if console.history_position == -1 {

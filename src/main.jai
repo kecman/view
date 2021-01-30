@@ -18,7 +18,7 @@ geom :: #import "geometry";
 #load "console.jai";
 #load "entities.jai";
 #load "mesh_utils.jai";
-// #load "commands.jai"; // @CompilerBug loading this here causes overloaded procedure with identical arg list compilation error
+//#load "commands.jai"; // @CompilerBug loading here triggers incorrect (?) compilation error
 
 // Shared global state is stored here
 app : struct {
@@ -41,6 +41,7 @@ app : struct {
     show_console_ui := true;
 
     camera : Camera;
+    console : Console;
 }
 
 current_window_aspect_ratio_width_over_height :: () -> float {
