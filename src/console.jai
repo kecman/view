@@ -1,6 +1,6 @@
 #load "commands.jai";
 
-console : Console;
+console : Console; // @Cleanup move to app
 
 Command_Info :: struct {
     name : string;
@@ -100,11 +100,11 @@ console_execute_command :: (_command : string) {
 }
 
 console_draw :: () {
-    if !show_ui || !show_console_ui return;
+    if !app.show_ui || !app.show_console_ui return;
 
-    console_top_y := current_window_height * .6;
+    console_top_y := app.current_window_height * .6;
     ImGui.SetNextWindowPos(pos=*make_vector2(0, xx console_top_y), pivot=*make_vector2(0,0));
-    ImGui.SetNextWindowSize(*make_vector2(xx current_window_width, xx (current_window_height - console_top_y)), .Always);
+    ImGui.SetNextWindowSize(*make_vector2(xx app.current_window_width, xx (app.current_window_height - console_top_y)), .Always);
     ImGui.Begin("console", flags = ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar); // TODO if !Begin should close
 
     ImGui.TextWrapped("Enter 'help' for help, press TAB for text completion, press UP/DOWN to navigate history.");

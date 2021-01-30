@@ -89,6 +89,8 @@ get_text_width_in_pixels :: (text: string, scale: float) -> int {
 }
 
 render_text_quad :: (shader_program: GLuint, text: string, position: Vector2, scale: float, color: Vector4) {
+    using app;
+
     glUseProgram(shader_program);
     glUniform4f(glGetUniformLocation(shader_program, "text_color"), color.x, color.y, color.z, color.w);
 

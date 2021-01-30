@@ -2,48 +2,51 @@
 #import "File";
 #import "String";
 #import "Math";
+// Debug :: #import "Debug";
 
 #load "vendor/imgui_sdl_gl.jai";
 
-geom :: #import "geometry"; // @Cleanup just load this
+ // @Cleanup just load this
+geom :: #import "geometry";
 #import "BoostPolygon";
 
 #load "io.jai";
 #load "shaders.jai";
 #load "font.jai";
+#load "carpet.jai";
 #load "camera.jai";
 #load "console.jai";
 #load "entities.jai";
 #load "mesh_utils.jai";
-//#load "commands.jai"; // @CompilerBug? loading this here and console.jai causes:Error: Redeclaration of variable 'command_list'. but I think this should work? Hmmm
+// #load "commands.jai"; // @CompilerBug loading this here causes overloaded procedure with identical arg list compilation error
 
-//#import "Debug";
+// Shared global state is stored here
+app : struct {
+    INITIAL_WINDOW_WIDTH  : s32 : 1280;
+    INITIAL_WINDOW_HEIGHT : s32 : 720;
 
-// @TODO put all globals into an App struct
+    current_window_width := INITIAL_WINDOW_WIDTH;
+    current_window_height := INITIAL_WINDOW_HEIGHT;
 
-INITIAL_WINDOW_WIDTH  : s32 : 1280;
-INITIAL_WINDOW_HEIGHT : s32 : 720;
+    text_shader : GLuint;
+    text_vao : GLuint;
+    text_vbo : GLuint;
 
-current_window_width := INITIAL_WINDOW_WIDTH;
-current_window_height := INITIAL_WINDOW_HEIGHT;
+    mesh_shader : GLuint;
+    mesh_vao : GLuint;
+    polyline_shader : GLuint;
+    polyline_vao : GLuint;
 
-current_window_aspect_ratio_width_over_height :: () -> float {
-    return cast(float) current_window_width / cast(float) current_window_height;
+    show_ui := true;
+    show_console_ui := true;
+
+    camera : Camera;
 }
 
-text_shader : GLuint;
-text_vao : GLuint;
-text_vbo : GLuint;
+current_window_aspect_ratio_width_over_height :: () -> float {
+    return cast(float) app.current_window_width / cast(float) app.current_window_height;
+}
 
-mesh_shader : GLuint;
-mesh_vao : GLuint;
-polyline_shader : GLuint;
-polyline_vao : GLuint;
-
-show_ui := true;
-show_console_ui := true;
-
-// @TODO move this into the polyine struct
 VertexLabelStyle :: struct {
     show_position := false;
     show_index := false;
@@ -53,6 +56,7 @@ VertexLabelStyle :: struct {
 }
 
 render_mesh :: (mesh : Mesh, style : VertexLabelStyle) {
+    using app;
 
     if !mesh.visible {
         return;
@@ -113,8 +117,8 @@ render_vertex_labels :: (points : []Vector3, style : VertexLabelStyle, label_ind
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     world_from_model := matrix4_identity();
-    view_from_world := make_look_at_matrix(*camera);
-    projection_from_view := make_orthographic_projection_matrix(*camera);
+    view_from_world := make_look_at_matrix(*app.camera);
+    projection_from_view := make_orthographic_projection_matrix(*app.camera);
     projection_from_model := projection_from_view * view_from_world * world_from_model;
 
     // @TODO call render_text_quad once with a list of points
@@ -130,27 +134,11 @@ render_vertex_labels :: (points : []Vector3, style : VertexLabelStyle, label_ind
 
         // [-1, 1]x[-1,1] -> [0, current_window_width]x[0, current_window_height]
         text_position_px := projection_from_model * make_vector4(it.x, it.y, 0., 1.);
-        text_position_px.x = cast(float)current_window_width * (text_position_px.x + 1) / 2;
-        text_position_px.y = cast(float)current_window_height * (text_position_px.y + 1) / 2;
+        text_position_px.x = cast(float)app.current_window_width * (text_position_px.x + 1) / 2;
+        text_position_px.y = cast(float)app.current_window_height * (text_position_px.y + 1) / 2;
 
-        render_text_quad(text_shader, text, text_position_px.xy, scale, make_vector4(1., 1., 1., 1));
+        render_text_quad(app.text_shader, text, text_position_px.xy, scale, make_vector4(1., 1., 1., 1));
     }
-}
-
-printv :: (a : Code) #expand {
-    get_ident_name :: (code : Code) -> string {
-        root := compiler_get_nodes(code);
-        assert(root.kind == .IDENT);
-        ident := cast(*Code_Ident) root;
-        return ident.name;
-    }
-
-    print("% = %\n", #run get_ident_name(a), #insert a);
-}
-
-die :: (loc := #caller_location) {
-    print("exit(1) at %:%\n", loc.fully_pathed_filename, loc.line_number);
-    exit(1);
 }
 
 main :: () {
@@ -164,7 +152,7 @@ main :: () {
 
     window := SDL_CreateWindow(tprint("View v%", VIEW_VERSION_STRING).data,
                                SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                               INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT,
+                               app.INITIAL_WINDOW_WIDTH, app.INITIAL_WINDOW_HEIGHT,
                                SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);
 
     // Check that the window was successfully created
@@ -209,24 +197,24 @@ main :: () {
 
     // Setup text shader
     {
-        projection := orthographic_projection_matrix(0.0, xx current_window_width, 0.0, xx current_window_height, -1.0, 1.0);
+        projection := orthographic_projection_matrix(0.0, xx app.current_window_width, 0.0, xx app.current_window_height, -1.0, 1.0);
         mvp := projection;
 
         vert :: #run read_entire_file("src/shaders/text.vert");
         frag :: #run read_entire_file("src/shaders/text.frag");
-        text_shader = get_shader_program(vert, frag);
+        app.text_shader = get_shader_program(vert, frag);
 
-        glUseProgram(text_shader);
-        mvp_loc := glGetUniformLocation(text_shader, "mvp");
+        glUseProgram(app.text_shader);
+        mvp_loc := glGetUniformLocation(app.text_shader, "mvp");
         glUniformMatrix4fv(mvp_loc, 1, GL_TRUE, *mvp._11);
     }
 
     // Prepare VAO for text quads.
     {
-        glGenVertexArrays(1, *text_vao);
-        glGenBuffers(1, *text_vbo);
-        glBindVertexArray(text_vao);
-        glBindBuffer(GL_ARRAY_BUFFER, text_vbo);
+        glGenVertexArrays(1, *app.text_vao);
+        glGenBuffers(1, *app.text_vbo);
+        glBindVertexArray(app.text_vao);
+        glBindBuffer(GL_ARRAY_BUFFER, app.text_vbo);
         glBufferData(GL_ARRAY_BUFFER, size_of(GLfloat) * 6 * 4, null, GL_DYNAMIC_DRAW);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * size_of(GLfloat), xx 0);
@@ -238,13 +226,13 @@ main :: () {
     {
         vert :: #run read_entire_file("src/shaders/mesh.vert");
         frag :: #run read_entire_file("src/shaders/mesh.frag");
-        mesh_shader = get_shader_program(vert, frag);
+        app.mesh_shader = get_shader_program(vert, frag);
     }
 
     // Prepare VAO for lines
     {
-        glGenVertexArrays(1, *polyline_vao);
-        glGenVertexArrays(1, *mesh_vao);
+        glGenVertexArrays(1, *app.polyline_vao);
+        glGenVertexArrays(1, *app.mesh_vao);
     }
 
     /*
@@ -275,13 +263,13 @@ main :: () {
     {
         // This should be dynamic, depending on the camera etc
         world_from_model := matrix4_identity();
-        view_from_world := make_look_at_matrix(*camera);
-        projection_from_view := make_orthographic_projection_matrix(*camera);
+        view_from_world := make_look_at_matrix(*app.camera);
+        projection_from_view := make_orthographic_projection_matrix(*app.camera);
 
         projection_from_model := projection_from_view * view_from_world * world_from_model;
 
-        glUseProgram(mesh_shader);
-        mvp_loc := glGetUniformLocation(mesh_shader, "mvp");
+        glUseProgram(app.mesh_shader);
+        mvp_loc := glGetUniformLocation(app.mesh_shader, "mvp");
         glUniformMatrix4fv(mvp_loc, 1, GL_TRUE, *projection_from_model._11);
     }
 
@@ -330,25 +318,25 @@ main :: () {
                 case SDL_WINDOWEVENT;
                     if event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED {
 
-                        width_scale := cast(float) event.window.data1 / current_window_width;
-                        height_scale := cast(float) event.window.data2 / current_window_height;
+                        width_scale := cast(float) event.window.data1 / app.current_window_width;
+                        height_scale := cast(float) event.window.data2 / app.current_window_height;
 
-                        camera_delta_rl := (1. - width_scale) * (camera.right - camera.left) / 2;
-                        camera_delta_tb := (1. - height_scale) * (camera.top - camera.bottom) / 2;
-                        camera.right -= camera_delta_rl;
-                        camera.left += camera_delta_rl;
-                        camera.top -= camera_delta_tb;
-                        camera.bottom += camera_delta_tb;
+                        camera_delta_rl := (1. - width_scale) * (app.camera.right - app.camera.left) / 2;
+                        camera_delta_tb := (1. - height_scale) * (app.camera.top - app.camera.bottom) / 2;
+                        app.camera.right -= camera_delta_rl;
+                        app.camera.left += camera_delta_rl;
+                        app.camera.top -= camera_delta_tb;
+                        app.camera.bottom += camera_delta_tb;
 
-                        current_window_width = event.window.data1;
-                        current_window_height = event.window.data2;
+                        app.current_window_width = event.window.data1;
+                        app.current_window_height = event.window.data2;
                     }
                 case SDL_KEYDOWN; {
                     if event.key.keysym.sym == SDLK_BACKQUOTE {
                         if SDL_GetModState() & KMOD_CTRL {
-                            show_ui = !show_ui;
+                            app.show_ui = !app.show_ui;
                         } else {
-                            show_console_ui = !show_console_ui;
+                            app.show_console_ui = !app.show_console_ui;
                         }
                     }
                 }
@@ -361,16 +349,17 @@ main :: () {
                     if event.key.keysym.sym == SDLK_RIGHTBRACKET {
                         amount : float = 45;
                         if SDL_GetModState() & KMOD_SHIFT amount = 15;
-                        camera.up_direction.xy = rotate(camera.up_direction.xy, to_radians(amount));
+                        app.camera.up_direction.xy = rotate(app.camera.up_direction.xy, to_radians(amount));
                     }
                     if event.key.keysym.sym == SDLK_LEFTBRACKET {
                         amount : float = 45;
                         if SDL_GetModState() & KMOD_SHIFT amount = 15;
-                        camera.up_direction.xy = rotate(camera.up_direction.xy, to_radians(-amount));
+                        app.camera.up_direction.xy = rotate(app.camera.up_direction.xy, to_radians(-amount));
                     }
                 }
                 case SDL_DROPFILE; {
-                    dropped := to_string(event.drop.file); // @Cleanup event.drop.file should be free'd using SDL_free
+                    // @Cleanup event.drop.file should be free'd using SDL_free
+                    dropped := to_string(event.drop.file);
 
                     skip := false;
                     for entities {
@@ -420,7 +409,7 @@ main :: () {
         ImGui.GetStyle().WindowRounding = 0;
         ImGui_ImplSdl_NewFrame(window);
 
-        if show_ui {
+        if app.show_ui {
             ImGui.SetNextWindowPos(pos=*make_vector2(10, 10), pivot=*make_vector2(0,0));
             ImGui.Begin("", flags = ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar);
             ImGui.ColorEdit4("Background Color", clear_color.component, ImGui.ColorEditFlags.NoInputs);
@@ -433,7 +422,7 @@ main :: () {
                 }
             }
 
-            if ImGui.Button("Reset Window          ", size=*make_vector2(0,0)) SDL_SetWindowSize(window, INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
+            if ImGui.Button("Reset Window          ", size=*make_vector2(0,0)) SDL_SetWindowSize(window, app.INITIAL_WINDOW_WIDTH, app.INITIAL_WINDOW_HEIGHT);
             if ImGui.Button("Reset Camera       (R)", size=*make_vector2(0,0)) fit_on_screen();
             if ImGui.Button("Cycle vertex style (V)", size=*make_vector2(0,0)) cycle_vertex_label_style(*vertex_label_style);
             if ImGui.Button("Cycle line style   (L)", size=*make_vector2(0,0)) cycle_line_style(*vertex_label_style);
@@ -494,36 +483,31 @@ main :: () {
             case .ResizeNWSE;    SDL_SetCursor(cursor_resize_nwse);
         }
 
-        if ImGui.IsMouseClicked(0) {
-            mouse_down_pos = io().MousePos;
-            camera_at_mouse_down = camera;
-        }
-
         {
             world_from_model := matrix4_identity();
-            view_from_world := make_look_at_matrix(*camera);
-            projection_from_view := make_orthographic_projection_matrix(*camera);
+            view_from_world := make_look_at_matrix(*app.camera);
+            projection_from_view := make_orthographic_projection_matrix(*app.camera);
             projection_from_model := projection_from_view * view_from_world * world_from_model;
 
-            glUseProgram(mesh_shader);
-            mvp_loc := glGetUniformLocation(mesh_shader, "mvp");
+            glUseProgram(app.mesh_shader);
+            mvp_loc := glGetUniformLocation(app.mesh_shader, "mvp");
             glUniformMatrix4fv(mvp_loc, 1, GL_TRUE, *projection_from_model._11);
         }
 
         {
-            SDL_GetWindowSize(window, *current_window_width, *current_window_height);
-            projection := orthographic_projection_matrix(0.0, xx current_window_width, 0.0, xx current_window_height, -1.0, 1.0);
+            SDL_GetWindowSize(window, *app.current_window_width, *app.current_window_height);
+            projection := orthographic_projection_matrix(0.0, xx app.current_window_width, 0.0, xx app.current_window_height, -1.0, 1.0);
 
             // @fixme: this is broken, text is in the wrong position in y after resizing
             mvp := projection;
-            glUseProgram(text_shader);
-            mvp_loc := glGetUniformLocation(text_shader, "mvp");
+            glUseProgram(app.text_shader);
+            mvp_loc := glGetUniformLocation(app.text_shader, "mvp");
             glUniformMatrix4fv(mvp_loc, 1, GL_TRUE, *mvp._11);
         }
 
         #if false {
-            debug_print_active_uniforms(text_shader);
-            debug_print_active_uniforms(mesh_shader);
+            debug_print_active_uniforms(app.text_shader);
+            debug_print_active_uniforms(app.mesh_shader);
         }
 
         // Rendering
@@ -562,10 +546,10 @@ main :: () {
             // text := cursor_text;
             text_w := get_text_width_in_pixels(text, 1.0);
             scale := 0.5;
-            render_text_quad(text_shader,
+            render_text_quad(app.text_shader,
                              text,
                              // make_vector2(25.0, WINDOW_HEIGHT - FONT_SIZE * scale),
-                             make_vector2(io().MousePos.x, current_window_height - io().MousePos.y),
+                             make_vector2(io().MousePos.x, app.current_window_height - io().MousePos.y),
                              scale,
                              make_vector4(1., 1., 1., 1));
         }
@@ -596,7 +580,7 @@ fit_on_screen :: () {
     }
 
     geom.offset(*overall_bounds, 0.05 * geom.extents(*overall_bounds));
-    update_to_fit_on_screen(*camera, *overall_bounds);
+    update_to_fit_on_screen(*app.camera, *overall_bounds);
 }
 
 cycle_vertex_label_style :: (using style : *VertexLabelStyle) {
@@ -619,6 +603,8 @@ cycle_line_style :: (using style : *VertexLabelStyle) {
 }
 
 debug_print_active_uniforms :: (shader : GLuint) {
+    using app;
+
     max_length: GLint;
     glGetProgramiv(mesh_shader, GL_ACTIVE_UNIFORM_MAX_LENGTH, *max_length);
     name := alloc_string(max_length);

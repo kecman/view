@@ -1,9 +1,3 @@
-camera : Camera;
-
-// @Cleanup: Make these file scoped by modifying them in update_camera
-camera_at_mouse_down : Camera;
-mouse_down_pos : Vector2; // @Cleanup: replace this state with ImGui: use GetMouseDragDelta
-
 Camera :: struct {
     // Data to transfrom from world to view coordinates
     eye_position :  Vector3; // world
@@ -31,6 +25,8 @@ Camera :: struct {
 }
 
 init_camera :: () {
+    camera := *app.camera;
+
     // These define the camera coordinate system
     camera.eye_position = .{0, 0, 200};
     camera.look_position = .{0, 0, 0}; // arcball pivot
@@ -51,6 +47,12 @@ init_camera :: () {
 
 // @Cleanup: only do ONE operation using else if's
 update_camera :: (delta_time : float) {
+    camera := *app.camera;
+
+    if ImGui.IsMouseClicked(0) {
+        mouse_down_pos = io().MousePos;
+        camera_at_mouse_down = app.camera;
+    }
 
     if io().WantCaptureMouse || (io().MouseDelta.x == 0 && io().MouseDelta.y == 0) {
         return; // Mouse delta is zero when current or previous mouse positions were invalid
@@ -58,8 +60,8 @@ update_camera :: (delta_time : float) {
 
     camera.fov_vertical_radians = 2 * atan2(camera.top, camera.eye_position.z);
 
-    view_from_world := make_look_at_matrix(*camera);
-    projection_from_view := make_orthographic_projection_matrix(*camera);
+    view_from_world := make_look_at_matrix(camera);
+    projection_from_view := make_orthographic_projection_matrix(camera);
     world_from_projection := inverse(projection_from_view * view_from_world);
 
     // Pan with middle down.
@@ -78,8 +80,8 @@ update_camera :: (delta_time : float) {
         }
 
         // Shoot ray through pixel along the look vector to hit a plane through the look position with the same normal
-        curr_pan_point := get_pan_position(io().MousePos, world_from_projection, camera);
-        prev_pan_point := get_pan_position(io().MousePos - io().MouseDelta, world_from_projection, camera);
+        curr_pan_point := get_pan_position(io().MousePos, world_from_projection, <<camera);
+        prev_pan_point := get_pan_position(io().MousePos - io().MouseDelta, world_from_projection, <<camera);
         increment := -(curr_pan_point - prev_pan_point) / 2; // @Cleanup WHY this divide by 2, there is probably a bug elsewhere... ?
 
         camera.eye_position += increment;
@@ -229,9 +231,9 @@ io_mouse_middle_down :: () -> bool { return io().MouseDown[2]; }
 
 arcball_vector :: (mouse_position_px : Vector2) -> Vector3
 {
-    arcball_center_px := make_vector2(current_window_width / 2., current_window_height / 2.);
-    arcball_radius_px := min(current_window_height, current_window_width) / 2.; // allows room on left/right for rotation look direction
-    // arcball_radius_px := length(make_vector2(xx current_window_height, xx current_window_width) / 2); // only room to rotate on sphere
+    arcball_center_px := make_vector2(app.current_window_width / 2., app.current_window_height / 2.);
+    arcball_radius_px := min(app.current_window_height, app.current_window_width) / 2.; // allows room on left/right for rotation look direction
+    // arcball_radius_px := length(make_vector2(xx app.current_window_height, xx app.current_window_width) / 2); // only room to rotate on sphere
 
     using result := make_vector3((mouse_position_px - arcball_center_px) / arcball_radius_px, 0);
     y *= -1; // Since y_px increases from the top of the screen to the bottom
@@ -248,14 +250,19 @@ arcball_vector :: (mouse_position_px : Vector2) -> Vector3
 to_ndc :: (position_px : Vector2) -> Vector2
 {
     using position_ndc : Vector2 = ---;
-    x = 2 * (position_px.x / cast(float)current_window_width) - 1;
-    y = 2 * (position_px.y / cast(float)current_window_height) - 1;
+    x = 2 * (position_px.x / cast(float)app.current_window_width) - 1;
+    y = 2 * (position_px.y / cast(float)app.current_window_height) - 1;
     y *= -1; // (-1,-1) => bottom-left of screen, (+1,+1) => top-right of screen
-    print("NDC : %", position_ndc);
+
+    // print("NDC : %", position_ndc);
     assert(x >= -1 && x <= 1, "Expected NDC x coordinates to be in range [-1,+1], got %", x);
     assert(y >= -1 && y <= 1, "Expected NDC y coordinates to be in range [-1,+1], got %", y);
+
     return position_ndc;
 }
+
+camera_at_mouse_down : Camera;
+mouse_down_pos : Vector2; // @Cleanup: replace this state with ImGui: use GetMouseDragDelta
 
 geom :: #import "geometry";
 #load "numeric.jai";
