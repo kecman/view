@@ -67,9 +67,14 @@ render_mesh :: (mesh : Mesh, style : VertexLabelStyle) {
 
     glUseProgram(mesh_shader);
 
+    projection_from_model := make_projection_from_world(app.camera) * mesh.world_from_model;
+
+    mvp_loc := glGetUniformLocation(mesh_shader, "mvp");
     color_loc := glGetUniformLocation(mesh_shader, "color");
-    glUniform4f(color_loc, mesh.color.x, mesh.color.y, mesh.color.z, mesh.color.w);
     point_size_loc := glGetUniformLocation(mesh_shader, "point_size");
+
+    glUniformMatrix4fv(mvp_loc, 1, GL_TRUE, *projection_from_model._11);
+    glUniform4f(color_loc, mesh.color.x, mesh.color.y, mesh.color.z, mesh.color.w);
     glUniform1f(point_size_loc, xx style.point_size);
 
     glBindVertexArray(mesh_vao);
@@ -132,7 +137,7 @@ render_vertex_labels :: (points : []Vector3, style : VertexLabelStyle, label_ind
         scale := 0.3;
 
         // [-1, 1]x[-1,1] -> [0, current_window_width]x[0, current_window_height]
-        text_position_px := projection_from_model * make_vector4(it.x, it.y, 0., 1.);
+        text_position_px := projection_from_model * make_vector4(it.x, it.y, it.z, 1.);
         text_position_px.x = cast(float)app.current_window_width * (text_position_px.x + 1) / 2;
         text_position_px.y = cast(float)app.current_window_height * (text_position_px.y + 1) / 2;
 
@@ -196,16 +201,9 @@ main :: () {
 
     // Setup text shader
     {
-        projection := orthographic_projection_matrix(0.0, xx app.current_window_width, 0.0, xx app.current_window_height, -1.0, 1.0);
-        mvp := projection;
-
         vert :: #run read_entire_file("src/shaders/text.vert");
         frag :: #run read_entire_file("src/shaders/text.frag");
         app.text_shader = get_shader_program(vert, frag);
-
-        glUseProgram(app.text_shader);
-        mvp_loc := glGetUniformLocation(app.text_shader, "mvp");
-        glUniformMatrix4fv(mvp_loc, 1, GL_TRUE, *mvp._11);
     }
 
     // Prepare VAO for text quads.
@@ -234,46 +232,14 @@ main :: () {
         glGenVertexArrays(1, *app.mesh_vao);
     }
 
-    /*
-    test_mesh : geom.Mesh;
-    {
-        array_add(*test_mesh.vertices, .{0, 0, 0});
-        array_add(*test_mesh.vertices, .{5, 0, 0});
-        array_add(*test_mesh.vertices, .{5, 5, 0});
-        array_add(*test_mesh.vertices, .{0, 5, 0});
-        for test_mesh.vertices print("vertex [%] %\n", it_index, it);
-
-        array_add(*test_mesh.indices, 0); array_add(*test_mesh.indices, 1);
-        array_add(*test_mesh.indices, 1); array_add(*test_mesh.indices, 2);
-        array_add(*test_mesh.indices, 2); array_add(*test_mesh.indices, 3);
-        array_add(*test_mesh.indices, 3); array_add(*test_mesh.indices, 4);
-        for test_mesh.indices print("index [%] %\n", it_index, it);
-
-        test_mesh.geometry_format = .LINES;
-        geom.buffer_mesh(*test_mesh);
-        print("mesh %\n", test_mesh);
-    }
-    */
-
     triad := make_axes_triad(10);
 
     vertex_label_style : VertexLabelStyle;
-
-    {
-        world_from_model := matrix4_identity();
-        projection_from_model := make_projection_from_world(app.camera) * world_from_model;
-
-        glUseProgram(app.mesh_shader);
-        mvp_loc := glGetUniformLocation(app.mesh_shader, "mvp");
-        glUniformMatrix4fv(mvp_loc, 1, GL_TRUE, *projection_from_model._11);
-    }
-
 
     init_font();
     init_commands();
 
     ImGui.CreateContext();
-    // Setup ImGui binding
     ImGui_ImplSdl_Init(window);
 
     if false {
@@ -467,7 +433,6 @@ main :: () {
 
         console_draw();
 
-
         if ImGui.GetMouseCursor() == {
             case .Arrow;         SDL_SetCursor(cursor_arrow);
             case .TextInput;     SDL_SetCursor(cursor_text_input);
@@ -476,26 +441,6 @@ main :: () {
             case .ResizeEW;      SDL_SetCursor(cursor_resize_ew);
             case .ResizeNESW;    SDL_SetCursor(cursor_resize_nesw);
             case .ResizeNWSE;    SDL_SetCursor(cursor_resize_nwse);
-        }
-
-        {
-            world_from_model := matrix4_identity();
-            projection_from_model := make_projection_from_world(app.camera) * world_from_model;
-
-            glUseProgram(app.mesh_shader);
-            mvp_loc := glGetUniformLocation(app.mesh_shader, "mvp");
-            glUniformMatrix4fv(mvp_loc, 1, GL_TRUE, *projection_from_model._11);
-        }
-
-        {
-            SDL_GetWindowSize(window, *app.current_window_width, *app.current_window_height);
-            projection := orthographic_projection_matrix(0.0, xx app.current_window_width, 0.0, xx app.current_window_height, -1.0, 1.0);
-
-            // @fixme: this is broken, text is in the wrong position in y after resizing
-            mvp := projection;
-            glUseProgram(app.text_shader);
-            mvp_loc := glGetUniformLocation(app.text_shader, "mvp");
-            glUniformMatrix4fv(mvp_loc, 1, GL_TRUE, *mvp._11);
         }
 
         #if false {
@@ -517,6 +462,7 @@ main :: () {
             mesh := get_mesh(it);
             if mesh && mesh.visible {
                 render_mesh(<<mesh, vertex_label_style);
+                // @Cleanup so the transform is also available for text rendering
                 render_vertex_labels(mesh.vertices, vertex_label_style);
             }
         }

@@ -18,14 +18,14 @@ Mesh :: struct {
     wireframe : bool = false;
     color : Vector4;
 
-    // @TODO: store an object/world transform in each mesh
-
     // @Cleanup Store array slices and put the allocator on the Mesh
     // @Cleanup Store vertices/normals as a flat array to better support 2D polylines? Maybe 'subclass' mesh with using
     vertices :  [..]Vector3;
     normals :  [..]Vector3;
     indices : [..]u32;
     // @Incomplete tcoords?
+
+    world_from_model : Matrix4 = .{_11 = 1, _22 = 1, _33 = 1, _44 = 1};
 }
 
 buffer_mesh :: (mesh : *Mesh) {
