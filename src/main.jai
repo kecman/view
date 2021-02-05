@@ -581,7 +581,7 @@ fit_on_screen :: () {
     }
 
     geom.offset(*overall_bounds, 0.05 * geom.extents(overall_bounds));
-    update_to_fit_on_screen(*app.camera, overall_bounds);
+    update_to_fit_on_screen(overall_bounds);
 }
 
 cycle_vertex_label_style :: (using style : *VertexLabelStyle) {
