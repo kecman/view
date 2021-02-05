@@ -7,7 +7,7 @@ build :: () {
 
     {
         build_options := get_build_options();
-        build_options.output_type = Build_Output_Type.NO_OUTPUT;
+        build_options.output_type = .NO_OUTPUT;
         set_build_options(build_options);
     }
 
@@ -31,7 +31,7 @@ build :: () {
 
     {
         build_options := get_build_options(w);
-        build_options.output_type = Build_Output_Type.EXECUTABLE;
+        build_options.output_type = .EXECUTABLE;
         if array_find(command_line_arguments, "test") {
             build_options.output_executable_name = "test";
         } else {

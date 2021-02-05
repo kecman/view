@@ -171,6 +171,12 @@ console_draw :: () {
 
 #scope_file
 
+str_length :: (x: *u8) -> int @pure {  // Copied from String.jai to avoid dependency.
+    p := x;
+    while << p  { p += 1; }
+    return p - x;
+}
+
 print_location :: (loc := #caller_location) {
     print("%:%\n", loc.fully_pathed_filename, loc.line_number);
 }
