@@ -160,20 +160,19 @@ update_camera :: (delta_time : float) {
     // print("update_camera: %\n", camera);
 }
 
-// update_to_fit_on_screen :: (camera : *Camera, bbox : *$T/geom.AxisBox) { // @CompilerBug?
-update_to_fit_on_screen :: (using camera : *Camera, world_box : *geom.AxisBox2) {
+update_to_fit_on_screen :: (using camera : *Camera, world_box : geom.AxisBox3) {
     if geom.is_empty(world_box) {
         return;
     }
 
-    center := geom.center_point(world_box);
-    eye_position.xy = center;
-    look_position.xy = center;
-    up_direction = .{0, 1, 0};
+    // center := geom.center_point(world_box);
+    // eye_position.xy = center.xy;
+    // look_position.xy = center.xy;
+    // up_direction = .{0, 1, 0};
 
     view_from_world := make_look_at_matrix(camera);
-    view_min := view_from_world * make_vector4(world_box.min_point.x, world_box.min_point.y, 0, 1);
-    view_max := view_from_world * make_vector4(world_box.max_point.x, world_box.max_point.y, 0, 1);
+    view_min := view_from_world * make_vector4(world_box.min_point, 1);
+    view_max := view_from_world * make_vector4(world_box.max_point, 1);
 
     extents := geom.extents(world_box);
     scale := (extents.y / 2) / top;

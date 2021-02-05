@@ -38,7 +38,7 @@ app : struct {
     polyline_vao : GLuint;
 
     show_ui := true;
-    show_console_ui := true;
+    show_console_ui := false;
 
     camera : Camera;
     console : Console;
@@ -570,18 +570,18 @@ main :: () {
 #scope_file
 
 fit_on_screen :: () {
-    overall_bounds : geom.AxisBox2;
+    overall_bounds : geom.AxisBox3;
     geom.init(*overall_bounds);
     for entities {
         mesh := get_mesh(it);
         if mesh && mesh.visible {
             bounds := geom.bounding_box(<<mesh);
-            geom.expand(*overall_bounds, *bounds);
+            geom.expand(*overall_bounds, bounds);
         }
     }
 
-    geom.offset(*overall_bounds, 0.05 * geom.extents(*overall_bounds));
-    update_to_fit_on_screen(*app.camera, *overall_bounds);
+    geom.offset(*overall_bounds, 0.05 * geom.extents(overall_bounds));
+    update_to_fit_on_screen(*app.camera, overall_bounds);
 }
 
 cycle_vertex_label_style :: (using style : *VertexLabelStyle) {

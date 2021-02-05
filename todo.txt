@@ -8,6 +8,7 @@ Plan
 [ ] If file is hovered make it flash to white so it's easy to find
 
 Backlog
+[ ] Don't pass pointers for arguments that aren't modified
 [ ] Alternate segment colours (two draw calls?)
 [ ] Compiled at time in Window, after version?
 [ ] Implement sliding to show/hide the terminal
@@ -18,7 +19,6 @@ Backlog
 [ ] Support polygons and polygon soups, and do convex decomposition for rendering
 [ ] Support loading wkt file format
 [ ] Cleanup text rendering, it's so slow right now!
-[-] :OnlyRenderMeshType: Refactor to only render the Mesh type
 [ ] Make the polygon/polyline types use slices, not dynamic arrays, put allocators in the top level
 [ ] Autogenerate the console registering code to add commands to the console
 [ ] Sort by time loaded

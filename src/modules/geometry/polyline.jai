@@ -34,7 +34,7 @@ is_empty :: (polyline_soup : $T/Polyline_Soup) -> bool #must {
     return true;
 }
 
-bounding_box :: (using polyline : *$T/Polyline) -> AxisBox(T.Point) #must {
+bounding_box :: (using polyline : $T/Polyline) -> AxisBox(T.Point) #must {
     box : AxisBox(T.Point);
     init(*box);
     for points {
@@ -43,12 +43,12 @@ bounding_box :: (using polyline : *$T/Polyline) -> AxisBox(T.Point) #must {
     return box;
 }
 
-bounding_box :: (using polyline_soup : *$T/Polyline_Soup) -> AxisBox(T.Point) #must {
+bounding_box :: (using polyline_soup : $T/Polyline_Soup) -> AxisBox(T.Point) #must {
     box : AxisBox(T.Point);
     init(*box);
     for * polylines {
         polyline_box := bounding_box(it);
-        expand(*box, *polyline_box);
+        expand(*box, polyline_box);
     }
     return box;
 }

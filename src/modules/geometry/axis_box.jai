@@ -39,7 +39,7 @@ to_polyline :: (using box : *AxisBox2) -> Polyline2 #must {
     return polyline;
 }
 
-is_empty :: (using box : *$T/AxisBox) -> bool #must {
+is_empty :: (using box : $T/AxisBox) -> bool #must {
     dim :: #run vector_dimension(T.Point);
     for d : 0..dim-1 {
         if min_point.component[d] > max_point.component[d] {
@@ -57,7 +57,7 @@ expand :: (using box : *$T/AxisBox, point : T.Point) {
     }
 }
 
-expand :: (using box : *$T/AxisBox, other : *T) {
+expand :: (using box : *$T/AxisBox, other : T) {
     if !is_empty(other) {
         expand(box, other.min_point);
         expand(box, other.max_point);
@@ -81,7 +81,7 @@ offset :: (using box : *$T/AxisBox, increment : float) {
 offset :: (using box : *$T/AxisBox, increment : T.Vector) {
     dim :: #run vector_dimension(T.Point);
 
-    if !is_empty(box) {
+    if !is_empty(<<box) {
         for d : 0..dim-1 {
             assert(is_finite(increment.component[d]));
             min_point.component[d] -= increment.component[d];
@@ -89,12 +89,12 @@ offset :: (using box : *$T/AxisBox, increment : T.Vector) {
         }
     }
 
-    if is_empty(box) {
+    if is_empty(<<box) {
         init(box); // If box min/max invert after offset, use the standard representation of an empty box
     }
 }
 
-extents :: (using box : *$T/AxisBox) -> T.Vector #must {
+extents :: (using box : $T/AxisBox) -> T.Vector #must {
     dim :: #run vector_dimension(T.Point);
 
     box_extents : T.Vector;
