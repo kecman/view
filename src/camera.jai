@@ -60,9 +60,7 @@ update_camera :: (delta_time : float) {
 
     camera.fov_vertical_radians = 2 * atan2(camera.top, camera.eye_position.z);
 
-    view_from_world := make_look_at_matrix(camera);
-    projection_from_view := make_orthographic_projection_matrix(camera);
-    world_from_projection := inverse(projection_from_view * view_from_world);
+    world_from_projection := inverse(make_projection_from_world(<<camera));
 
     // Pan with middle down.
     if io_mouse_middle_down() {
@@ -91,9 +89,7 @@ update_camera :: (delta_time : float) {
     // Orbit about the look position using left button
     if ImGui.IsMouseDragging(0, 0.) {
 
-        view_from_world_at_mouse_down := make_look_at_matrix(*camera_at_mouse_down);
-        projection_from_view_at_mouse_down := make_orthographic_projection_matrix(*camera_at_mouse_down);
-        world_from_projection_at_mouse_down := inverse(projection_from_view_at_mouse_down * view_from_world_at_mouse_down);
+        world_from_projection_at_mouse_down := inverse(make_projection_from_world(camera_at_mouse_down));
 
         prev_arcball_vector := arcball_vector(mouse_down_pos);
         curr_arcball_vector := arcball_vector(io().MousePos);
@@ -170,7 +166,7 @@ update_to_fit_on_screen :: (world_box : geom.AxisBox3) {
     // look_position.xy = center.xy;
     // up_direction = .{0, 1, 0};
 
-    view_from_world := make_look_at_matrix(*app.camera);
+    view_from_world := make_look_at_matrix(app.camera);
     view_min := view_from_world * make_vector4(world_box.min_point, 1);
     view_max := view_from_world * make_vector4(world_box.max_point, 1);
 
@@ -193,7 +189,7 @@ update_to_fit_on_screen :: (world_box : geom.AxisBox3) {
 }
 
 // @Cleanup use Math.make_look_at_matrix here
-make_look_at_matrix :: (using camera : *Camera) -> Matrix4 #must {
+make_look_at_matrix :: (using camera : Camera) -> Matrix4 #must {
     f := normalize_or_z_axis(look_position - eye_position);
     s := normalize_or_z_axis(cross(f, up_direction));
     u := cross(s, f);
@@ -217,8 +213,20 @@ make_look_at_matrix :: (using camera : *Camera) -> Matrix4 #must {
     return m;
 }
 
-make_orthographic_projection_matrix :: (using camera : *Camera) -> Matrix4 #must {
+make_orthographic_projection_matrix :: (using camera : Camera) -> Matrix4 #must {
     return orthographic_projection_matrix(left, right, bottom, top, near, far);
+}
+
+make_projection_from_world :: (using camera : Camera) -> Matrix4 #must {
+    if #complete projection_type == {
+        case .ORTHOGRAPHIC;
+            view_from_world := make_look_at_matrix(camera);
+            projection_from_view := make_orthographic_projection_matrix(camera);
+            return projection_from_view * view_from_world;
+        case .PERSPECTIVE;
+            assert(false);
+            return matrix4_identity();
+    }
 }
 
 io :: () -> *ImGui.IO {return ImGui.GetIO(); }

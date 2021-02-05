@@ -118,9 +118,7 @@ render_vertex_labels :: (points : []Vector3, style : VertexLabelStyle, label_ind
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     world_from_model := matrix4_identity();
-    view_from_world := make_look_at_matrix(*app.camera);
-    projection_from_view := make_orthographic_projection_matrix(*app.camera);
-    projection_from_model := projection_from_view * view_from_world * world_from_model;
+    projection_from_model := make_projection_from_world(app.camera) * world_from_model;
 
     // @TODO call render_text_quad once with a list of points
     for points {
@@ -262,12 +260,8 @@ main :: () {
     vertex_label_style : VertexLabelStyle;
 
     {
-        // This should be dynamic, depending on the camera etc
         world_from_model := matrix4_identity();
-        view_from_world := make_look_at_matrix(*app.camera);
-        projection_from_view := make_orthographic_projection_matrix(*app.camera);
-
-        projection_from_model := projection_from_view * view_from_world * world_from_model;
+        projection_from_model := make_projection_from_world(app.camera) * world_from_model;
 
         glUseProgram(app.mesh_shader);
         mvp_loc := glGetUniformLocation(app.mesh_shader, "mvp");
@@ -486,9 +480,7 @@ main :: () {
 
         {
             world_from_model := matrix4_identity();
-            view_from_world := make_look_at_matrix(*app.camera);
-            projection_from_view := make_orthographic_projection_matrix(*app.camera);
-            projection_from_model := projection_from_view * view_from_world * world_from_model;
+            projection_from_model := make_projection_from_world(app.camera) * world_from_model;
 
             glUseProgram(app.mesh_shader);
             mvp_loc := glGetUniformLocation(app.mesh_shader, "mvp");
