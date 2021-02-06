@@ -217,6 +217,7 @@ main :: () {
                         continue;
                     }
 
+                    // @Incomplete: support polygon types using wkt format
                     mesh := load_obj(dropped);
 
                     if #complete mesh.geometry_format == {
@@ -230,12 +231,12 @@ main :: () {
                             array_add(*entities, entity);
 
                             logprint("view","Loaded 2d polyline soup file: '%'\n", dropped);
-                            fit_on_screen();
 
                         case .TRIANGLES;
                             entity := New(Mesh_Entity);
                             entity.mesh = mesh;
                             array_add(*entities, entity);
+
                             logprint("view", "Loaded triangle mesh file: '%'\n", dropped);
 
                         case .POINTS; #through;
@@ -243,7 +244,7 @@ main :: () {
                         case;
                             logprint("view", "Skipped file: '%' (unsupported geometry type %)\n", dropped, mesh.geometry_format);
                             deinit(*mesh);
-                            continue; // @Incomplete: support polygon types using wkt format
+                            continue;
                     }
                 }
             }
