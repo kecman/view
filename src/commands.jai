@@ -121,6 +121,7 @@ tmp_clockwise_boundaries :: (args : []string) {
 
     polygon_soup2_entity := cast(*Polygon_Soup2_Entity) it;
 
+    #import "BoostPolygon";
     boundary := BoostPolygon.clockwise_boundaries(*polygon_soup2_entity.shape);
     if boundary.polylines.count == 0 {
         console_add_log("# result is empty");
@@ -171,6 +172,7 @@ tmp_offset :: (args : []string) {
 
     polyline_soup2_entity := cast(*Polyline_Soup2_Entity) it;
 
+    #import "BoostPolygon";
     offset_polygon := BoostPolygon.offset(*polyline_soup2_entity.shape, offset_radius);
     if offset_polygon.polygons.count == 0 {
         console_add_log("# result is empty"); // offsetting a line with a negative value gives nothing

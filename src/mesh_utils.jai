@@ -45,15 +45,15 @@ make_axes_triad :: (axis_length : float) -> Axes_Triad
     z_axis = to_Mesh(par_shapes_triad.z_axis);
     origin = to_Mesh(par_shapes_triad.origin);
 
-    x_axis.color = Vector4.{1, 0, 0, 1};
-    y_axis.color = Vector4.{0, 1, 0, 1};
-    z_axis.color = Vector4.{0, 0, 1, 1};
-    origin.color = Vector4.{1, 1, 1, 1};
-
     buffer_mesh(*x_axis);
     buffer_mesh(*y_axis);
     buffer_mesh(*z_axis);
     buffer_mesh(*origin);
+
+    x_axis.color = Vector4.{1, 0, 0, 1};
+    y_axis.color = Vector4.{0, 1, 0, 1};
+    z_axis.color = Vector4.{0, 0, 1, 1};
+    origin.color = Vector4.{1, 1, 1, 1};
 
     return result;
 }

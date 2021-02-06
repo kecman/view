@@ -356,8 +356,10 @@ parse_triangle :: (handler : *Text_File_Handler, str : string) -> Triangle {
 
 #import "Text_File_Handler";
 #import "Basic";
+#import "File";
 #import "String";
 #import "Math";
 #import "Hash";
 
 #import "geometry";
+#import "BoostPolygon"; // for convex_decomposition

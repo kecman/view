@@ -9,8 +9,10 @@ Geometry_Format :: enum {
 Mesh :: struct {
     geometry_format := Geometry_Format.UNKNOWN;
 
+#if USE_GRAPHICS {
     vbo : GLuint;
     ibo : GLuint;
+}
 
     is_dirty := true;
     fully_pathed_filename : string;
@@ -29,6 +31,7 @@ Mesh :: struct {
 }
 
 buffer_mesh :: (mesh : *Mesh) {
+#if USE_GRAPHICS {
     if mesh.is_dirty {
         if !mesh.vbo glGenBuffers(1, *mesh.vbo);
         glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
@@ -43,10 +46,13 @@ buffer_mesh :: (mesh : *Mesh) {
         mesh.is_dirty = false;
     }
 }
+}
 
 deinit :: (mesh : *Mesh) {
+#if USE_GRAPHICS {
     if mesh.vbo glDeleteBuffers(1, *mesh.vbo);
     if mesh.ibo glDeleteBuffers(1, *mesh.ibo);
+}
 
     mesh.vbo = 0;
     mesh.ibo = 0;
@@ -75,6 +81,8 @@ bounding_box :: (using mesh : Mesh) -> AxisBox3 #must {
     return box;
 }
 
-#scope_file
-
-#import "GL"; // needed since Mesh stores GLuint
+// Or maybe we should have a Renderable_Mesh? bleh..
+#if USE_GRAPHICS {
+#import "GL"; // for GLuint, glGenBuffers, glDeleteBuffers
+#run compiler_set_type_info_flags(GL_Procedures, .NO_SIZE_COMPLAINT);
+}
