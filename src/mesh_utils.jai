@@ -1,5 +1,141 @@
-#load "shapes.jai";
-#import "geometry";
+
+to_Mesh :: (shape : Polyline_Soup2) -> Mesh, bool #must {
+    mesh : Mesh;
+
+    if is_empty(shape) {
+        return mesh, false;
+    }
+
+    mesh.geometry_format = .LINES;
+
+    index_offset := 0;
+    for polyline : shape.polylines {
+        if is_empty(polyline) {
+            continue;
+        }
+
+        point := polyline.points[0];
+        array_add(*mesh.vertices, make_vector3(point.x, point.y, 0));
+
+        for segment_index : 0..polyline.points.count-2 {
+            point = polyline.points[segment_index + 1];
+            array_add(*mesh.vertices, make_vector3(point.x, point.y, 0));
+            array_add(*mesh.indices, xx (index_offset + segment_index));
+            array_add(*mesh.indices, xx (index_offset + segment_index  + 1));
+        }
+
+        index_offset += polyline.points.count;
+    }
+
+    buffer_mesh(*mesh);
+
+    return mesh, true;
+}
+
+to_Polyline_Soup2 :: (mesh : Mesh, $Point : Type = Vector2) -> Polyline_Soup(Point), bool #must {
+    result : Polyline_Soup(Point);
+
+    if mesh.geometry_format != .LINES || mesh.indices.count < 2 || mesh.vertices.count == 0 {
+        return result, false;
+    }
+
+    // @Cleanup Implement a segment iterator?
+
+    Segment :: struct {
+        from_index : int = ---;
+        to_index : int = ---;
+        from_point : Point = ---;
+        to_point : Point = ---;
+    }
+
+    get_segment :: (mesh : Mesh, segment_index : int) -> Segment {
+        assert(2 * segment_index + 1 < mesh.indices.count);
+
+        segment : Segment;
+        segment.from_index = mesh.indices[2 * segment_index];
+        segment.to_index   = mesh.indices[2 * segment_index + 1];
+        #if Point == Vector2 {
+        segment.from_point = mesh.vertices[segment.from_index].xy;
+        segment.to_point   = mesh.vertices[segment.to_index].xy;
+        } else {
+        segment.from_point = mesh.vertices[segment.from_index];
+        segment.to_point   = mesh.vertices[segment.to_index];
+        }
+        return segment;
+    }
+
+    segment_index := 0;
+
+    segment := get_segment(mesh, segment_index);
+    polyline_start_index := segment.from_index;
+    polyline := array_add(*result.polylines);
+    array_add(*polyline.points, segment.from_point);
+
+    while true {
+        segment := get_segment(mesh, segment_index);
+        array_add(*polyline.points, segment.to_point);
+
+        segment_index += 1;
+        if 2 * segment_index + 1 >= mesh.indices.count break;
+
+        if segment.to_index == polyline_start_index {
+            segment := get_segment(mesh, segment_index);
+            polyline_start_index = segment.from_index;
+            polyline = array_add(*result.polylines);
+            array_add(*polyline.points, segment.from_point);
+        }
+    }
+
+    return result, true;
+}
+
+to_Mesh :: (shape : Polygon_Soup2) -> Mesh, bool #must {
+    result : Mesh;
+
+    convex : Polygon_Soup2 = BoostPolygon.convex_decomposition(*shape);
+
+    for convex.polygons {
+        if it.inner_rings.count != 0 {
+            return result, false;
+        }
+    }
+
+    result.geometry_format = .TRIANGLES;
+
+    mesh_index := 0;
+    for convex.polygons {
+        i := 0;
+        j := 1;
+        k := 2;
+        while k < it.outer_ring.points.count {
+            pi := it.outer_ring.points[i];
+            pj := it.outer_ring.points[j];
+            pk := it.outer_ring.points[k];
+            array_add(*result.vertices, make_vector3(pi.x, pi.y, 0));
+            array_add(*result.vertices, make_vector3(pj.x, pj.y, 0));
+            array_add(*result.vertices, make_vector3(pk.x, pk.y, 0));
+            array_add(*result.indices, xx (mesh_index + 0));
+            array_add(*result.indices, xx (mesh_index + 1));
+            array_add(*result.indices, xx (mesh_index + 2));
+            j += 1;
+            k += 1;
+            mesh_index += 3;
+        }
+    }
+
+    buffer_mesh(*result);
+
+    return result, true;
+}
+
+// @TODO only really needed to load polygon objs, but we should just do that with wkt files instead
+to_Polygon_Soup2 :: (mesh : Mesh) -> Polygon_Soup2, bool #must {
+    result : Polygon_Soup2;
+    // make each triangle into a polygon
+    // boolean union triangles? (this should be a parameter)
+    // not very nice at all but I guess it works
+    return result, false;
+}
 
 to_Mesh :: (m : par_shapes_mesh) -> Mesh
 {
@@ -174,3 +310,8 @@ deinit :: (using triad : *Triad) {
     deinit(triad.z_axis);
     deinit(triad.origin);
 }
+
+#scope_file
+
+#load "shapes.jai";
+#import "geometry";
