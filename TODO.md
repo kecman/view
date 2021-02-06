@@ -1,6 +1,7 @@
 ## Soon
+- [Performance] Speed up text rendering, it's so slow right now!
 - 3D mesh shading and lights in the scene
-- Use @test to tag/run tests
+- [Tests] Use @test to tag/run tests
 - Autogenerate code for bingings
 - [Bug] Show points in the specific entity, not on the mesh, so this works better with polygons
 - [Bug] Fix vertex numbering with meshes
@@ -9,7 +10,9 @@
 
 ## Backlog
 - build_debug and build_release with proper llvm options
-- Hot load the C++ bindings, and console commands, so you can keep same UI state while you iterate on your code
+- [Epic] Hotload the C++ bindings, and console commands, so you can keep same UI state while you iterate on your code
+- [Epic] Hotload jai code so that you can keep state while you change your algorithm
+- Implement geometric equals functions for testing, can be used to compare Jai/C++ implementations
 - Don't pass pointers for arguments that aren't modified
 - Alternate segment colours (two draw calls?)
 - Compiled at time in Window, after version?
@@ -20,7 +23,6 @@
 - Cleanup construction/destruction: make functions to do that
 - Support polygons and polygon soups, and do convex decomposition for rendering
 - Support loading wkt file format
-- Cleanup text rendering, it's so slow right now!
 - Make the polygon/polyline types use slices, not dynamic arrays, put allocators in the top level
 - Autogenerate the console registering code to add commands to the console
 - Sort by time loaded
