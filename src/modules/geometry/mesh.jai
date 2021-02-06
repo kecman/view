@@ -69,7 +69,6 @@ print_Mesh :: (mesh : Mesh) {
 
 bounding_box :: (using mesh : Mesh) -> AxisBox3 #must {
     box : AxisBox3;
-    init(*box);
     for * mesh.vertices {
         expand(*box, <<it);
     }

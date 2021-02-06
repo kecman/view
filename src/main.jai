@@ -508,18 +508,57 @@ main :: () {
 #scope_file
 
 fit_on_screen :: () {
-    overall_bounds : geom.AxisBox3;
-    geom.init(*overall_bounds);
+
+    view_from_world := make_look_at_matrix(app.camera);
+    world_from_view := inverse(view_from_world);
+
+    // Compute the bounding box of the scene in view coords
+    bbox : geom.AxisBox3;
+    bbox2 : geom.AxisBox2;
+
+    // geom.init(*bbox);
     for entities {
         mesh := get_mesh(it);
         if mesh && mesh.visible {
-            bounds := geom.bounding_box(<<mesh);
-            geom.expand(*overall_bounds, bounds);
+            // for mesh.vertices {
+
+            // }
+
+            mesh_bbox := geom.bounding_box(<<mesh);
+            for :corners_iterator model_point, _ : mesh_bbox {
+                world_point := view_from_world * mesh.world_from_model * make_vector4(model_point, 1);
+                geom.expand(*bbox, world_point.xyz);
+            }
+            geom.expand(*bbox, mesh_bbox);
         }
     }
 
-    geom.offset(*overall_bounds, 0.05 * geom.extents(overall_bounds));
-    update_to_fit_on_screen(overall_bounds);
+    // geom.offset(*bbox, 0.05 * geom.extents(bbox));
+
+    if geom.is_empty(bbox) return;
+
+    center_world := (world_from_view * make_vector4(geom.center_point(bbox), 1)).xyz;
+    // app.camera.eye_position.xy = center_world.xy;
+    // app.camera.eye_position = center_world + make_vector3(0, 0, 10);
+    app.camera.look_position = center_world;
+    // up_direction = .{0, 1, 0};
+
+    extents := geom.extents(bbox);
+    scale := (extents.y / 2) / app.camera.top;
+    if scale * app.camera.right < (extents.x / 2) {
+        scale = (extents.x / 2) / app.camera.right;
+    }
+
+    app.camera.top *= scale;
+    app.camera.bottom *= scale;
+    app.camera.right *= scale;
+    app.camera.left *= scale;
+
+    // @TODO pick these numbers so details at 5um are clearly visible e.g., fill up whole screen?
+    app.camera.top = max(app.camera.top, 0.1);
+    app.camera.bottom = min(app.camera.bottom, -0.1);
+    app.camera.right = max(app.camera.right, current_window_aspect_ratio_width_over_height() * 0.1);
+    app.camera.left = min(app.camera.left, -current_window_aspect_ratio_width_over_height() * 0.1);;
 }
 
 cycle_vertex_label_style :: (using style : *VertexLabelStyle) {

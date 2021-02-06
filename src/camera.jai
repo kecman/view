@@ -156,38 +156,6 @@ update_camera :: (delta_time : float) {
     // print("update_camera: %\n", camera);
 }
 
-update_to_fit_on_screen :: (world_box : geom.AxisBox3) {
-    if geom.is_empty(world_box) {
-        return;
-    }
-
-    // center := geom.center_point(world_box);
-    // eye_position.xy = center.xy;
-    // look_position.xy = center.xy;
-    // up_direction = .{0, 1, 0};
-
-    view_from_world := make_look_at_matrix(app.camera);
-    view_min := view_from_world * make_vector4(world_box.min_point, 1);
-    view_max := view_from_world * make_vector4(world_box.max_point, 1);
-
-    extents := geom.extents(world_box);
-    scale := (extents.y / 2) / app.camera.top;
-    if scale * app.camera.right < (extents.x / 2) {
-        scale = (extents.x / 2) / app.camera.right;
-    }
-
-    app.camera.top *= scale;
-    app.camera.bottom *= scale;
-    app.camera.right *= scale;
-    app.camera.left *= scale;
-
-    // @TODO pick these numbers so details at 5um are clearly visible e.g., fill up whole screen?
-    app.camera.top = max(app.camera.top, 0.1);
-    app.camera.bottom = min(app.camera.bottom, -0.1);
-    app.camera.right = max(app.camera.right, current_window_aspect_ratio_width_over_height() * 0.1);
-    app.camera.left = min(app.camera.left, -current_window_aspect_ratio_width_over_height() * 0.1);;
-}
-
 // @Cleanup use Math.make_look_at_matrix here
 make_look_at_matrix :: (using camera : Camera) -> Matrix4 #must {
     f := normalize_or_z_axis(look_position - eye_position);
