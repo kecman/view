@@ -9,6 +9,7 @@ load_obj :: (filename : string) -> Mesh {
     // http://paulbourke.net/dataformats/obj/
 
     result : Mesh;
+    result.wireframe = true;
     result.fully_pathed_filename = filename;
 
     handler: Text_File_Handler;
