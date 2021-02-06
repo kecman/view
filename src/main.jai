@@ -219,18 +219,38 @@ main :: () {
 
                     // @Incomplete: support polygon types using wkt format
                     mesh := load_obj(dropped);
+                    if !mesh.vertices.count {
+                        print("Skipped file: '%' (0 vertices)\n", dropped);
+                        continue;
+                    }
 
                     if #complete mesh.geometry_format == {
                         case .LINES;
-                            shape, ok := to_Polyline_Soup2(mesh);
-                            assert(ok);
+                            bbox := geom.bounding_box(mesh);
+                            print("bbox = %\n", bbox);
+                            if extents(bbox).z == 0 {
+                                shape, ok := to_Polyline_Soup2(mesh);
+                                assert(ok);
 
-                            entity := New(Polyline_Soup2_Entity);
-                            entity.mesh = mesh;
-                            entity.shape = shape;
-                            array_add(*entities, entity);
+                                entity := New(Polyline_Soup2_Entity);
+                                // entity := New(Polyline_Soup3_Entity);
+                                entity.mesh = mesh;
+                                entity.shape = shape;
+                                array_add(*entities, entity);
 
-                            logprint("view","Loaded 2d polyline soup file: '%'\n", dropped);
+                                logprint("view","Loaded 2d polyline soup file: '%'\n", dropped);
+                            } else {
+                                shape, ok := to_Polyline_Soup2(mesh, Vector3);
+                                assert(ok);
+
+                                entity := New(Polyline_Soup3_Entity);
+                                entity.mesh = mesh;
+                                entity.shape = shape;
+                                array_add(*entities, entity);
+
+                                logprint("view","Loaded 3d polyline soup file: '%'\n", dropped);
+                                continue;
+                            }
 
                         case .TRIANGLES;
                             entity := New(Mesh_Entity);
@@ -472,10 +492,17 @@ render_mesh :: (mesh : Mesh, style : VertexLabelStyle) {
 }
 
 render_vertex_labels :: (points : []Vector3, style : VertexLabelStyle, label_index_offset : int = 0) {
+    RENDER_LIMIT :: 1000;
+    if points.count > RENDER_LIMIT && (style.show_index || style.show_position) {
+        // logprint("view", "Sorry text rendering sucks at the moment, can only render up to % labels!\n", RENDER_LIMIT);
+        return;
+    }
+
     glEnable(GL_BLEND);
     defer glDisable(GL_BLEND);
-    glDisable(GL_CULL_FACE);
-    defer glEnable(GL_CULL_FACE);
+    // Culling is unhelpful for polygon meshes @Cleanup make this a property on the mesh
+    // glDisable(GL_CULL_FACE);
+    // defer glEnable(GL_CULL_FACE);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     world_from_model := matrix4_identity();

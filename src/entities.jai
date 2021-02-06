@@ -4,6 +4,7 @@ Entity :: struct {
     Entity_Type :: enum {
         UNKNOWN;
         POLYLINE_SOUP2;
+        POLYLINE_SOUP3;
         POLYGON_SOUP2;
         MESH;
         FLOAT;
@@ -16,6 +17,14 @@ Polyline_Soup2_Entity :: struct {
     type = .POLYLINE_SOUP2;
 
     shape : geom.Polyline_Soup2;
+    mesh : Mesh; // for rendering
+}
+
+Polyline_Soup3_Entity :: struct {
+    using base : Entity;
+    type = .POLYLINE_SOUP3;
+
+    shape : geom.Polyline_Soup3;
     mesh : Mesh; // for rendering
 }
 
@@ -42,6 +51,11 @@ deinit :: (base : *Entity) {
             deinit(*entity.mesh);
             deinit(*entity.shape);
         }
+        case .POLYLINE_SOUP3; {
+            entity := cast(*Polyline_Soup3_Entity)base;
+            deinit(*entity.mesh);
+            deinit(*entity.shape);
+        }
         case .POLYGON_SOUP2; {
             entity := cast(*Polygon_Soup2_Entity)base;
             deinit(*entity.mesh);
@@ -60,6 +74,10 @@ get_mesh :: (base : *Entity) -> *Mesh {
     if #complete base.type == {
         case .POLYLINE_SOUP2; {
             entity := cast(*Polyline_Soup2_Entity)base;
+            return *entity.mesh;
+        }
+        case .POLYLINE_SOUP3; {
+            entity := cast(*Polyline_Soup3_Entity)base;
             return *entity.mesh;
         }
         case .POLYGON_SOUP2; {

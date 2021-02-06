@@ -177,17 +177,11 @@ to_Mesh :: (shape : Polyline_Soup2) -> Mesh, bool #must {
     return mesh, true;
 }
 
-to_Polyline_Soup2 :: (mesh : Mesh) -> Polyline_Soup2, bool #must {
-    result : Polyline_Soup2;
+to_Polyline_Soup2 :: (mesh : Mesh, $Point : Type = Vector2) -> Polyline_Soup(Point), bool #must {
+    result : Polyline_Soup(Point);
 
     if mesh.geometry_format != .LINES || mesh.indices.count < 2 || mesh.vertices.count == 0 {
         return result, false;
-    }
-
-    for mesh.vertices {
-        if it.z != mesh.vertices[0].z {
-            return result, false; // Not a 2D shape in the xy-plane
-        }
     }
 
     // @Cleanup Implement a segment iterator?
@@ -195,8 +189,8 @@ to_Polyline_Soup2 :: (mesh : Mesh) -> Polyline_Soup2, bool #must {
     Segment :: struct {
         from_index : int = ---;
         to_index : int = ---;
-        from_point : Vector2 = ---;
-        to_point : Vector2 = ---;
+        from_point : Point = ---;
+        to_point : Point = ---;
     }
 
     get_segment :: (mesh : Mesh, segment_index : int) -> Segment {
@@ -205,8 +199,13 @@ to_Polyline_Soup2 :: (mesh : Mesh) -> Polyline_Soup2, bool #must {
         segment : Segment;
         segment.from_index = mesh.indices[2 * segment_index];
         segment.to_index   = mesh.indices[2 * segment_index + 1];
+        #if Point == Vector2 {
         segment.from_point = mesh.vertices[segment.from_index].xy;
         segment.to_point   = mesh.vertices[segment.to_index].xy;
+        } else {
+        segment.from_point = mesh.vertices[segment.from_index];
+        segment.to_point   = mesh.vertices[segment.to_index];
+        }
         return segment;
     }
 
