@@ -1,25 +1,3 @@
-#import "Basic";
-#import "File";
-#import "String";
-#import "Math";
-// Debug :: #import "Debug";
-
-#load "vendor/imgui_sdl_gl.jai";
-
- // @Cleanup just load this
-geom :: #import "geometry";
-#import "BoostPolygon";
-
-#load "io.jai";
-#load "shaders.jai";
-#load "font.jai";
-#load "carpet.jai";
-#load "camera.jai";
-#load "console.jai";
-#load "entities.jai";
-#load "mesh_utils.jai";
-//#load "commands.jai"; // @CompilerBug loading here triggers incorrect (?) compilation error
-
 // Shared global state is stored here
 app : struct {
     INITIAL_WINDOW_WIDTH  : s32 : 1280;
@@ -46,103 +24,6 @@ app : struct {
 
 current_window_aspect_ratio_width_over_height :: () -> float {
     return cast(float) app.current_window_width / cast(float) app.current_window_height;
-}
-
-VertexLabelStyle :: struct {
-    show_position := false;
-    show_index := false;
-
-    point_size : int = 4; // 0, 2, 4, 6
-    line_width : int = 2; // 1, 1, 2, 3
-}
-
-render_mesh :: (mesh : Mesh, style : VertexLabelStyle) {
-    using app;
-
-    if !mesh.visible {
-        return;
-    }
-
-    assert(!mesh.is_dirty);
-
-    glUseProgram(mesh_shader);
-
-    projection_from_model := make_projection_from_world(app.camera) * mesh.world_from_model;
-
-    mvp_loc := glGetUniformLocation(mesh_shader, "mvp");
-    color_loc := glGetUniformLocation(mesh_shader, "color");
-    point_size_loc := glGetUniformLocation(mesh_shader, "point_size");
-
-    glUniformMatrix4fv(mvp_loc, 1, GL_TRUE, *projection_from_model._11);
-    glUniform4f(color_loc, mesh.color.x, mesh.color.y, mesh.color.z, mesh.color.w);
-    glUniform1f(point_size_loc, xx style.point_size);
-
-    glBindVertexArray(mesh_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ibo);
-
-    glEnableVertexAttribArray(0);
-    defer glDisableVertexAttribArray(0);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, size_of(Vector3), null);
-
-    last_line_width: float;
-    glGetFloatv(GL_LINE_WIDTH, xx *last_line_width);
-    defer glLineWidth(last_line_width);
-
-    glLineWidth(xx style.line_width); // 1, 2, 3... See also glEnable(GL_LINE_SMOOTH);
-
-    last_polygon_mode: [2]GLuint;
-    glGetIntegerv(GL_POLYGON_MODE, xx last_polygon_mode.data);
-    defer glPolygonMode(GL_FRONT_AND_BACK, last_polygon_mode[0]);
-
-    if mesh.wireframe {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    } else {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    }
-
-    if #complete mesh.geometry_format == {
-        case .POINTS;
-        case .UNKNOWN;
-        case .LINES;
-            glDrawElements(GL_LINES, xx mesh.indices.count, GL_UNSIGNED_INT, null);
-        case .TRIANGLES;
-            glDrawElements(GL_TRIANGLES, xx mesh.indices.count, GL_UNSIGNED_INT, null);
-    }
-
-    glEnable(GL_PROGRAM_POINT_SIZE);
-    glDrawArrays(GL_POINTS, 0, xx mesh.vertices.count);
-}
-
-render_vertex_labels :: (points : []Vector3, style : VertexLabelStyle, label_index_offset : int = 0) {
-    glEnable(GL_BLEND);
-    defer glDisable(GL_BLEND);
-    glDisable(GL_CULL_FACE);
-    defer glEnable(GL_CULL_FACE);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    world_from_model := matrix4_identity();
-    projection_from_model := make_projection_from_world(app.camera) * world_from_model;
-
-    // @TODO call render_text_quad once with a list of points
-    for points {
-        text : string;
-        if style.show_index && style.show_position text = tprint("% (% %)", label_index_offset + it_index, it.x, it.y);
-        if style.show_index && !style.show_position text = tprint("%", label_index_offset + it_index);
-        if !style.show_index && style.show_position text = tprint("(% %)", it.x, it.y);
-        if !style.show_index && !style.show_position break;
-
-        text_w := get_text_width_in_pixels(text, 1.0);
-        scale := 0.3;
-
-        // [-1, 1]x[-1,1] -> [0, current_window_width]x[0, current_window_height]
-        text_position_px := projection_from_model * make_vector4(it.x, it.y, it.z, 1.);
-        text_position_px.x = cast(float)app.current_window_width * (text_position_px.x + 1) / 2;
-        text_position_px.y = cast(float)app.current_window_height * (text_position_px.y + 1) / 2;
-
-        render_text_quad(app.text_shader, text, text_position_px.xy, scale, make_vector4(1., 1., 1., 1));
-    }
 }
 
 main :: () {
@@ -508,7 +389,114 @@ main :: () {
     SDL_Quit();
 }
 
+#import "Basic";
+#import "File";
+#import "String";
+#import "Math";
+
+geom :: #import "geometry";
+#import "BoostPolygon";
+
+#load "io.jai";
+#load "shaders.jai";
+#load "font.jai";
+#load "carpet.jai";
+#load "camera.jai";
+#load "console.jai";
+#load "entities.jai";
+#load "mesh_utils.jai";
+//#load "commands.jai"; // @CompilerBug loading here triggers incorrect (?) compilation error
+
 #scope_file
+
+render_mesh :: (mesh : Mesh, style : VertexLabelStyle) {
+    using app;
+
+    if !mesh.visible {
+        return;
+    }
+
+    assert(!mesh.is_dirty);
+
+    glUseProgram(mesh_shader);
+
+    projection_from_model := make_projection_from_world(app.camera) * mesh.world_from_model;
+
+    mvp_loc := glGetUniformLocation(mesh_shader, "mvp");
+    color_loc := glGetUniformLocation(mesh_shader, "color");
+    point_size_loc := glGetUniformLocation(mesh_shader, "point_size");
+
+    glUniformMatrix4fv(mvp_loc, 1, GL_TRUE, *projection_from_model._11);
+    glUniform4f(color_loc, mesh.color.x, mesh.color.y, mesh.color.z, mesh.color.w);
+    glUniform1f(point_size_loc, xx style.point_size);
+
+    glBindVertexArray(mesh_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ibo);
+
+    glEnableVertexAttribArray(0);
+    defer glDisableVertexAttribArray(0);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, size_of(Vector3), null);
+
+    last_line_width: float;
+    glGetFloatv(GL_LINE_WIDTH, xx *last_line_width);
+    defer glLineWidth(last_line_width);
+
+    glLineWidth(xx style.line_width); // 1, 2, 3... See also glEnable(GL_LINE_SMOOTH);
+
+    last_polygon_mode: [2]GLuint;
+    glGetIntegerv(GL_POLYGON_MODE, xx last_polygon_mode.data);
+    defer glPolygonMode(GL_FRONT_AND_BACK, last_polygon_mode[0]);
+
+    if mesh.wireframe {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    } else {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+
+    if #complete mesh.geometry_format == {
+        case .POINTS;
+        case .UNKNOWN;
+        case .LINES;
+            glDrawElements(GL_LINES, xx mesh.indices.count, GL_UNSIGNED_INT, null);
+        case .TRIANGLES;
+            glDrawElements(GL_TRIANGLES, xx mesh.indices.count, GL_UNSIGNED_INT, null);
+    }
+
+    glEnable(GL_PROGRAM_POINT_SIZE);
+    glDrawArrays(GL_POINTS, 0, xx mesh.vertices.count);
+}
+
+render_vertex_labels :: (points : []Vector3, style : VertexLabelStyle, label_index_offset : int = 0) {
+    glEnable(GL_BLEND);
+    defer glDisable(GL_BLEND);
+    glDisable(GL_CULL_FACE);
+    defer glEnable(GL_CULL_FACE);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    world_from_model := matrix4_identity();
+    projection_from_model := make_projection_from_world(app.camera) * world_from_model;
+
+    // @TODO call render_text_quad once with a list of points
+    for points {
+        text : string;
+        if style.show_index && style.show_position text = tprint("% (% %)", label_index_offset + it_index, it.x, it.y);
+        if style.show_index && !style.show_position text = tprint("%", label_index_offset + it_index);
+        if !style.show_index && style.show_position text = tprint("(% %)", it.x, it.y);
+        if !style.show_index && !style.show_position break;
+
+        text_w := get_text_width_in_pixels(text, 1.0);
+        scale := 0.3;
+
+        // [-1, 1]x[-1,1] -> [0, current_window_width]x[0, current_window_height]
+        text_position_px := projection_from_model * make_vector4(it.x, it.y, it.z, 1.);
+        text_position_px.x = cast(float)app.current_window_width * (text_position_px.x + 1) / 2;
+        text_position_px.y = cast(float)app.current_window_height * (text_position_px.y + 1) / 2;
+
+        render_text_quad(app.text_shader, text, text_position_px.xy, scale, make_vector4(1., 1., 1., 1));
+    }
+}
 
 fit_on_screen :: () {
     view_from_world := make_look_at_matrix(app.camera);
@@ -557,6 +545,14 @@ fit_on_screen :: () {
     app.camera.bottom = min(app.camera.bottom, -0.1);
     app.camera.right = max(app.camera.right, current_window_aspect_ratio_width_over_height() * 0.1);
     app.camera.left = min(app.camera.left, -current_window_aspect_ratio_width_over_height() * 0.1);;
+}
+
+VertexLabelStyle :: struct {
+    show_position := false;
+    show_index := false;
+
+    point_size : int = 4; // 0, 2, 4, 6
+    line_width : int = 2; // 1, 1, 2, 3
 }
 
 cycle_vertex_label_style :: (using style : *VertexLabelStyle) {
@@ -630,6 +626,8 @@ debug_callback :: (source: GLenum, type: GLenum, id: GLuint, severity: GLenum, l
         print("userParam: %\n", userParam);
     }
 }
+
+#load "vendor/imgui_sdl_gl.jai";
 
 #import "Compiler";
 // #run compiler_set_type_info_flags(GL_Procedures, .PROCEDURES_ARE_VOID_POINTERS);
