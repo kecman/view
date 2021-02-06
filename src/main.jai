@@ -17,6 +17,7 @@ app : struct {
 
     show_ui := true;
     show_console_ui := false;
+    show_viewcube_ui := false;
 
     camera : Camera;
     console : Console;
@@ -342,6 +343,7 @@ main :: () {
         // @Cleanup: use delta_time argument?
         update_camera(1);
 
+
         for entities {
             mesh := get_mesh(it);
             if mesh && mesh.visible {
@@ -356,6 +358,7 @@ main :: () {
         render_mesh(triad.y_axis, .{point_size=0, line_width=1});
         render_mesh(triad.z_axis, .{point_size=0, line_width=1});
 
+        render_viewcube();
         ImGui.Render();
 
         if false { // @Cleanup: remove this
@@ -405,6 +408,7 @@ geom :: #import "geometry";
 #load "console.jai";
 #load "entities.jai";
 #load "mesh_utils.jai";
+#load "widgets.jai";
 //#load "commands.jai"; // @CompilerBug loading here triggers incorrect (?) compilation error
 
 #scope_file
