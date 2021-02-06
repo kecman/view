@@ -11,6 +11,11 @@ AxisBox :: struct(Point : Type) {
     #insert #run generate_initializer(DIM);
 };
 
+// Explicitly initialize the box
+init :: (using box : *$T/AxisBox) {
+    #insert #run generate_initializer(DIM);
+}
+
 AxisBox2 :: AxisBox(Vector2);
 
 Corner2 :: enum u8 {
@@ -132,8 +137,7 @@ offset :: (using box : *$T/AxisBox, increment : T.Vector) {
 
     if is_empty(<<box) {
         // If box min/max invert after offset, use the standard representation of an empty box
-        using box;
-        #insert #run generate_initializer(DIM);
+        init(box);
     }
 }
 
