@@ -41,7 +41,7 @@ main :: () {
 #scope_file
 
 #import "geometry" (USE_GRAPHICS = false);
-#load "io.jai";
+#load "io_obj.jai";
 
 #import "Basic";
 #import "Compiler";

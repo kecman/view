@@ -1,4 +1,5 @@
 ## Soon
+- Support loading wkt file format, so we can load Polygons in a reasonable way
 - [Performance] Speed up text rendering, it's so slow right now!
 - 3D mesh shading and lights in the scene
 - [Tests] Use @test to tag/run tests
@@ -22,7 +23,6 @@
 - Transparency with order as it is in the entity list
 - Cleanup construction/destruction: make functions to do that
 - Support polygons and polygon soups, and do convex decomposition for rendering
-- Support loading wkt file format
 - Make the polygon/polyline types use slices, not dynamic arrays, put allocators in the top level
 - Autogenerate the console registering code to add commands to the console
 - Sort by time loaded

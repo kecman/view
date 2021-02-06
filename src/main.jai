@@ -419,7 +419,7 @@ main :: () {
 #import "Math";
 
 geom :: #import "geometry";
-#load "io.jai";
+#load "io_obj.jai";
 #load "shaders.jai";
 #load "font.jai";
 #load "carpet.jai";
