@@ -4,7 +4,7 @@ AxisBox3 :: AxisBox(Vector3);
 AxisBox :: struct(Point : Type) {
     Vector :: Point;
 
-    DIM :: #run vector_dimension(Point);
+    DIM :: #run dimension_of(Point);
     Corner :: #run corner_type(DIM);
 
     min_point : Point;

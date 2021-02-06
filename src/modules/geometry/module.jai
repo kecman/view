@@ -15,14 +15,15 @@ to_degrees :: (radians : float) -> float {
 
 #scope_module
 
-check_vector :: (T : Type, loc := #caller_location) {
-    dim := vector_dimension(T);
+check_dimension_of :: (T : Type, loc := #caller_location) {
+    dim := dimension_of(T);
     if dim < 2 || dim > 3 {
         compiler_report(loc.fully_pathed_filename, loc.line_number, 0, "Expected Vector2 or Vector3");
     }
 }
 
-vector_dimension :: (T : Type, loc := #caller_location) -> int {
+// Returns a signed int so we can write dim-1 in loops and things just work
+dimension_of :: (T : Type, loc := #caller_location) -> int {
     if T == Vector2 return 2;
     if T == Vector3 return 3;
     compiler_report(loc.fully_pathed_filename, loc.line_number, 0, "Expected Vector2 or Vector3");

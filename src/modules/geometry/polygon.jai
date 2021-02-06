@@ -3,7 +3,7 @@ Polygon2 :: Polygon(Vector2);
 Polygon_Soup2 :: Polygon_Soup(Vector2);
 
 // A ring (aka linear ring) is a closed line (last point == first point) which should not be self-intersecting
-Ring :: struct (Point : Type) #modify check_vector(Point) {
+Ring :: struct (Point : Type) #modify check_dimension_of(Point) {
     points : [..]Point; // last point == first point
 }
 
@@ -11,7 +11,7 @@ deinit :: (shape : *$T/Ring) {
     array_reset(*shape.points);
 }
 
-Polygon :: struct (Point : Type) #modify check_vector(Point) {
+Polygon :: struct (Point : Type) #modify check_dimension_of(Point) {
     // @Cleanup: consider explicitly storing the allocator and storing slices, see e.g., Hash_Table.jai
     outer_ring : Ring(Point);
     inner_rings : [..]Ring(Point);
@@ -23,7 +23,7 @@ deinit :: (shape : *$T/Polygon) {
     array_reset(*shape.inner_rings);
 }
 
-Polygon_Soup :: struct (Point : Type) #modify check_vector(Point) {
+Polygon_Soup :: struct (Point : Type) #modify check_dimension_of(Point) {
     polygons : [..]Polygon(Point);
 }
 

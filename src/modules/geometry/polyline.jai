@@ -4,7 +4,7 @@ Polyline_Soup2 :: Polyline_Soup(Vector2);
 Polyline3 :: Polyline(Vector3);
 Polyline_Soup3 :: Polyline_Soup(Vector3);
 
-Polyline :: struct (Point : Type) #modify check_vector(Point) {
+Polyline :: struct (Point : Type) #modify check_dimension_of(Point) {
     points : [..]Point;
 }
 
@@ -12,7 +12,7 @@ deinit :: (shape : *$T/Polyline) {
     array_reset(*shape.points);
 }
 
-Polyline_Soup :: struct (Point : Type) #modify check_vector(Point) {
+Polyline_Soup :: struct (Point : Type) #modify check_dimension_of(Point) {
     polylines : [..]Polyline(Point);
 }
 
