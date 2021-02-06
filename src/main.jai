@@ -508,42 +508,34 @@ main :: () {
 #scope_file
 
 fit_on_screen :: () {
-
     view_from_world := make_look_at_matrix(app.camera);
     world_from_view := inverse(view_from_world);
 
     // Compute the bounding box of the scene in view coords
-    bbox : geom.AxisBox3;
-    bbox2 : geom.AxisBox2;
-
-    // geom.init(*bbox);
+    bbox_view : geom.AxisBox3;
     for entities {
         mesh := get_mesh(it);
         if mesh && mesh.visible {
-            // for mesh.vertices {
+            view_from_model := view_from_world * mesh.world_from_model;
 
-            // }
-
-            mesh_bbox := geom.bounding_box(<<mesh);
-            for :corners_iterator model_point, _ : mesh_bbox {
-                world_point := view_from_world * mesh.world_from_model * make_vector4(model_point, 1);
-                geom.expand(*bbox, world_point.xyz);
+            mesh_bbox_view : AxisBox3;
+            for point_model : mesh.vertices {
+                point_view := (view_from_model * make_vector4(point_model, 1)).xyz;
+                expand(*mesh_bbox_view, point_view);
             }
-            geom.expand(*bbox, mesh_bbox);
+            expand(*bbox_view, mesh_bbox_view);
         }
     }
 
-    // geom.offset(*bbox, 0.05 * geom.extents(bbox));
+    if geom.is_empty(bbox_view) return;
 
-    if geom.is_empty(bbox) return;
+    // Offset by a bit so the geometry doesn't end right on window boundaries
+    geom.offset(*bbox_view, 0.05 * geom.extents(bbox_view));
 
-    center_world := (world_from_view * make_vector4(geom.center_point(bbox), 1)).xyz;
-    // app.camera.eye_position.xy = center_world.xy;
-    // app.camera.eye_position = center_world + make_vector3(0, 0, 10);
+    center_world := (world_from_view * make_vector4(geom.center_point(bbox_view), 1)).xyz;
     app.camera.look_position = center_world;
-    // up_direction = .{0, 1, 0};
 
-    extents := geom.extents(bbox);
+    extents := geom.extents(bbox_view);
     scale := (extents.y / 2) / app.camera.top;
     if scale * app.camera.right < (extents.x / 2) {
         scale = (extents.x / 2) / app.camera.right;

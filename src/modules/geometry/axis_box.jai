@@ -1,6 +1,3 @@
-AxisBox2 :: AxisBox(Vector2);
-AxisBox3 :: AxisBox(Vector3);
-
 AxisBox :: struct(Point : Type) {
     Vector :: Point;
 
@@ -14,12 +11,16 @@ AxisBox :: struct(Point : Type) {
     #insert #run generate_initializer(DIM);
 };
 
+AxisBox2 :: AxisBox(Vector2);
+
 Corner2 :: enum u8 {
     XY_00 :: 0;
     XY_01 :: 1;
     XY_10 :: 2;
     XY_11 :: 3;
 }
+
+AxisBox3 :: AxisBox(Vector3);
 
 Corner3 :: enum u8 {
     XYZ_000 :: 0;
@@ -54,8 +55,10 @@ corners_iterator :: (using box : *$T/AxisBox, body : Code, flags : For_Flags) #e
 {
     #assert(flags == 0); // No options are supported
 
+    CORNER_COUNT :: 1 << T.DIM;
+
     `it_index := 0;
-    for 0..(1 << T.DIM)-1 {
+    for 0..CORNER_COUNT-1 {
         `it := corner(<<box, xx it_index);
         #insert (remove=#assert(false)) body;
         it_index += 1;
@@ -128,7 +131,9 @@ offset :: (using box : *$T/AxisBox, increment : T.Vector) {
     }
 
     if is_empty(<<box) {
-        init(box); // If box min/max invert after offset, use the standard representation of an empty box
+        // If box min/max invert after offset, use the standard representation of an empty box
+        using box;
+        #insert #run generate_initializer(DIM);
     }
 }
 
