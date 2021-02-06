@@ -9,8 +9,14 @@ load_obj :: (filename : string) -> Mesh {
     // http://paulbourke.net/dataformats/obj/
 
     result : Mesh;
-    result.wireframe = true;
     result.fully_pathed_filename = filename;
+
+    result.wireframe = true;
+
+    hash := get_hash(filename);
+    result.color.x = cast(float)(hash % 257) / 256;
+    result.color.y = cast(float)(get_hash(hash) % 257) / 256;
+    result.color.z = cast(float)(get_hash(get_hash(hash)) % 257) / 256;
 
     handler: Text_File_Handler;
     handler.do_version_number = false;
@@ -352,5 +358,6 @@ parse_triangle :: (handler : *Text_File_Handler, str : string) -> Triangle {
 #import "Basic";
 #import "String";
 #import "Math";
+#import "Hash";
 
 #import "geometry";

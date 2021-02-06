@@ -1,10 +1,8 @@
 Plan
 [ ] 3D mesh shading and lights in the scene
-[ ] Fix camera wierdness (Update orbit location when zooming to geometry, make sure frustrum contains everything)
 [ ] Autogenerate code for bingings
 [ ] Store model transforms matrix in mesh
 [ ] Show points in the specific entity, not on the mesh, so this works better with polygons
-[ ] Hash filename to colours
 [ ] If file is hovered make it flash to white so it's easy to find
 
 Backlog
@@ -63,6 +61,7 @@ Build/test stuff
 [ ] use @test to tag/run tests
 
 Bugs
+[ ] Fix camera frustrum contain all visible items
 [ ] Fix memory leaks, need to use a new version of valgrind for --keep-debuginfo=yes option but it seems like getting to show line numbers properly isn't working
 [ ] ImGui bindings for unix don't write declare CreateContext arguments #c_call
 
@@ -90,6 +89,7 @@ Complete
 [x] Dont distort geometry in non-square viewports
 [x] Remove the corner rounding on the ui
 [x] Implement a debug macro/Code thing which prints the variable name followed by it's value
+[x] Hash filename to colours
 
 Script to build imgui as a library:
 
