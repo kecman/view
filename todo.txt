@@ -8,6 +8,7 @@ Plan
 [ ] If file is hovered make it flash to white so it's easy to find
 
 Backlog
+[ ] Hot load the C++ bindings, and console commands, so you can keep same UI state while you iterate on your code
 [ ] Don't pass pointers for arguments that aren't modified
 [ ] Alternate segment colours (two draw calls?)
 [ ] Compiled at time in Window, after version?
@@ -38,6 +39,7 @@ Backlog
 [ ] Just log warnings and ignore the context allocator if it's not malloc, or create a new polygon allocated with malloc if passing to c
 [ ] Extend the imgui_inspector example to allow you to drag+drop jai files and have show you all the types in the file
 [ ] Use automatic differentiation in shape generation
+[ ] Sounds for a more satifying UI?
 [ ] Implement a view cube
 [ ] Implement arcball constraints cf. http://graphicsinterface.org/wp-content/uploads/gi1992-18.pdf
 
