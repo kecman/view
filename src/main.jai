@@ -373,7 +373,11 @@ main :: () {
         if app.show_ui {
             ImGui.SetNextWindowPos(pos=*make_vector2(10, 10), pivot=*make_vector2(0,0));
             ImGui.Begin("", flags = ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar);
-            ImGui.ColorEdit4("Background Color", *clear_color.component, ImGui.ColorEditFlags.NoInputs);
+            ImGui.ColorEdit4("Canvas", *clear_color.component, ImGui.ColorEditFlags.NoInputs);
+            ImGui.SameLine();
+            ImGui.Checkbox("World Axes", *triad.origin.visible);
+            set_visibility(*triad, triad.origin.visible);
+
 
             #if false {
                 if ImGui.Button("Demo Window", size=*make_vector2(0,0)) show_demo_window ^= true;
@@ -392,27 +396,26 @@ main :: () {
                 return to_c_string(concatenate(label, tprint("##%", ptr)));
             }
 
-            ImGui.Text(" ");
-            ImGui.SameLine();
-            ImGui.Checkbox("World Axes", *triad.origin.visible);
-            set_visibility(*triad, triad.origin.visible);
-
             entity_to_remove := -1;
             for entities {
                 mesh := get_mesh(it);
                 if mesh {
                     ImGui.Text(to_c_string(tprint("%", it_index)));
                     ImGui.SameLine();
-                    ImGui.Checkbox(imgui_label(path_filename(mesh.fully_pathed_filename), it), *mesh.visible);
-                    ImGui.SameLine();
-                    ImGui.ColorEdit4(imgui_label("##color", it), *mesh.color.component, ImGui.ColorEditFlags.NoInputs);
-                    ImGui.SameLine();
-                    ImGui.Checkbox(imgui_label("##wireframe", it), *mesh.wireframe);
-                    ImGui.SameLine();
                     if ImGui.Button(imgui_label("Remove", it), size=*make_vector2(0, 0)) {
                         entity_to_remove = it_index;
                         break;
                     }
+                    ImGui.SameLine();
+                    ImGui.ColorEdit4(imgui_label("##color", it), *mesh.color.component, ImGui.ColorEditFlags.NoInputs);
+                    ImGui.SameLine();
+                    ImGui.Checkbox(imgui_label("##visible", it), *mesh.visible);
+                    if it.type == .MESH {
+                        ImGui.SameLine();
+                        ImGui.Checkbox(imgui_label("##wireframe", it), *mesh.wireframe);
+                    }
+                    ImGui.SameLine();
+                    ImGui.Text(path_filename(mesh.fully_pathed_filename));
                 }
             }
 
@@ -527,7 +530,10 @@ fit_on_screen :: () {
         }
     }
 
-    if geom.is_empty(bbox_view) return;
+    if geom.is_empty(bbox_view) {
+        init_camera(); // Reset to initial view
+        return;
+    }
 
     // Offset by a bit so the geometry doesn't end right on window boundaries
     geom.offset(*bbox_view, 0.05 * geom.extents(bbox_view));
