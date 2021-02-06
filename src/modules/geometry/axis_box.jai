@@ -13,7 +13,8 @@ AxisBox :: struct(Point : Type) {
 
 // Explicitly initialize the box
 init :: (using box : *$T/AxisBox) {
-    #insert #run generate_initializer(DIM);
+    ini :: initializer_of(T);
+    ini(box);
 }
 
 AxisBox2 :: AxisBox(Vector2);
