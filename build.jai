@@ -10,13 +10,14 @@ DONE
 help_string :: #string DONE
 
 Build Options:
-  debug   build debug mode (default)
-  release build release mode
-  checks  enable array bounds checks and fatal cast and math bounds checks
+  debug      build debug mode (default)
+  release    build release mode
+  checks     enable array bounds checks and fatal cast and math bounds checks
+  boost_on   compile with boost polygon bindings (default off since the library isn't distributed yet)
 
 Build Targets:
-  view    build view target (default)
-  test    build test target
+  view       build view target (default)
+  test       build test target
 
 DONE
 
@@ -38,6 +39,9 @@ build :: () {
     test_found    := array_find(command_line_arguments, "test");
     release_found := array_find(command_line_arguments, "release");
     checks_found  := array_find(command_line_arguments, "checks");
+    enable_boost_polygon := array_find(command_line_arguments, "boost_on");
+
+    // It would be cool to auto-detect boost polygon availability
 
     if help_found {
         print(help_string);
@@ -77,6 +81,8 @@ build :: () {
     compiler_begin_intercept(w);
     if test_found add_build_file("src/test.jai", w);
     else          add_build_file("src/main.jai", w);
+    if enable_boost_polygon add_build_string("ENABLE_BOOST_POLYGON :: true;", w);
+    else                    add_build_string("ENABLE_BOOST_POLYGON :: false;", w);
     add_build_string(version_string, w);
     while true {
         message := compiler_wait_for_message();

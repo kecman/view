@@ -103,6 +103,7 @@ get_geometry_index :: (arg : string) -> int, bool #must {
 
 // @Incomplete Separate into boiler plate and an actual command (with @ConsoleCommand note)
 tmp_clockwise_boundaries :: (args : []string) {
+#if ENABLE_BOOST_POLYGON {
     if args.count != 1 {
         console_add_log("[error] expected exactly 1 argument");
         return;
@@ -136,10 +137,15 @@ tmp_clockwise_boundaries :: (args : []string) {
     entity.shape = boundary;
 
     array_add(*entities, entity);
+} else {
+    logprint("view", "Feature unavailable: compile with ENABLE_BOOST_POLYGON");
+    return;
+}
 }
 
 // @Incomplete Separate into boiler plate and an actual command (with @ConsoleCommand note)
 tmp_offset :: (args : []string) {
+#if ENABLE_BOOST_POLYGON {
     if args.count != 2 {
         console_add_log("[error] expected exactly 2 arguments");
         return;
@@ -186,4 +192,8 @@ tmp_offset :: (args : []string) {
     entity.mesh = mesh;
     entity.shape = offset_polygon;
     array_add(*entities, entity);
+} else {
+    logprint("view", "Feature unavailable: compile with ENABLE_BOOST_POLYGON");
+    return;
+}
 }

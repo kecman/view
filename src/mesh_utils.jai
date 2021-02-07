@@ -92,6 +92,12 @@ to_Polyline_Soup2 :: (mesh : Mesh, $Point : Type = Vector2) -> Polyline_Soup(Poi
 to_Mesh :: (shape : Polygon_Soup2) -> Mesh, bool #must {
     result : Mesh;
 
+    if shape.polygons.count == 0 {
+        return result, false;
+    }
+
+#if ENABLE_BOOST_POLYGON {
+    #import "BoostPolygon"; // for convex_decomposition
     convex : Polygon_Soup2 = BoostPolygon.convex_decomposition(*shape);
 
     for convex.polygons {
@@ -126,6 +132,9 @@ to_Mesh :: (shape : Polygon_Soup2) -> Mesh, bool #must {
     buffer_mesh(*result);
 
     return result, true;
+} else {
+    return result, false;
+}
 }
 
 // @TODO only really needed to load polygon objs, but we should just do that with wkt files instead
