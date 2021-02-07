@@ -1,32 +1,32 @@
 ## Soon
 - Support loading wkt file format, so we can load Polygons in a reasonable way
-- [Performance] Speed up text rendering, it's so slow right now!
-- 3D mesh shading and lights in the scene
-- [Tests] Use @test to tag/run tests
-- Autogenerate code for bingings
+- Implement a polyline soup segment_iterator
+- Implement commands to change the render settings on stuff
+- [Rendering] 3D mesh shading and lights in the scene
+- [Testing] [Meta-programming] Use @test to tag/run tests
+- [Commands] [Meta-programming] Autogenerate code for bingings
+- [Commands] [Meta-programming] Autogenerate ui code for bingings
 - [Bug] Show points in the specific entity, not on the mesh, so this works better with polygons
 - [Bug] Fix vertex numbering with meshes
-- [Bug] Fix crash when loading a toolpath .obj
-- If file is hovered make it flash to white so it's easy to find
 
 ## Backlog
-- build_debug and build_release with proper llvm options
-- [Epic] Hotload the C++ bindings, and console commands, so you can keep same UI state while you iterate on your code
-- [Epic] Hotload jai code so that you can keep state while you change your algorithm
+- [Build] Distribution stuff, how to make this a single executable? statically link?
+- [Performance] Speed up text rendering, it's so slow right now!
+- [XXL] Build and add bindings for gmp
+- [XXL] Hotload the C++ bindings, and console commands, so you can keep same UI state while you iterate on your code
+- [XXL] Hotload jai code so that you can keep state while you change your algorithm
 - Implement geometric equals functions for testing, can be used to compare Jai/C++ implementations
 - Don't pass pointers for arguments that aren't modified
-- Alternate segment colours (two draw calls?)
+- [Rendering] Alternate segment colours (two draw calls?)
+- [UI/UX] Implement sliding to show/hide the terminal
+- [UI/UX] Scroll to the bottom of the terminal
+- [UI/UX] If file is hovered make it flash to white so it's easy to find
 - Compiled at time in Window, after version?
-- Implement sliding to show/hide the terminal
-- Scroll to the bottom of the terminal
-- Cleanup memory management for things returned by boost polygon module, should copy them on jai side and add a function to the bindings which free the mesh :Cleanup_Construction_Destruction:
+- [Cleanup] memory management for things returned by boost polygon module, should copy them on jai side and add a function to the bindings which free the mesh :Cleanup_Construction_Destruction:
 - Transparency with order as it is in the entity list
-- Cleanup construction/destruction: make functions to do that
-- Support polygons and polygon soups, and do convex decomposition for rendering
-- Make the polygon/polyline types use slices, not dynamic arrays, put allocators in the top level
-- Autogenerate the console registering code to add commands to the console
+- [Cleanup] Make the polygon/polyline types use slices, not dynamic arrays, put allocators in the top level
+- [Meta-programming] Autogenerate the console registering code to add commands to the console
 - Sort by time loaded
-- Distribution stuff, how to make this a single executable? statically link?
 - Write * to indicate an identical first and last point
 - Mode line showing the style info etc
 - Custom key-bindings and sensitivity of parameters, dynamically generate UI for this? and save to the text file
