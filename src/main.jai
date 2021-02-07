@@ -213,14 +213,14 @@ main :: () {
                         }
                     }
                     if skip {
-                        print("Skipped file: '%' (already loaded)\n", dropped);
+                        logprint("view", "Skipped file: '%' (already loaded)\n", dropped);
                         continue;
                     }
 
                     // @Incomplete: support polygon types using wkt format
                     mesh := load_obj(dropped);
                     if !mesh.vertices.count {
-                        print("Skipped file: '%' (0 vertices)\n", dropped);
+                        logprint("view", "Skipped file: '%' (0 vertices)\n", dropped);
                         continue;
                     }
 
