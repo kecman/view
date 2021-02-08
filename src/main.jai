@@ -417,6 +417,9 @@ main :: () {
 #import "File";
 #import "String";
 #import "Math";
+#import "SDL_";
+#import "ImGui_";
+#load "modules/ImGui_/examples/imgui_sdl_gl.jai";
 
 geom :: #import "geometry";
 #load "io_obj.jai";
@@ -656,8 +659,6 @@ debug_callback :: (source: GLenum, type: GLenum, id: GLuint, severity: GLenum, l
         print("userParam: %\n", userParam);
     }
 }
-
-#load "vendor/imgui_sdl_gl.jai";
 
 #import "Compiler";
 #run compiler_set_type_info_flags(GL_Procedures, .NO_SIZE_COMPLAINT);
