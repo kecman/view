@@ -18,6 +18,7 @@
 - Implement geometric equals functions for testing, can be used to compare Jai/C++ implementations
 - Don't pass pointers for arguments that aren't modified
 - [Rendering] Alternate segment colours (two draw calls?)
+- [UI/UX] Hold shift to change size of arcball, and project across x/y direction so you can do full 90degree rotations of the part, draw regions in the far plane and cicle on the near plane
 - [UI/UX] Implement sliding to show/hide the terminal
 - [UI/UX] Scroll to the bottom of the terminal
 - [UI/UX] If file is hovered make it flash to white so it's easy to find
