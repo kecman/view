@@ -5,7 +5,7 @@ Polyline3 :: Polyline(Vector3);
 Polyline_Soup3 :: Polyline_Soup(Vector3);
 
 Polyline :: struct (Point : Type)
-#modify check_dimension_of(Point)
+#modify ensure_2d_or_3d(Point)
 {
     points : [..]Point;
 }
@@ -15,7 +15,7 @@ deinit :: (shape : *$T/Polyline) {
 }
 
 Polyline_Soup :: struct (Point : Type)
-#modify check_dimension_of(Point)
+#modify ensure_2d_or_3d(Point)
 {
     polylines : [..]Polyline(Point);
 }

@@ -17,10 +17,10 @@ to_degrees :: (radians : float) -> float {
 
 #scope_module
 
-check_dimension_of :: (T : Type, loc := #caller_location) {
+ensure_2d_or_3d :: (T : Type, loc := #caller_location) {
     dim := dimension_of(T);
     if dim < 2 || dim > 3 {
-        compiler_report(loc.fully_pathed_filename, loc.line_number, 0, "Expected Vector2 or Vector3");
+        compiler_report(loc.fully_pathed_filename, loc.line_number, 0, tprint("Expected Vector2 or Vector3, got %", T));
     }
 }
 
@@ -28,6 +28,6 @@ check_dimension_of :: (T : Type, loc := #caller_location) {
 dimension_of :: (T : Type, loc := #caller_location) -> int {
     if T == Vector2 return 2;
     if T == Vector3 return 3;
-    compiler_report(loc.fully_pathed_filename, loc.line_number, 0, "Expected Vector2 or Vector3");
+    compiler_report(loc.fully_pathed_filename, loc.line_number, 0, tprint("Expected Vector2 or Vector3, got %", T));
     return -1;
 }
