@@ -204,6 +204,11 @@ main :: () {
                     // @Cleanup event.drop.file should be free'd using SDL_free
                     dropped := to_string(event.drop.file);
 
+                    MAGIC_COMPILE_FILE :: "item_Part.obj";
+                    if !contains(dropped, MAGIC_COMPILE_FILE) && running_at_compile_time() {
+                        compiler_report(tprint("Oi! You can only load % at compile time, got %", MAGIC_COMPILE_FILE, dropped));
+                    }
+
                     skip := false;
                     for entities {
                         mesh := get_mesh(it);
