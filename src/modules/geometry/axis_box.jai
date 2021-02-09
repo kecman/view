@@ -56,7 +56,6 @@ corner :: inline (using box : $T/AxisBox, corner : T.Corner) -> T.Point
     return result;
 }
 
-// Iterates of the corners of the `box`
 corners_iterator :: (using box : *$T/AxisBox, body : Code, flags : For_Flags) #expand
 {
     #assert(flags == 0); // No options are supported
@@ -81,11 +80,12 @@ make_axis_box :: (points : ..Vector2) -> AxisBox2 #must {
 
 to_polyline :: (using box : *AxisBox2) -> Polyline2 #must {
     polyline : Polyline2;
-    array_add(*polyline.points, make_vector2(min_point.x, min_point.y));
-    array_add(*polyline.points, make_vector2(max_point.x, min_point.y));
-    array_add(*polyline.points, make_vector2(max_point.x, max_point.y));
-    array_add(*polyline.points, make_vector2(min_point.x, max_point.y));
-    array_add(*polyline.points, make_vector2(min_point.x, min_point.y));
+    array_add(*polyline.points,
+              corner(<<box, .XY_00),
+              corner(<<box, .XY_10),
+              corner(<<box, .XY_11),
+              corner(<<box, .XY_01),
+              corner(<<box, .XY_00));
     return polyline;
 }
 
@@ -151,7 +151,7 @@ extents :: (using box : $T/AxisBox) -> T.Vector #must {
 
 #scope_file
 
-generate_initializer :: ($dim : s8) -> string {
+generate_initializer :: ($dim : int) -> string {
     builder : String_Builder;
     defer free_buffers(*builder);
     for 0..dim-1 {
@@ -161,7 +161,7 @@ generate_initializer :: ($dim : s8) -> string {
     return builder_to_string(*builder);
 }
 
-corner_type :: ($dim : s8) -> Type {
+corner_type :: ($dim : int) -> Type {
     return ifx dim == 2 then Corner2 else Corner3;
 }
 
