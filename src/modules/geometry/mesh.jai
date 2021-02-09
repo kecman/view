@@ -52,10 +52,10 @@ deinit :: (mesh : *Mesh) {
 #if USE_GRAPHICS {
     if mesh.vbo glDeleteBuffers(1, *mesh.vbo);
     if mesh.ibo glDeleteBuffers(1, *mesh.ibo);
-}
 
     mesh.vbo = 0;
     mesh.ibo = 0;
+}
     mesh.is_dirty = true;
 
     // Note: array_reset frees memory and zeros members
