@@ -12,7 +12,7 @@
 //    0                         12 --> x
 //
 make_polygon_a :: () -> Polygon2 {
-    polygon : Polygon2;
+    polygon : Polygon;
 
     array_add(*polygon.outer_ring.points, .{0, 0}, .{12, 0}, .{12, 7}, .{0, 7}, .{0, 0});
 

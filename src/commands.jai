@@ -115,15 +115,15 @@ tmp_clockwise_boundaries :: (args : []string) {
 
     it := entities[geometry_index];
 
-    if it.type != .POLYGON_SOUP2 {
+    if it.type != .POLYGON_SOUP {
         console_add_log("[error] clockwise_boundaries not supported for entity type %", it.type);
         return;
     }
 
-    polygon_soup2_entity := cast(*Polygon_Soup2_Entity) it;
+    polygon_soup_entity := cast(*Polygon_Soup_Entity) it;
 
     #import "BoostPolygon";
-    boundary := BoostPolygon.clockwise_boundaries(*polygon_soup2_entity.shape);
+    boundary := BoostPolygon.clockwise_boundaries(*polygon_soup_entity.shape);
     if boundary.polylines.count == 0 {
         console_add_log("# result is empty");
         return;
@@ -188,7 +188,7 @@ tmp_offset :: (args : []string) {
     mesh, ok := to_Mesh(offset_polygon);
     assert(ok);
 
-    entity := New(Polygon_Soup2_Entity);
+    entity := New(Polygon_Soup_Entity);
     entity.mesh = mesh;
     entity.shape = offset_polygon;
     array_add(*entities, entity);

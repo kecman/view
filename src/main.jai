@@ -318,12 +318,14 @@ main :: () {
                     ImGui.ColorEdit4(imgui_label("##color", it), *mesh.color.component, ImGui.ColorEditFlags.NoInputs);
                     ImGui.SameLine();
                     ImGui.Checkbox(imgui_label("##visible", it), *mesh.visible);
-                    if it.type == .MESH {
+                    if it.type == .MESH || it.type == .POLYGON_SOUP {
                         ImGui.SameLine();
                         ImGui.Checkbox(imgui_label("##wireframe", it), *mesh.wireframe);
                     }
                     ImGui.SameLine();
-                    ImGui.Text(path_filename(mesh.fully_pathed_filename));
+                    if mesh.fully_pathed_filename.count {
+                        ImGui.Text(path_filename(mesh.fully_pathed_filename)); // @CompilerBug?
+                    }
                 }
             }
 

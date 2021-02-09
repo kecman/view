@@ -89,7 +89,7 @@ to_Polyline_Soup2 :: (mesh : Mesh, $Point : Type = Vector2) -> Polyline_Soup(Poi
     return result, true;
 }
 
-to_Mesh :: (shape : Polygon_Soup2) -> Mesh, bool #must {
+to_Mesh :: (shape : Polygon_Soup) -> Mesh, bool #must {
     result : Mesh;
 
     if shape.polygons.count == 0 {
@@ -98,7 +98,7 @@ to_Mesh :: (shape : Polygon_Soup2) -> Mesh, bool #must {
 
 #if ENABLE_BOOST_POLYGON {
     #import "BoostPolygon"; // for convex_decomposition
-    convex : Polygon_Soup2 = BoostPolygon.convex_decomposition(*shape);
+    convex : Polygon_Soup = BoostPolygon.convex_decomposition(*shape);
 
     for convex.polygons {
         if it.inner_rings.count != 0 {
@@ -138,8 +138,8 @@ to_Mesh :: (shape : Polygon_Soup2) -> Mesh, bool #must {
 }
 
 // @TODO only really needed to load polygon objs, but we should just do that with wkt files instead
-to_Polygon_Soup2 :: (mesh : Mesh) -> Polygon_Soup2, bool #must {
-    result : Polygon_Soup2;
+to_Polygon_Soup :: (mesh : Mesh) -> Polygon_Soup, bool #must {
+    result : Polygon_Soup;
     // make each triangle into a polygon
     // boolean union triangles? (this should be a parameter)
     // not very nice at all but I guess it works
