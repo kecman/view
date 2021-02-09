@@ -1,8 +1,6 @@
-Polyline2 :: Polyline(Vector2);
-Polyline_Soup2 :: Polyline_Soup(Vector2);
-
-Polyline3 :: Polyline(Vector3);
-Polyline_Soup3 :: Polyline_Soup(Vector3);
+//
+// Polyline.
+//
 
 Polyline :: struct (Point : Type)
 #modify ensure_2d_or_3d(Point)
@@ -10,9 +8,28 @@ Polyline :: struct (Point : Type)
     points : [..]Point;
 }
 
+Polyline2 :: Polyline(Vector2);
+Polyline3 :: Polyline(Vector3);
+
 deinit :: (shape : *$T/Polyline) {
     array_reset(*shape.points);
 }
+
+is_empty :: (polyline : $T/Polyline) -> bool #must {
+    return polyline.points.count < 2;
+}
+
+bounding_box :: (using polyline : $T/Polyline) -> AxisBox(T.Point) #must {
+    box : AxisBox(T.Point);
+    for points {
+        expand(*box, it);
+    }
+    return box;
+}
+
+//
+// Polyline Soup.
+//
 
 Polyline_Soup :: struct (Point : Type)
 #modify ensure_2d_or_3d(Point)
@@ -20,13 +37,12 @@ Polyline_Soup :: struct (Point : Type)
     polylines : [..]Polyline(Point);
 }
 
+Polyline_Soup2 :: Polyline_Soup(Vector2);
+Polyline_Soup3 :: Polyline_Soup(Vector3);
+
 deinit :: (shape : *$T/Polyline_Soup) {
     for * shape.polylines deinit(it);
     array_reset(*shape.polylines);
-}
-
-is_empty :: (polyline : $T/Polyline) -> bool #must {
-    return polyline.points.count < 2;
 }
 
 is_empty :: (polyline_soup : $T/Polyline_Soup) -> bool #must {
@@ -38,18 +54,8 @@ is_empty :: (polyline_soup : $T/Polyline_Soup) -> bool #must {
     return true;
 }
 
-bounding_box :: (using polyline : $T/Polyline) -> AxisBox(T.Point) #must {
-    box : AxisBox(T.Point);
-    init(*box);
-    for points {
-        expand(*box, it);
-    }
-    return box;
-}
-
 bounding_box :: (using polyline_soup : $T/Polyline_Soup) -> AxisBox(T.Point) #must {
     box : AxisBox(T.Point);
-    init(*box);
     for * polylines {
         polyline_box := bounding_box(it);
         expand(*box, polyline_box);
