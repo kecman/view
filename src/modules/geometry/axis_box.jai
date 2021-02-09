@@ -71,13 +71,10 @@ corners_iterator :: (using box : *$T/AxisBox, body : Code, flags : For_Flags) #e
     }
 }
 
-make_axis_box :: (min_point : Vector2, max_point : Vector2) -> AxisBox2 #must {
-    assert(is_finite(min_point.x) && is_finite(min_point.y));
-    assert(is_finite(max_point.x) && is_finite(max_point.y));
-
+make_axis_box :: (points : ..Vector2) -> AxisBox2 #must {
     box : AxisBox2;
-    box.min_point = min_point;
-    box.max_point = max_point;
+
+    for points expand(*box, it);
 
     return box;
 }
