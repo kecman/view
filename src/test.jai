@@ -42,6 +42,7 @@ main :: () {
 
 #import "geometry" (USE_GRAPHICS = false);
 #load "io_obj.jai";
+#load "mesh_utils.jai";
 
 #import "Basic";
 #import "Compiler";
