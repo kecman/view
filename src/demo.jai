@@ -11,7 +11,7 @@
 //  0 +------------>------------+
 //    0                         12 --> x
 //
-make_polygon_a :: () -> Polygon2 {
+make_polygon_a :: () -> Polygon {
     polygon : Polygon;
 
     array_add(*polygon.outer_ring.points, .{0, 0}, .{12, 0}, .{12, 7}, .{0, 7}, .{0, 0});
@@ -32,6 +32,7 @@ main :: ()
     print("polygon_a = %\n", polygon_a);
 
     box : AxisBox2 = ---;
+
     // box = make_axis_box(polygon_a.outer_ring.points[0], polygon_a.outer_ring.points[1]);
     // printv(#code box);
 
@@ -41,14 +42,8 @@ main :: ()
     box = bounding_box(polygon_a);
     printv(#code box);
 
-    {
-        using polygon_a.outer_ring;
-        box = make_axis_box(..points);
-        printv(#code box);
-    }
-
-    // polygon_a_bbox := bounding_box(polygon_a);
-    // print(#code polygon_a_bbox);
+    polygon_a_area := area(polygon_a);
+    printv(#code polygon_a_area);
 
     // print("box = %, type_of(box) = %\n", box, type_of(box));
     // print("%\n", inline fib(4));
