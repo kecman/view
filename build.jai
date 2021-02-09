@@ -3,24 +3,6 @@
 #import "Check";
 #import "String";
 
-version_string :: #string DONE
-    VIEW_VERSION_STRING :: "0.0.1";
-DONE
-
-help_string :: #string DONE
-
-Build Options:
-  debug      build debug mode (default)
-  release    build release mode
-  checks     enable array bounds checks and fatal cast and math bounds checks
-  boost_on   compile with boost polygon bindings (default off since the library isn't distributed yet)
-
-Build Targets:
-  view       build view target (default)
-  test       build test target
-
-DONE
-
 build :: () {
 
     {
@@ -37,11 +19,10 @@ build :: () {
     command_line_arguments := compiler_get_command_line_arguments();
     help_found    := array_find(command_line_arguments, "help");
     test_found    := array_find(command_line_arguments, "test");
+    demo_found    := array_find(command_line_arguments, "demo");
     release_found := array_find(command_line_arguments, "release");
     checks_found  := array_find(command_line_arguments, "checks");
     enable_boost_polygon := array_find(command_line_arguments, "boost_on");
-
-    // It would be cool to auto-detect boost polygon availability
 
     if help_found {
         print(help_string);
@@ -51,15 +32,13 @@ build :: () {
     {
         using build_options := get_build_options(w);
         defer set_build_options(build_options, w);
+
         output_type = .EXECUTABLE;
         lazy_foreign_function_lookups = true;
 
-
-        if test_found {
-            output_executable_name = "test";
-        } else {
-            output_executable_name = "view";
-        }
+        if      test_found output_executable_name = "test";
+        else if demo_found output_executable_name = "demo";
+        else               output_executable_name = "view";
 
         if checks_found {
             array_bounds_check = .ON;
@@ -78,23 +57,47 @@ build :: () {
         array_add(*modules_search_path_array, join(CWD, "src/modules", separator="/"));
     }
 
-    compiler_begin_intercept(w);
-    if test_found add_build_file("src/test.jai", w);
-    else          add_build_file("src/main.jai", w);
-    if enable_boost_polygon add_build_string("ENABLE_BOOST_POLYGON :: true;", w);
-    else                    add_build_string("ENABLE_BOOST_POLYGON :: false;", w);
-    add_build_string(version_string, w);
-    while true {
-        message := compiler_wait_for_message();
-        if !message                  continue;
-        if message.workspace != w    continue;
-        if message.kind == .COMPLETE break;
-        do_error_checking(message);
+    {
+        compiler_begin_intercept(w);
+        defer compiler_end_intercept(w);
+
+        add_build_string(version_string, w);
+
+        if      test_found add_build_file("src/test.jai", w);
+        else if demo_found add_build_file("src/demo.jai", w);
+        else               add_build_file("src/main.jai", w);
+
+        // It would be cool to auto-detect boost polygon availability
+        if enable_boost_polygon add_build_string("ENABLE_BOOST_POLYGON :: true;", w);
+        else                    add_build_string("ENABLE_BOOST_POLYGON :: false;", w);
+
+        while true {
+            message := compiler_wait_for_message();
+            if !message                  continue;
+            if message.workspace != w    continue;
+            if message.kind == .COMPLETE break;
+            do_error_checking(message);
+        }
     }
-    compiler_end_intercept(w);
 }
 
-// @Question it takes much longer if I have functions here for build debug/release???
-#run {
-    build();
-}
+#run build();
+
+version_string :: #string DONE
+    VIEW_VERSION_STRING :: "0.0.1";
+DONE
+
+help_string :: #string DONE
+
+Build Options:
+  debug      build debug mode (default)
+  release    build release mode
+  checks     enable array bounds checks and fatal cast and math bounds checks
+  boost_on   compile with boost polygon bindings (default off since the library isn't distributed yet)
+
+Build Targets:
+  view       build view target (default)
+  test       build test target
+  test       build demo target
+
+DONE
