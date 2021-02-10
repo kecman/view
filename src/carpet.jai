@@ -8,11 +8,11 @@ printv :: (a : Code, loc := #caller_location) #expand {
         return ident.name;
     }
 
-    print("%:% % = %\n",
-          loc.fully_pathed_filename,
-          loc.line_number,
-          #run get_ident_name(a),
-          #insert a);
+#if false {
+    print("%:% % = %\n", loc.fully_pathed_filename, loc.line_number, #run get_ident_name(a), #insert a);
+} else {
+    print("% = %\n", #run get_ident_name(a), #insert a);
+}
 }
 
 die :: (loc := #caller_location) {
