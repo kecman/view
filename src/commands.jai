@@ -138,7 +138,7 @@ tmp_clockwise_boundaries :: (args : []string) {
 
     array_add(*entities, entity);
 } else {
-    logprint("view", "Feature unavailable: compile with ENABLE_BOOST_POLYGON");
+    logprint("view", "Feature unavailable: compile with ENABLE_BOOST_POLYGON\n");
     return;
 }
 }
@@ -193,7 +193,7 @@ tmp_offset :: (args : []string) {
     entity.shape = offset_polygon;
     array_add(*entities, entity);
 } else {
-    logprint("view", "Feature unavailable: compile with ENABLE_BOOST_POLYGON");
+    logprint("view", "Feature unavailable: compile with ENABLE_BOOST_POLYGON\n");
     return;
 }
 }
