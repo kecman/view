@@ -6,6 +6,7 @@
 build :: () {
 
     {
+        // This is a build file that doesn't generate an executable
         using build_options := get_build_options();
         defer set_build_options(build_options);
         output_type = .NO_OUTPUT;
@@ -13,6 +14,7 @@ build :: () {
 
     set_working_directory(#filepath);
 
+    // Create a workspace where we will compile our actual program
     w := compiler_create_workspace();
     if !w exit(1);
 
@@ -22,7 +24,7 @@ build :: () {
     demo_found    := array_find(command_line_arguments, "demo");
     release_found := array_find(command_line_arguments, "release");
     checks_found  := array_find(command_line_arguments, "checks");
-    enable_boost_polygon := array_find(command_line_arguments, "boost_on");
+    boost_found   := array_find(command_line_arguments, "boost_on");
 
     if help_found {
         print(help_string);
@@ -67,9 +69,8 @@ build :: () {
         else if demo_found add_build_file("src/demo.jai", w);
         else               add_build_file("src/main.jai", w);
 
-        // It would be cool to auto-detect boost polygon availability
-        if enable_boost_polygon add_build_string("ENABLE_BOOST_POLYGON :: true;", w);
-        else                    add_build_string("ENABLE_BOOST_POLYGON :: false;", w);
+        if boost_found     add_build_string("ENABLE_BOOST_POLYGON :: true;", w);
+        else               add_build_string("ENABLE_BOOST_POLYGON :: false;", w);
 
         while true {
             message := compiler_wait_for_message();
@@ -84,7 +85,7 @@ build :: () {
 #run build();
 
 version_string :: #string DONE
-    VIEW_VERSION_STRING :: "0.0.1";
+VIEW_VERSION_STRING :: "0.0.1";
 DONE
 
 help_string :: #string DONE
