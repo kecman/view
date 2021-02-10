@@ -99,6 +99,6 @@ Build Options:
 Build Targets:
   view       build view target (default)
   test       build test target
-  test       build demo target
+  demo       build demo target
 
 DONE
