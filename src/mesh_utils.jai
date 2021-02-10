@@ -39,8 +39,6 @@ to_Polyline_Soup2 :: (mesh : Mesh, $Point : Type = Vector2) -> Polyline_Soup(Poi
         return result, false;
     }
 
-    // @Cleanup Implement a segment iterator?
-
     Segment :: struct {
         from_index : int = ---;
         to_index : int = ---;
