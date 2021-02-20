@@ -424,7 +424,7 @@ main :: () {
 #import "File";
 #import "String";
 #import "Math";
-#import "SDL_";
+#import "SDL";
 #import "ImGui_";
 #load "modules/ImGui_/examples/imgui_sdl_gl.jai";
 
