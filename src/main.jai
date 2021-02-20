@@ -218,14 +218,14 @@ main :: () {
                         }
                     }
                     if skip {
-                        logprint("view", "Skipped file: '%' (already loaded)\n", dropped);
+                        log("Skipped file: '%' (already loaded)\n", dropped);
                         continue;
                     }
 
                     // @Incomplete: support polygon types using wkt format
                     mesh := load_obj(dropped);
                     if !mesh.vertices.count {
-                        logprint("view", "Skipped file: '%' (0 vertices)\n", dropped);
+                        log("Skipped file: '%' (0 vertices)\n", dropped);
                         continue;
                     }
 
@@ -243,7 +243,7 @@ main :: () {
                                 entity.shape = shape;
                                 array_add(*entities, entity);
 
-                                logprint("view","Loaded 2d polyline soup file: '%'\n", dropped);
+                                log("Loaded 2d polyline soup file: '%'\n", dropped);
                             } else {
                                 shape, ok := to_Polyline_Soup2(mesh, Vector3);
                                 assert(ok);
@@ -253,7 +253,7 @@ main :: () {
                                 entity.shape = shape;
                                 array_add(*entities, entity);
 
-                                logprint("view","Loaded 3d polyline soup file: '%'\n", dropped);
+                                log("Loaded 3d polyline soup file: '%'\n", dropped);
                                 continue;
                             }
 
@@ -262,12 +262,12 @@ main :: () {
                             entity.mesh = mesh;
                             array_add(*entities, entity);
 
-                            logprint("view", "Loaded triangle mesh file: '%'\n", dropped);
+                            log("Loaded triangle mesh file: '%'\n", dropped);
 
                         case .POINTS; #through;
                         case .UNKNOWN; #through;
                         case;
-                            logprint("view", "Skipped file: '%' (unsupported geometry type %)\n", dropped, mesh.geometry_format);
+                            log("Skipped file: '%' (unsupported geometry type %)\n", dropped, mesh.geometry_format);
                             deinit(*mesh);
                             continue;
                     }
