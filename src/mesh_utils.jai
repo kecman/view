@@ -32,7 +32,10 @@ to_Mesh :: (shape : Polyline_Soup2) -> Mesh, bool #must {
     return mesh, true;
 }
 
-to_Polyline_Soup2 :: (mesh : Mesh, $Point : Type = Vector2) -> Polyline_Soup(Point), bool #must {
+to_Polyline_Soup2 :: #bake_arguments to_Polyline_Soup(Point = Vector2);
+to_Polyline_Soup3 :: #bake_arguments to_Polyline_Soup(Point = Vector3);
+
+to_Polyline_Soup :: (mesh : Mesh, Point : $Type) -> Polyline_Soup(Point), bool #must {
     result : Polyline_Soup(Point);
 
     if mesh.geometry_format != .LINES || mesh.indices.count < 2 || mesh.vertices.count == 0 {
@@ -52,13 +55,13 @@ to_Polyline_Soup2 :: (mesh : Mesh, $Point : Type = Vector2) -> Polyline_Soup(Poi
         segment : Segment;
         segment.from_index = mesh.indices[2 * segment_index];
         segment.to_index   = mesh.indices[2 * segment_index + 1];
-        #if Point == Vector2 {
+#if Point == Vector2 {
         segment.from_point = mesh.vertices[segment.from_index].xy;
         segment.to_point   = mesh.vertices[segment.to_index].xy;
-        } else {
+} else {
         segment.from_point = mesh.vertices[segment.from_index];
         segment.to_point   = mesh.vertices[segment.to_index];
-        }
+}
         return segment;
     }
 

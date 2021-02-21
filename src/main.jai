@@ -245,7 +245,7 @@ main :: () {
 
                                 log("Loaded 2d polyline soup file: '%'\n", dropped);
                             } else {
-                                shape, ok := to_Polyline_Soup2(mesh, Vector3);
+                                shape, ok := to_Polyline_Soup3(mesh);
                                 assert(ok);
 
                                 entity := New(Polyline_Soup3_Entity);
