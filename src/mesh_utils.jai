@@ -17,11 +17,11 @@ to_Mesh :: (shape : Polyline_Soup2) -> Mesh, bool #must {
         point := polyline.points[0];
         array_add(*mesh.vertices, make_vector3(point.x, point.y, 0));
 
-        for segment_index : 0..polyline.points.count-2 {
-            point = polyline.points[segment_index + 1];
+        for edge_index : 0..polyline.points.count-2 {
+            point = polyline.points[edge_index + 1];
             array_add(*mesh.vertices, make_vector3(point.x, point.y, 0));
-            array_add(*mesh.indices, xx (index_offset + segment_index));
-            array_add(*mesh.indices, xx (index_offset + segment_index  + 1));
+            array_add(*mesh.indices, xx (index_offset + edge_index));
+            array_add(*mesh.indices, xx (index_offset + edge_index  + 1));
         }
 
         index_offset += polyline.points.count;
@@ -42,48 +42,45 @@ to_Polyline_Soup :: (mesh : Mesh, Point : $Type) -> Polyline_Soup(Point), bool #
         return result, false;
     }
 
-    Segment :: struct {
-        from_index : int = ---;
-        to_index : int = ---;
-        from_point : Point = ---;
-        to_point : Point = ---;
+    get_edge :: (mesh : Mesh, edge_index : int) -> Indexed_Edge3 {
+        assert(2 * edge_index + 1 < mesh.indices.count);
+
+        edge : Indexed_Edge3;
+        edge.from_index = mesh.indices[2 * edge_index];
+        edge.to_index   = mesh.indices[2 * edge_index + 1];
+        edge.from_point = *mesh.vertices[edge.from_index];
+        edge.to_point   = *mesh.vertices[edge.to_index];
+
+        return edge;
     }
 
-    get_segment :: (mesh : Mesh, segment_index : int) -> Segment {
-        assert(2 * segment_index + 1 < mesh.indices.count);
-
-        segment : Segment;
-        segment.from_index = mesh.indices[2 * segment_index];
-        segment.to_index   = mesh.indices[2 * segment_index + 1];
-#if Point == Vector2 {
-        segment.from_point = mesh.vertices[segment.from_index].xy;
-        segment.to_point   = mesh.vertices[segment.to_index].xy;
-} else {
-        segment.from_point = mesh.vertices[segment.from_index];
-        segment.to_point   = mesh.vertices[segment.to_index];
-}
-        return segment;
+    get_point :: inline (point : Vector3) -> Point {
+        #if Point == Vector2 {
+            return point.xy;
+        } else {
+            return point;
+        }
     }
 
-    segment_index := 0;
+    edge_index := 0;
 
-    segment := get_segment(mesh, segment_index);
-    polyline_start_index := segment.from_index;
+    edge := get_edge(mesh, edge_index);
+    polyline_start_index := edge.from_index;
     polyline := array_add(*result.polylines);
-    array_add(*polyline.points, segment.from_point);
+    array_add(*polyline.points, get_point(<<edge.from_point));
 
     while true {
-        segment := get_segment(mesh, segment_index);
-        array_add(*polyline.points, segment.to_point);
+        edge := get_edge(mesh, edge_index);
+        array_add(*polyline.points, get_point(<<edge.to_point));
 
-        segment_index += 1;
-        if 2 * segment_index + 1 >= mesh.indices.count break;
+        edge_index += 1;
+        if 2 * edge_index + 1 >= mesh.indices.count break;
 
-        if segment.to_index == polyline_start_index {
-            segment := get_segment(mesh, segment_index);
-            polyline_start_index = segment.from_index;
+        if edge.to_index == polyline_start_index {
+            edge := get_edge(mesh, edge_index);
+            polyline_start_index = edge.from_index;
             polyline = array_add(*result.polylines);
-            array_add(*polyline.points, segment.from_point);
+            array_add(*polyline.points, get_point(<<edge.from_point));
         }
     }
 

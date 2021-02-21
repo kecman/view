@@ -3,7 +3,7 @@
 #load "axis_box.jai";
 #load "polyline.jai";
 #load "polygon.jai";
-#load "segment.jai";
+#load "edge.jai";
 #load "mesh.jai";
 
 to_radians :: (degrees : float) -> float {

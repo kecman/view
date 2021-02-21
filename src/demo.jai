@@ -37,14 +37,12 @@ basic_language_demo :: ()
         VF2 :: CNC_Machine.{limits=.{0, 8000}, settings = cast(Settings)7};      // This is constant
         print("I see you have a\n%2\n%1\n",                                      // Format string can reorder arguments
               get_opinion(VF2),                                                  // Try commenting this
-              formatStruct(VF2, 0, long_form_separator_between_fields = ";\n")); // Adjustable format
+              VF2);
 
         mazak := VF2;
         mazak.post = .MAZAK;
         mazak.name = "i500";
-        print("I see you have a\n%2\n%1\n",
-              get_opinion(mazak),
-              formatStruct(mazak, 0, long_form_separator_between_fields = ";\n"));
+        print("I see you have a\n%2\n%1\n", get_opinion(mazak), mazak);
 
         get_opinion :: (using machine : CNC_Machine) -> string {
             opinion : string = ---;
