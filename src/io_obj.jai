@@ -45,7 +45,7 @@ load_obj :: (filename : string) -> Mesh {
                     error(handler, tprint("Expected 2d or 3d vertex coordinates, got dim=%.\n", dim)); // @Incomplete test this
                     continue;
                 }
-                array_add(*result.vertices, vertex);
+                array_add(*result.positions, vertex);
             case "vn"; // @Incomplete
                 normal, dim := parse_upto_3d(*handler, rhs);
                 if dim != 3 {
@@ -94,7 +94,7 @@ load_obj :: (filename : string) -> Mesh {
 
     buffer_mesh(*result);
 
-    // for result.vertices print("vertices: %\n", it);
+    // for result.points print("points: %\n", it);
     // for result.indices print("indices: %\n", it);
 
     return result;
@@ -111,8 +111,8 @@ save_obj :: (filename : string, mesh : Mesh) -> bool
 
     if mesh.geometry_format == .TRIANGLES {
         if mesh.normals.count {
-            for i : 0..mesh.vertices.count-1 {
-                px, py, pz := mesh.vertices[i].x, mesh.vertices[i].y, mesh.vertices[i].z;
+            for i : 0..mesh.positions.count-1 {
+                px, py, pz := mesh.positions[i].x, mesh.positions[i].y, mesh.positions[i].z;
                 nx, ny, nz := mesh.normals[i].x, mesh.normals[i].y, mesh.normals[i].z;
                 file_write(*objfile, tprint("v % % %\n", px, py, pz));
                 file_write(*objfile, tprint("vn % % %\n", nx, ny, nz));
@@ -124,8 +124,8 @@ save_obj :: (filename : string, mesh : Mesh) -> bool
                 file_write(*objfile, tprint("f %//% %//% %//%\n", a, a, b, b, c, c));
             }
         } else {
-            for i : 0..mesh.vertices.count-1 {
-                file_write(*objfile, tprint("v % % %\n", mesh.vertices[i].x, mesh.vertices[i].y, mesh.vertices[i].z));
+            for i : 0..mesh.positions.count-1 {
+                file_write(*objfile, tprint("v % % %\n", mesh.positions[i].x, mesh.positions[i].y, mesh.positions[i].z));
             }
             for i : 0..(mesh.indices.count/3)-1 {
                 a := 1 + mesh.indices[3 * i + 0];

@@ -313,7 +313,7 @@ main :: () {
             if mesh && mesh.visible {
                 render_mesh(<<mesh, vertex_label_style);
                 // @Cleanup so the transform is also available for text rendering
-                render_vertex_labels(mesh.vertices, vertex_label_style);
+                render_vertex_labels(mesh.positions, vertex_label_style);
             }
         }
 
@@ -400,7 +400,7 @@ load_entity_from_file :: (filename : string) {
 
     // @Incomplete: support polygon types using wkt format
     mesh := load_obj(filename);
-    if !mesh.vertices.count {
+    if !mesh.positions.count {
         log("Skipped file: '%' (0 vertices)\n", filename);
         return;
     }
@@ -524,7 +524,7 @@ render_mesh :: (mesh : Mesh, style : VertexLabelStyle) {
     }
 
     glEnable(GL_PROGRAM_POINT_SIZE);
-    glDrawArrays(GL_POINTS, 0, xx mesh.vertices.count);
+    glDrawArrays(GL_POINTS, 0, xx mesh.positions.count);
 }
 
 render_vertex_labels :: (points : []Vector3, style : VertexLabelStyle, label_index_offset : int = 0) {
@@ -576,7 +576,7 @@ fit_on_screen :: () {
             view_from_model := view_from_world * mesh.world_from_model;
 
             mesh_bbox_view : AxisBox3;
-            for point_model : mesh.vertices {
+            for point_model : mesh.positions {
                 point_view := (view_from_model * make_vector4(point_model, 1)).xyz;
                 expand(*mesh_bbox_view, point_view);
             }

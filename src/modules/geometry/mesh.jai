@@ -20,11 +20,14 @@ Mesh :: struct {
     wireframe : bool = false;
     color : Vector4;
 
-    // @Cleanup Store array slices and put the allocator on the Mesh
     // @Cleanup Store vertices/normals as a flat array to better support 2D polylines? Maybe 'subclass' mesh with using
-    vertices :  [..]Vector3;
+
+    // allocator :      Allocator;
+    // allocator_data : *void;
+
+    positions : [..]Vector3;
     normals :  [..]Vector3;
-    indices : [..]u32;
+    indices :  [..]u32;
     // @Incomplete tcoords?
 
     world_from_model : Matrix4 = .{_11 = 1, _22 = 1, _33 = 1, _44 = 1};
@@ -35,7 +38,7 @@ buffer_mesh :: (mesh : *Mesh) {
     if mesh.is_dirty {
         if !mesh.vbo glGenBuffers(1, *mesh.vbo);
         glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
-        glBufferData(GL_ARRAY_BUFFER, size_of(Vector3) * mesh.vertices.count, mesh.vertices.data, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, size_of(Vector3) * mesh.positions.count, mesh.positions.data, GL_STATIC_DRAW);
 
         if !mesh.ibo glGenBuffers(1, *mesh.ibo);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ibo);
@@ -59,7 +62,7 @@ deinit :: (mesh : *Mesh) {
     mesh.is_dirty = true;
 
     // Note: array_reset frees memory and zeros members
-    array_reset(*mesh.vertices);
+    array_reset(*mesh.positions);
     array_reset(*mesh.normals);
     array_reset(*mesh.indices);
 
@@ -69,13 +72,13 @@ deinit :: (mesh : *Mesh) {
 
 print_Mesh :: (mesh : Mesh) {
     print("print_Mesh %\n", mesh);
-    for mesh.vertices print("- vtx[%] %\n", it_index, it);
+    for mesh.positions print("- vtx[%] %\n", it_index, it);
     for mesh.indices  print("- idx[%] %\n", it_index, it);
 }
 
 bounding_box :: (using mesh : Mesh) -> AxisBox3 #must {
     box : AxisBox3;
-    for * mesh.vertices {
+    for * mesh.positions {
         expand(*box, <<it);
     }
     return box;

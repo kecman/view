@@ -15,11 +15,11 @@ to_Mesh :: (shape : Polyline_Soup2) -> Mesh, bool #must {
         }
 
         point := polyline.points[0];
-        array_add(*mesh.vertices, make_vector3(point.x, point.y, 0));
+        array_add(*mesh.positions, make_vector3(point.x, point.y, 0));
 
         for edge_index : 0..polyline.points.count-2 {
             point = polyline.points[edge_index + 1];
-            array_add(*mesh.vertices, make_vector3(point.x, point.y, 0));
+            array_add(*mesh.positions, make_vector3(point.x, point.y, 0));
             array_add(*mesh.indices, xx (index_offset + edge_index));
             array_add(*mesh.indices, xx (index_offset + edge_index  + 1));
         }
@@ -38,7 +38,7 @@ to_Polyline_Soup3 :: #bake_arguments to_Polyline_Soup(Point = Vector3);
 to_Polyline_Soup :: (mesh : Mesh, Point : $Type) -> Polyline_Soup(Point), bool #must {
     result : Polyline_Soup(Point);
 
-    if mesh.geometry_format != .LINES || mesh.indices.count < 2 || mesh.vertices.count == 0 {
+    if mesh.geometry_format != .LINES || mesh.indices.count < 2 || mesh.positions.count == 0 {
         return result, false;
     }
 
@@ -48,8 +48,8 @@ to_Polyline_Soup :: (mesh : Mesh, Point : $Type) -> Polyline_Soup(Point), bool #
         edge : Indexed_Edge3;
         edge.from_index = mesh.indices[2 * edge_index];
         edge.to_index   = mesh.indices[2 * edge_index + 1];
-        edge.from_point = *mesh.vertices[edge.from_index];
-        edge.to_point   = *mesh.vertices[edge.to_index];
+        edge.from_point = *mesh.positions[edge.from_index];
+        edge.to_point   = *mesh.positions[edge.to_index];
 
         return edge;
     }
@@ -149,7 +149,7 @@ to_Mesh :: (m : par_shapes_mesh) -> Mesh
     using result : Mesh;
 
     geometry_format = .TRIANGLES;
-    array_copy(*vertices, m.points);
+    array_copy(*positions, m.points);
     array_copy(*normals, m.normals);
 
     array_reserve(*indices, m.triangles.count * 3);

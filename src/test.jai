@@ -24,7 +24,7 @@ main :: () {
     obj := load_obj(filename);
 
     check(obj.indices.count, 18);
-    check(obj.vertices.count, 10);
+    check(obj.positions.count, 10);
 
     soup2, success := to_Polyline_Soup2(obj);
     check(success, true);
