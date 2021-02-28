@@ -93,8 +93,6 @@ edge_iterator :: (using ring : *Ring, body : Code, flags : For_Flags) #expand
 {
     #assert(flags == 0); // No options are supported.
 
-    // print_stack_trace(context.stack_trace);
-
     edge_count := points.count - 1;
 
     `it_index := 0;
