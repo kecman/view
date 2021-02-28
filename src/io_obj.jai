@@ -9,11 +9,11 @@ load_obj :: (filename : string) -> Mesh {
     // http://paulbourke.net/dataformats/obj/
 
     result : Mesh;
-    result.fully_pathed_filename = filename;
+    result.fully_pathed_filename = copy_string(filename);
 
     result.wireframe = true;
 
-    hash := get_hash(filename);
+    hash := get_hash(result.fully_pathed_filename);
     result.color.x = cast(float)(hash % 257) / 256;
     result.color.y = cast(float)(get_hash(hash) % 257) / 256;
     result.color.z = cast(float)(get_hash(get_hash(hash)) % 257) / 256;
@@ -22,7 +22,7 @@ load_obj :: (filename : string) -> Mesh {
     handler.do_version_number = false;
     defer deinit(*handler);
 
-    start_file(*handler, "load_obj", filename, false);
+    start_file(*handler, "load_obj", result.fully_pathed_filename, false);
     if handler.failed {
         return result;
     }
