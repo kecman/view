@@ -103,7 +103,7 @@ main :: () {
         app.mesh_shader = get_shader_program(vert, frag);
     }
 
-    // Prepare VAO for lines
+    // Prepare VAO
     {
         glGenVertexArrays(1, *app.polyline_vao);
         glGenVertexArrays(1, *app.mesh_vao);
@@ -493,10 +493,21 @@ render_mesh :: (mesh : Mesh, style : VertexLabelStyle) {
     glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ibo);
 
-    glEnableVertexAttribArray(0);
-    defer glDisableVertexAttribArray(0);
+    ATTRIB_POSITION  :: 0;
+    ATTRIB_NORMAL    :: 1;
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, size_of(Vector3), null);
+    glEnableVertexAttribArray(ATTRIB_POSITION);
+    glEnableVertexAttribArray(ATTRIB_NORMAL);
+    defer glDisableVertexAttribArray(ATTRIB_POSITION);
+    defer glDisableVertexAttribArray(ATTRIB_NORMAL);
+
+    // ATTRIB_TEXCOORDS :: 1;
+    // ATTRIB_COLOR     :: 2;
+
+    NP := size_of(Vector3) * mesh.positions.count;
+
+    glVertexAttribPointer(ATTRIB_POSITION, 3, GL_FLOAT, false, size_of(Vector3), null);
+    glVertexAttribPointer(ATTRIB_NORMAL, 3, GL_FLOAT, false, size_of(Vector3), cast(*void)(NP));
 
     last_line_width: float;
     glGetFloatv(GL_LINE_WIDTH, xx *last_line_width);

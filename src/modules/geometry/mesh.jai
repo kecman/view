@@ -28,7 +28,7 @@ Mesh :: struct {
     positions : [..]Vector3;
     normals :  [..]Vector3;
     indices :  [..]u32;
-    // @Incomplete tcoords?
+    // texture_uvs : [..]Vector2; @Incomplete
 
     world_from_model : Matrix4 = .{_11 = 1, _22 = 1, _33 = 1, _44 = 1};
 }
@@ -37,12 +37,21 @@ buffer_mesh :: (using mesh : *Mesh) {
 #if USE_GRAPHICS {
     if is_dirty {
         if !vbo glGenBuffers(1, *vbo);
+
+        NP := size_of(Vector3) * positions.count;
+        NN := size_of(Vector3) * normals.count;
+
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, size_of(Vector3) * positions.count, positions.data, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, NP + NN, null, GL_STATIC_DRAW);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, NP, positions.data);
+        glBufferSubData(GL_ARRAY_BUFFER, NP, NN, normals.data);
 
         if !ibo glGenBuffers(1, *ibo);
+
+        NI := size_of(u32) * indices.count;
+
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, size_of(u32) * indices.count, indices.data, GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, NI, indices.data, GL_STATIC_DRAW);
 
         // @FIXME: Send normals!
 
