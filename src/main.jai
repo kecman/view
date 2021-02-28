@@ -204,7 +204,7 @@ main :: () {
                     }
                 }
                 case SDL_DROPFILE; {
-                    // @Cleanup event.drop.file should be free'd using SDL_free
+                    // @Leak @Cleanup event.drop.file should be free'd using SDL_free
                     dropped := to_string(event.drop.file);
                     load_entity_from_file(dropped);
                 }
