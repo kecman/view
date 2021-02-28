@@ -33,47 +33,47 @@ Mesh :: struct {
     world_from_model : Matrix4 = .{_11 = 1, _22 = 1, _33 = 1, _44 = 1};
 }
 
-buffer_mesh :: (mesh : *Mesh) {
+buffer_mesh :: (using mesh : *Mesh) {
 #if USE_GRAPHICS {
-    if mesh.is_dirty {
-        if !mesh.vbo glGenBuffers(1, *mesh.vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
-        glBufferData(GL_ARRAY_BUFFER, size_of(Vector3) * mesh.positions.count, mesh.positions.data, GL_STATIC_DRAW);
+    if is_dirty {
+        if !vbo glGenBuffers(1, *vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, size_of(Vector3) * positions.count, positions.data, GL_STATIC_DRAW);
 
-        if !mesh.ibo glGenBuffers(1, *mesh.ibo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ibo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, size_of(u32) * mesh.indices.count, mesh.indices.data, GL_STATIC_DRAW);
+        if !ibo glGenBuffers(1, *ibo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, size_of(u32) * indices.count, indices.data, GL_STATIC_DRAW);
 
         // @FIXME: Send normals!
 
-        mesh.is_dirty = false;
+        is_dirty = false;
     }
 }
 }
 
-deinit :: (mesh : *Mesh) {
+deinit :: (using mesh : *Mesh) {
 #if USE_GRAPHICS {
-    if mesh.vbo glDeleteBuffers(1, *mesh.vbo);
-    if mesh.ibo glDeleteBuffers(1, *mesh.ibo);
+    if vbo glDeleteBuffers(1, *vbo);
+    if ibo glDeleteBuffers(1, *ibo);
 
-    mesh.vbo = 0;
-    mesh.ibo = 0;
+    vbo = 0;
+    ibo = 0;
 }
-    mesh.is_dirty = true;
+    is_dirty = true;
 
     // Note: array_reset frees memory and zeros members
-    array_reset(*mesh.positions);
-    array_reset(*mesh.normals);
-    array_reset(*mesh.indices);
+    array_reset(*positions);
+    array_reset(*normals);
+    array_reset(*indices);
 
-    mesh.geometry_format = .UNKNOWN;
-    free(mesh.fully_pathed_filename.data);
+    geometry_format = .UNKNOWN;
+    free(fully_pathed_filename.data);
 }
 
-print_Mesh :: (mesh : Mesh) {
+print_Mesh :: (using mesh : Mesh) {
     print("print_Mesh %\n", mesh);
-    for mesh.positions print("- vtx[%] %\n", it_index, it);
-    for mesh.indices  print("- idx[%] %\n", it_index, it);
+    for positions print("- vtx[%] %\n", it_index, it);
+    for indices  print("- idx[%] %\n", it_index, it);
 }
 
 bounding_box :: (using mesh : Mesh) -> AxisBox3 #must {
