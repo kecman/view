@@ -458,15 +458,36 @@ render_mesh :: (mesh : Mesh, style : VertexLabelStyle) {
 
     glUseProgram(mesh_shader);
 
-    projection_from_model := make_projection_from_world(app.camera) * mesh.world_from_model;
+    assert(camera.projection_type == .ORTHOGRAPHIC);
 
-    mvp_loc := glGetUniformLocation(mesh_shader, "mvp");
-    color_loc := glGetUniformLocation(mesh_shader, "color");
-    point_size_loc := glGetUniformLocation(mesh_shader, "point_size");
 
-    glUniformMatrix4fv(mvp_loc, 1, GL_TRUE, *projection_from_model._11);
-    glUniform4f(color_loc, mesh.color.x, mesh.color.y, mesh.color.z, mesh.color.w);
-    glUniform1f(point_size_loc, xx style.point_size);
+    {
+        model_loc := glGetUniformLocation(mesh_shader, "world_from_model");
+        glUniformMatrix4fv(model_loc, 1, true, *mesh.world_from_model._11);
+        print_errors();
+    }
+
+    {
+        view_loc := glGetUniformLocation(mesh_shader, "view_from_world");
+        view_from_world := make_look_at_matrix(camera);
+        glUniformMatrix4fv(view_loc, 1, true, *view_from_world._11);
+    }
+
+    {
+        projection_loc := glGetUniformLocation(mesh_shader, "projection_from_view");
+        projection_from_view := make_orthographic_projection_matrix(camera);
+        glUniformMatrix4fv(projection_loc, 1, true, *projection_from_view._11);
+    }
+
+    {
+        color_loc := glGetUniformLocation(mesh_shader, "color");
+        glUniform4f(color_loc, mesh.color.x, mesh.color.y, mesh.color.z, mesh.color.w);
+    }
+
+    {
+        point_size_loc := glGetUniformLocation(mesh_shader, "point_size");
+        glUniform1f(point_size_loc, xx style.point_size);
+    }
 
     glBindVertexArray(mesh_vao);
     glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
