@@ -207,8 +207,8 @@ io_mouse_middle_down :: () -> bool { return io().MouseDown[2]; }
 arcball_vector :: (mouse_position_px : Vector2) -> Vector3
 {
     arcball_center_px := make_vector2(app.current_window_width / 2., app.current_window_height / 2.);
-    arcball_radius_px := min(app.current_window_height, app.current_window_width) / 2.; // allows room on left/right for rotation look direction
-    // arcball_radius_px := length(make_vector2(xx app.current_window_height, xx app.current_window_width) / 2); // only room to rotate on sphere
+    // arcball_radius_px := min(app.current_window_height, app.current_window_width) / 2.; // allows room on left/right for rotation look direction
+    arcball_radius_px := length(make_vector2(xx app.current_window_height, xx app.current_window_width) / 2); // only room to rotate on sphere
 
     using result := make_vector3((mouse_position_px - arcball_center_px) / arcball_radius_px, 0);
     y *= -1; // Since y_px increases from the top of the screen to the bottom
