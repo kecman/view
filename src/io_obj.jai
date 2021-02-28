@@ -24,8 +24,7 @@ load_obj :: (filename : string) -> Mesh {
 
     start_file(*handler, "load_obj", filename, false);
     if handler.failed {
-        print("Error (%:%): Unable to find my own executable?!\n", #file, #line); // @Cleanup proper logging
-        exit(1);
+        return result;
     }
 
     while true {

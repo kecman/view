@@ -29,11 +29,6 @@ current_window_aspect_ratio_width_over_height :: () -> float {
 
 main :: () {
 
-    // my_logger :: (message: string, ident: string, mode: Log_Mode, data: *void) {
-    //     print("my_logger: [%] %", ident, message);
-    // }
-    // context.logger = my_logger; // default is no-op so need to set our own
-
     SDL_Init(SDL_INIT_VIDEO);
 
     window := SDL_CreateWindow(tprint("View v%", VIEW_VERSION_STRING).data,
@@ -144,6 +139,14 @@ main :: () {
     // cursor_text.data[cursor_text.count] = 0;
     // cursor_text:="hello";
 
+    {
+        args := get_command_line_arguments();
+        defer array_free(args);
+        for 1..args.count-1 {
+            load_entity_from_file(args[it]);
+        }
+    }
+
     // Main loop
     done := false;
     while !done {
@@ -203,74 +206,7 @@ main :: () {
                 case SDL_DROPFILE; {
                     // @Cleanup event.drop.file should be free'd using SDL_free
                     dropped := to_string(event.drop.file);
-
-                    MAGIC_COMPILE_FILE :: "item_Part.obj";
-                    if !contains(dropped, MAGIC_COMPILE_FILE) && running_at_compile_time() {
-                        compiler_report(tprint("Oi! You can only load % at compile time, got %", MAGIC_COMPILE_FILE, dropped));
-                    }
-
-                    skip := false;
-                    for entities {
-                        mesh := get_mesh(it);
-                        if mesh && mesh.fully_pathed_filename == dropped {
-                            skip = true;
-                            break;
-                        }
-                    }
-                    if skip {
-                        log("Skipped file: '%' (already loaded)\n", dropped);
-                        continue;
-                    }
-
-                    // @Incomplete: support polygon types using wkt format
-                    mesh := load_obj(dropped);
-                    if !mesh.vertices.count {
-                        log("Skipped file: '%' (0 vertices)\n", dropped);
-                        continue;
-                    }
-
-                    if #complete mesh.geometry_format == {
-                        case .LINES;
-                            bbox := geom.bounding_box(mesh);
-                            print("bbox = %\n", bbox);
-                            if extents(bbox).z == 0 {
-                                shape, ok := to_Polyline_Soup2(mesh);
-                                assert(ok);
-
-                                entity := New(Polyline_Soup2_Entity);
-                                // entity := New(Polyline_Soup3_Entity);
-                                entity.mesh = mesh;
-                                entity.shape = shape;
-                                array_add(*entities, entity);
-
-                                log("Loaded 2d polyline soup file: '%'\n", dropped);
-                            } else {
-                                shape, ok := to_Polyline_Soup3(mesh);
-                                assert(ok);
-
-                                entity := New(Polyline_Soup3_Entity);
-                                entity.mesh = mesh;
-                                entity.shape = shape;
-                                array_add(*entities, entity);
-
-                                log("Loaded 3d polyline soup file: '%'\n", dropped);
-                                continue;
-                            }
-
-                        case .TRIANGLES;
-                            entity := New(Mesh_Entity);
-                            entity.mesh = mesh;
-                            array_add(*entities, entity);
-
-                            log("Loaded triangle mesh file: '%'\n", dropped);
-
-                        case .POINTS; #through;
-                        case .UNKNOWN; #through;
-                        case;
-                            log("Skipped file: '%' (unsupported geometry type %)\n", dropped, mesh.geometry_format);
-                            deinit(*mesh);
-                            continue;
-                    }
+                    load_entity_from_file(dropped);
                 }
             }
         }
@@ -442,6 +378,74 @@ geom :: #import "geometry";
 //#load "commands.jai"; // @CompilerBug loading here triggers incorrect (?) compilation error
 
 #scope_file
+
+load_entity_from_file :: (filename : string) {
+    MAGIC_COMPILE_FILE :: "item_Part.obj";
+    if !contains(filename, MAGIC_COMPILE_FILE) && running_at_compile_time() {
+        compiler_report(tprint("Oi! You can only load % at compile time, got %", MAGIC_COMPILE_FILE, filename));
+    }
+
+    skip := false;
+    for entities {
+        mesh := get_mesh(it);
+        if mesh && mesh.fully_pathed_filename == filename {
+            skip = true;
+            break;
+        }
+    }
+    if skip {
+        log("Skipped file: '%' (already loaded)\n", filename);
+        return;
+    }
+
+    // @Incomplete: support polygon types using wkt format
+    mesh := load_obj(filename);
+    if !mesh.vertices.count {
+        log("Skipped file: '%' (0 vertices)\n", filename);
+        return;
+    }
+
+    if #complete mesh.geometry_format == {
+        case .LINES;
+            bbox := geom.bounding_box(mesh);
+            print("bbox = %\n", bbox);
+            if extents(bbox).z == 0 {
+                shape, ok := to_Polyline_Soup2(mesh);
+                assert(ok);
+
+                entity := New(Polyline_Soup2_Entity);
+                // entity := New(Polyline_Soup3_Entity);
+                entity.mesh = mesh;
+                entity.shape = shape;
+                array_add(*entities, entity);
+
+                log("Loaded 2d polyline soup file: '%'\n", filename);
+            } else {
+                shape, ok := to_Polyline_Soup3(mesh);
+                assert(ok);
+
+                entity := New(Polyline_Soup3_Entity);
+                entity.mesh = mesh;
+                entity.shape = shape;
+                array_add(*entities, entity);
+
+                log("Loaded 3d polyline soup file: '%'\n", filename);
+            }
+
+        case .TRIANGLES;
+            entity := New(Mesh_Entity);
+            entity.mesh = mesh;
+            array_add(*entities, entity);
+
+            log("Loaded triangle mesh file: '%'\n", filename);
+
+        case .POINTS; #through;
+        case .UNKNOWN; #through;
+        case;
+            log("Skipped file: '%' (unsupported geometry type %)\n", filename, mesh.geometry_format);
+            deinit(*mesh);
+    }
+}
 
 render_mesh :: (mesh : Mesh, style : VertexLabelStyle) {
     using app;

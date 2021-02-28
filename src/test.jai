@@ -20,15 +20,15 @@ require :: (a : $T, b : T, check_proc : (T, T)->bool = (a,b)=>(a==b), loc := #ca
 // @TODO make an `obj_polyline_soup` function and test it, and run tests using procedure notes
 // @TODO perhaps this is simpler to implement with segment iterators etc
 main :: () {
-    dropped :: "/home/matija/Dropbox/view/data/test-geometry/polyline_soup_2_000.obj";
-    obj := load_obj(dropped);
+    filename :: "/home/matija/Dropbox/view/data/test-geometry/polyline_soup_2_000.obj";
+    obj := load_obj(filename);
 
     check(obj.indices.count, 18);
     check(obj.vertices.count, 10);
 
     soup2, success := to_Polyline_Soup2(obj);
     check(success, true);
-    if !success print("Skipped file: '%' (only 2D polylines with constant z are supported)\n", dropped);
+    if !success print("Skipped file: '%' (only 2D polylines with constant z are supported)\n", filename);
 }
 
 // // this file should be compiled and run when we pass --test to build.jai function should be run
