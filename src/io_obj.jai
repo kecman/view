@@ -11,7 +11,7 @@ load_obj :: (filename : string) -> Mesh {
     result : Mesh;
     result.fully_pathed_filename = copy_string(filename);
 
-    result.wireframe = true;
+    result.wireframe = false;
 
     hash := get_hash(result.fully_pathed_filename);
     result.color.x = cast(float)(hash % 257) / 256;

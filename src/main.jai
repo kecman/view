@@ -244,6 +244,17 @@ main :: () {
             for entities {
                 mesh := get_mesh(it);
                 if mesh {
+
+                    ShowTooltip :: (description : string) #expand {
+                        if (ImGui.IsItemHovered()) {
+                            ImGui.BeginTooltip();
+                            // ImGui.PushTextWrapPos(450);
+                            ImGui.TextUnformatted(description);
+                            // ImGui.PopTextWrapPos();
+                            ImGui.EndTooltip();
+                        }
+                    }
+
                     ImGui.Text(to_c_string(tprint("%", it_index)));
                     ImGui.SameLine();
                     if ImGui.Button(imgui_label("Remove", it), size=*make_vector2(0, 0)) {
@@ -251,12 +262,17 @@ main :: () {
                         break;
                     }
                     ImGui.SameLine();
-                    ImGui.ColorEdit4(imgui_label("##color", it), *mesh.color.component, ImGui.ColorEditFlags.NoInputs);
-                    ImGui.SameLine();
                     ImGui.Checkbox(imgui_label("##visible", it), *mesh.visible);
+                    ShowTooltip("visibility");
+                    ImGui.SameLine();
+                    ImGui.Checkbox(imgui_label("##display_mode", it), xx *mesh.display_mode);
+                    ShowTooltip("shading/normals");
+                    ImGui.SameLine();
+                    ImGui.ColorEdit4(imgui_label("##color", it), *mesh.color.component, ImGui.ColorEditFlags.NoInputs);
                     if it.type == .MESH || it.type == .POLYGON_SOUP {
                         ImGui.SameLine();
                         ImGui.Checkbox(imgui_label("##wireframe", it), *mesh.wireframe);
+                        ShowTooltip("wireframe");
                     }
                     ImGui.SameLine();
                     if mesh.fully_pathed_filename.count {
@@ -480,6 +496,11 @@ render_mesh :: (mesh : Mesh, style : VertexLabelStyle) {
     }
 
     {
+        mode_loc := glGetUniformLocation(mesh_shader, "display_mode");
+        glUniform1i(mode_loc, xx mesh.display_mode);
+    }
+
+    {
         color_loc := glGetUniformLocation(mesh_shader, "color");
         glUniform4f(color_loc, mesh.color.x, mesh.color.y, mesh.color.z, mesh.color.w);
     }
@@ -628,8 +649,8 @@ VertexLabelStyle :: struct {
     show_position := false;
     show_index := false;
 
-    point_size : int = 4; // 0, 2, 4, 6
-    line_width : int = 2; // 1, 1, 2, 3
+    point_size : int = 0; // 0, 2, 4, 6
+    line_width : int = 1; // 1, 1, 2, 3
 }
 
 cycle_vertex_label_style :: (using style : *VertexLabelStyle) {

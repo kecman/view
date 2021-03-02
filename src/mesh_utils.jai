@@ -198,6 +198,11 @@ make_axes_triad :: (axis_length : float) -> Axes_Triad
     z_axis.color = Vector4.{0, 0, 1, 1};
     origin.color = Vector4.{1, 1, 1, 1};
 
+    x_axis.display_mode = .SHADED;
+    y_axis.display_mode = .SHADED;
+    z_axis.display_mode = .SHADED;
+    origin.display_mode = .SHADED;
+
     return result;
 }
 

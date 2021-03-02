@@ -5,6 +5,11 @@ Geometry_Format :: enum {
     TRIANGLES;
 }
 
+Display_Mode :: enum {
+    NORMALS :: 0;
+    SHADED :: 1;
+}
+
 // Maybe this should be polymorphic on the vertex type?
 Mesh :: struct {
     geometry_format := Geometry_Format.UNKNOWN;
@@ -19,6 +24,7 @@ Mesh :: struct {
     visible : bool = true;
     wireframe : bool = false;
     color : Vector4;
+    display_mode : Display_Mode;
 
     // @Cleanup Store vertices/normals as a flat array to better support 2D polylines? Maybe 'subclass' mesh with using
 

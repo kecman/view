@@ -308,8 +308,8 @@ ImGui :: struct {
     // Tooltips
     // IMGUI_API void          SetTooltip(const char* fmt, ...) IM_FMTARGS(1);                     // set text tooltip under mouse-cursor, typically use with ImGui::IsItemHovered(). overidde any previous call to SetTooltip().
     // IMGUI_API void          SetTooltipV(const char* fmt, va_list args) IM_FMTLIST(1);
-    // IMGUI_API void          BeginTooltip();                                                     // begin/append a tooltip window. to create full-featured tooltip (with any kind of contents).
-    // IMGUI_API void          EndTooltip();
+    BeginTooltip :: () #foreign imgui "_ZN5ImGui12BeginTooltipEv";                                 // begin/append a tooltip window. to create full-featured tooltip (with any kind of contents).
+    EndTooltip :: () #foreign imgui "_ZN5ImGui10EndTooltipEv";
 
     // Menus
     BeginMainMenuBar :: () -> bool #foreign imgui "_ZN5ImGui16BeginMainMenuBarEv";                                                        // create and append to a full screen menu-bar. only call EndMainMenuBar() if this returns true!
