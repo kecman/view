@@ -430,7 +430,7 @@ ImGui :: struct {
     // Internal context access - if you want to use multiple context, share context between modules (e.g. DLL). There is a default context created and active by default.
     // All contexts share a same ImFontAtlas by default. If you want different font atlas, you can new() them and overwrite the GetIO().Fonts variable of an ImGui context.
     GetVersion :: () -> *u8 #foreign imgui "_ZN5ImGui10GetVersionEv";
-    CreateContext :: (malloc_fn: (u64) -> *void = null, free_fn: (*void) -> void = null) -> *Context #foreign imgui "_ZN5ImGui13CreateContextEPFPvmEPFvS0_E";
+    CreateContext :: (malloc_fn: (u64) -> *void = null, free_fn: (*void) -> () = null) -> *Context #foreign imgui "_ZN5ImGui13CreateContextEPFPvmEPFvS0_E";
     // IMGUI_API void          DestroyContext(ImGuiContext* ctx);
     // IMGUI_API ImGuiContext* GetCurrentContext();
     // IMGUI_API void          SetCurrentContext(ImGuiContext* ctx);
@@ -842,8 +842,8 @@ ImGui :: struct {
         SelectionEnd : s32;   //                                      // Read-write
 
         // NB: Helper functions for text manipulation. Calling those function loses selection.
-        DeleteChars :: (this : *TextEditCallbackData, pos : s32, bytes_count : s32) -> void #foreign imgui "_ZN25ImGuiTextEditCallbackData11DeleteCharsEii";
-        InsertChars :: (this : *TextEditCallbackData, pos : s32, text : *u8, text_end : *u8 = null) -> void #foreign imgui "_ZN25ImGuiTextEditCallbackData11InsertCharsEiPKcS1_";
+        DeleteChars :: (this : *TextEditCallbackData, pos : s32, bytes_count : s32) -> () #foreign imgui "_ZN25ImGuiTextEditCallbackData11DeleteCharsEii";
+        InsertChars :: (this : *TextEditCallbackData, pos : s32, text : *u8, text_end : *u8 = null) -> () #foreign imgui "_ZN25ImGuiTextEditCallbackData11InsertCharsEiPKcS1_";
         HasSelection :: inline (this : *TextEditCallbackData) -> bool { return this.SelectionStart != this.SelectionEnd; }
     }
 

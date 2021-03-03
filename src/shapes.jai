@@ -14,7 +14,7 @@ par_shapes_mesh :: struct
 };
 
 // @Cleanup pass a pointer for clarity
-deinit :: (mesh : par_shapes_mesh) -> void
+deinit :: (mesh : par_shapes_mesh) -> ()
 {
     // Note: array_reset frees memory and zeros members
     array_reset(*mesh.points);
@@ -143,7 +143,7 @@ par_shapes_create_parametric :: (fn : par_shapes_fn, slices : u32, stacks : u32,
 
 // Queries ---------------------------------------------------------------------
 
-par_shapes_export :: (mesh : par_shapes_mesh, filename : string) -> void
+par_shapes_export :: (mesh : par_shapes_mesh, filename : string) -> ()
 {
     objfile, success :=  file_open(filename, for_writing=true, keep_existing_content=false);
     assert(success);
@@ -370,7 +370,7 @@ par_shapes__torus :: (uv : Vector2, userdata : *void) -> Vector3
 }
 
 /*
-par_shapes__compute_welded_normals :: (m : par_shapes_mesh) -> void
+par_shapes__compute_welded_normals :: (m : par_shapes_mesh) -> ()
 {
     const float epsilon = par_shapes__epsilon_welded_normals;
     m->normals = PAR_MALLOC(float, m->npoints * 3);

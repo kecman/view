@@ -2,7 +2,7 @@
 
 Command_Info :: struct {
     name : string;
-    procedure : ([] string) -> void;
+    procedure : ([] string) -> ();
 }
 
 Console :: struct {
