@@ -7,7 +7,8 @@ Geometry_Format :: enum {
 
 Display_Mode :: enum {
     NORMALS :: 0;
-    SHADED :: 1;
+    SOLID_COLOR :: 1;
+    SHADED :: 2;
 }
 
 // Maybe this should be polymorphic on the vertex type?

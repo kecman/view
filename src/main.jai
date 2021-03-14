@@ -23,6 +23,8 @@ app : struct {
     console : Console;
 }
 
+V2_ZERO :: Vector2.{0, 0};
+
 current_window_aspect_ratio_width_over_height :: () -> float {
     return cast(float) app.current_window_width / cast(float) app.current_window_height;
 }
@@ -255,27 +257,62 @@ main :: () {
                         }
                     }
 
+                    // Entity index used to refer to geometry in console
                     ImGui.Text(to_c_string(tprint("%", it_index)));
+
+                    // Remove button
                     ImGui.SameLine();
                     if ImGui.Button(imgui_label("Remove", it), size=*make_vector2(0, 0)) {
                         entity_to_remove = it_index;
                         break;
                     }
-                    ImGui.SameLine();
-                    ImGui.Checkbox(imgui_label("##visible", it), *mesh.visible);
-                    ShowTooltip("visibility");
-                    ImGui.SameLine();
-                    ImGui.Checkbox(imgui_label("##display_mode", it), xx *mesh.display_mode);
-                    ShowTooltip("shading/normals");
+
+                    // Color picker
                     ImGui.SameLine();
                     ImGui.ColorEdit4(imgui_label("##color", it), *mesh.color.component, ImGui.ColorEditFlags.NoInputs);
-                    if it.type == .MESH || it.type == .POLYGON_SOUP {
-                        ImGui.SameLine();
-                        ImGui.Checkbox(imgui_label("##wireframe", it), *mesh.wireframe);
-                        ShowTooltip("wireframe");
-                    }
+
+                    // Toggle visibility checkbox
                     ImGui.SameLine();
+                    ImGui.Checkbox(imgui_label("##visible", it), *mesh.visible);
+                    ShowTooltip("Visible");
+
+                    // Extra settings accessible with RMB
+                    ImGui.SameLine();
+                    ImGui.Text("...");
+                    if ImGui.BeginPopupContextItem(imgui_label("##context_menu", it)) {
+                        defer ImGui.EndPopup();
+
+                        // Combo box to select display mode enum value
+                        info_enum := type_info(type_of(mesh.display_mode));
+                        value := get_enum_value(*mesh.display_mode, info_enum);
+                        value_name := "";
+                        for info_enum.names {
+                            if value == info_enum.values[it_index]  value_name = it;
+                        }
+                        if ImGui.BeginCombo("Display mode", temp_c_string(value_name)) {
+                            for info_enum.names {
+                                is_selected := value == info_enum.values[it_index];
+                                if ImGui.Selectable(temp_c_string(it), is_selected, size=*V2_ZERO) {
+                                    set_enum_value(*mesh.display_mode, info_enum, info_enum.values[it_index]);
+                                }
+                                if is_selected ImGui.SetItemDefaultFocus();
+                            }
+
+                            ImGui.EndCombo();
+                        }
+
+                        // Toggle visibility checkbox
+                        ImGui.Checkbox(imgui_label("Visible", it), *mesh.visible);
+
+                        // Toggle wireframe checkbox
+                        if it.type == .MESH || it.type == .POLYGON_SOUP {
+                            ImGui.Checkbox(imgui_label("Wireframe", it), *mesh.wireframe);
+                        }
+                    }
+
+                    // Write filename
                     if mesh.fully_pathed_filename.count {
+                        ImGui.SameLine();
                         ImGui.Text(path_filename(mesh.fully_pathed_filename)); // @CompilerBug?
                     }
                 }
@@ -375,6 +412,7 @@ main :: () {
 #import "Basic";
 #import "File";
 #import "String";
+#import "Reflection";
 #import "Math";
 #import "SDL";
 #import "ImGui_";

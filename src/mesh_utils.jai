@@ -115,9 +115,9 @@ to_Mesh :: (shape : Polygon_Soup) -> Mesh, bool #must {
             pi := it.outer_ring.points[i];
             pj := it.outer_ring.points[j];
             pk := it.outer_ring.points[k];
-            array_add(*result.vertices, make_vector3(pi.x, pi.y, 0));
-            array_add(*result.vertices, make_vector3(pj.x, pj.y, 0));
-            array_add(*result.vertices, make_vector3(pk.x, pk.y, 0));
+            array_add(*result.positions, make_vector3(pi.x, pi.y, 0));
+            array_add(*result.positions, make_vector3(pj.x, pj.y, 0));
+            array_add(*result.positions, make_vector3(pk.x, pk.y, 0));
             array_add(*result.indices, xx (mesh_index + 0));
             array_add(*result.indices, xx (mesh_index + 1));
             array_add(*result.indices, xx (mesh_index + 2));
