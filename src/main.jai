@@ -122,8 +122,7 @@ main :: () {
     ImGui_ImplSdl_Init(window);
 
     if false {
-        position := make_vector2(0, 0);
-        ImGui.SetWindowPos(pos=*position);
+        ImGui.SetWindowPos(pos=*V2_ZERO);
     }
 
     // Setup style
@@ -217,7 +216,7 @@ main :: () {
         ImGui_ImplSdl_NewFrame(window);
 
         if app.show_ui {
-            ImGui.SetNextWindowPos(pos=*make_vector2(10, 10), pivot=*make_vector2(0,0));
+            ImGui.SetNextWindowPos(pos=*make_vector2(10, 10), pivot=*V2_ZERO);
             ImGui.Begin("", flags = ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar);
             ImGui.ColorEdit4("Canvas", *clear_color.component, ImGui.ColorEditFlags.NoInputs);
             ImGui.SameLine();
@@ -226,17 +225,17 @@ main :: () {
 
 
             #if false {
-                if ImGui.Button("Demo Window", size=*make_vector2(0,0)) show_demo_window ^= true;
+                if ImGui.Button("Demo Window", size=*V2_ZERO) show_demo_window ^= true;
                 if show_demo_window {
-                    ImGui.SetNextWindowPos(*make_vector2(650, 20), ImGui.Cond.FirstUseEver, *make_vector2(0,0));
+                    ImGui.SetNextWindowPos(*make_vector2(650, 20), ImGui.Cond.FirstUseEver, *V2_ZERO);
                     ImGui.ShowDemoWindow(*show_demo_window);
                 }
             }
 
-            if ImGui.Button("Reset Window          ", size=*make_vector2(0,0)) SDL_SetWindowSize(window, app.INITIAL_WINDOW_WIDTH, app.INITIAL_WINDOW_HEIGHT);
-            if ImGui.Button("Reset Camera       (R)", size=*make_vector2(0,0)) fit_on_screen();
-            if ImGui.Button("Cycle vertex style (V)", size=*make_vector2(0,0)) cycle_vertex_label_style(*vertex_label_style);
-            if ImGui.Button("Cycle line style   (L)", size=*make_vector2(0,0)) cycle_line_style(*vertex_label_style);
+            if ImGui.Button("Reset Window          ", size=*V2_ZERO) SDL_SetWindowSize(window, app.INITIAL_WINDOW_WIDTH, app.INITIAL_WINDOW_HEIGHT);
+            if ImGui.Button("Reset Camera       (R)", size=*V2_ZERO) fit_on_screen();
+            if ImGui.Button("Cycle vertex style (V)", size=*V2_ZERO) cycle_vertex_label_style(*vertex_label_style);
+            if ImGui.Button("Cycle line style   (L)", size=*V2_ZERO) cycle_line_style(*vertex_label_style);
 
             imgui_label :: (label : string, ptr : *void) -> *u8 {
                 return to_c_string(concatenate(label, tprint("##%", ptr)));
@@ -262,7 +261,7 @@ main :: () {
 
                     // Remove button
                     ImGui.SameLine();
-                    if ImGui.Button(imgui_label("Remove", it), size=*make_vector2(0, 0)) {
+                    if ImGui.Button(imgui_label("Remove", it), size=*V2_ZERO) {
                         entity_to_remove = it_index;
                         break;
                     }
