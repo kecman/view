@@ -25,7 +25,7 @@ Mesh :: struct {
     visible : bool = true;
     wireframe : bool = false;
     color : Vector4;
-    display_mode : Display_Mode;
+    display_mode : Display_Mode = .SHADED;
 
     // @Cleanup Store vertices/normals as a flat array to better support 2D polylines? Maybe 'subclass' mesh with using
 

@@ -547,6 +547,11 @@ render_mesh :: (mesh : Mesh, style : VertexLabelStyle) {
         glUniform1f(point_size_loc, xx style.point_size);
     }
 
+    {
+        loc := glGetUniformLocation(mesh_shader, "camera.eye_position");
+        glUniform3f(loc, camera.eye_position.x, camera.eye_position.y, camera.eye_position.z);
+    }
+
     glBindVertexArray(mesh_vao);
     glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ibo);
