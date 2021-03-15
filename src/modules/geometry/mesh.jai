@@ -8,7 +8,7 @@ Geometry_Format :: enum {
 Display_Mode :: enum {
     NORMALS :: 0;
     SOLID_COLOR :: 1;
-    SHADED :: 2;
+    BLINN_PHONG :: 2;
 }
 
 // Maybe this should be polymorphic on the vertex type?
@@ -25,7 +25,7 @@ Mesh :: struct {
     visible : bool = true;
     wireframe : bool = false;
     color : Vector4;
-    display_mode : Display_Mode = .SHADED;
+    display_mode : Display_Mode = .BLINN_PHONG;
 
     // @Cleanup Store vertices/normals as a flat array to better support 2D polylines? Maybe 'subclass' mesh with using
 

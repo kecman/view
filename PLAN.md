@@ -2,7 +2,6 @@
 - Support loading wkt file format, so we can load Polygons in a reasonable way
 - Implement a polyline soup segment_iterator
 - Implement commands to change the render settings on stuff
-- [Rendering] 3D mesh shading and lights in the scene
 - [Testing] [Meta-programming] Use @test to tag/run tests
 - [Commands] [Meta-programming] Autogenerate code for bingings
 - [Commands] [Meta-programming] Autogenerate ui code for bingings
