@@ -344,12 +344,12 @@ fit_on_screen :: () {
     }
 
     // Offset by a bit so the geometry doesn't end right on window boundaries
-    geom.offset(*bbox_view, 0.05 * geom.extents(bbox_view));
+    geom.offset(*bbox_view, 0.05 * geom.diagonal(bbox_view));
 
-    center_world := (world_from_view * make_vector4(geom.center_point(bbox_view), 1)).xyz;
-    app.camera.look_position = center_world;
+    // Look at the center of the bbox
+    app.camera.look_position = (world_from_view * make_vector4(geom.center_point(bbox_view), 1)).xyz;
 
-    extents := geom.extents(bbox_view);
+    extents := geom.diagonal(bbox_view);
     scale := (extents.y / 2) / app.camera.top;
     if scale * app.camera.right < (extents.x / 2) {
         scale = (extents.x / 2) / app.camera.right;
@@ -427,7 +427,7 @@ load_entity_from_file :: (filename : string) {
         case .LINES;
             bbox := geom.bounding_box(mesh);
             print("bbox = %\n", bbox);
-            if extents(bbox).z == 0 {
+            if diagonal(bbox).z == 0 {
                 shape, ok := to_Polyline_Soup2(mesh);
                 assert(ok);
 

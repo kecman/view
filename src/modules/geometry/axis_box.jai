@@ -141,7 +141,7 @@ offset :: (using box : *$T/AxisBox, increment : T.Vector) {
     }
 }
 
-extents :: (using box : $T/AxisBox) -> T.Vector #must {
+diagonal :: (using box : $T/AxisBox) -> T.Vector #must {
     box_extents : T.Vector;
     for d : 0..box.DIM-1 {
         if min_point.component[d] <= max_point.component[d] {
