@@ -98,7 +98,7 @@ console_execute_command :: (_command : string) {
 }
 
 console_draw :: () {
-    if !app.show_ui || !app.show_console_ui return;
+    if !app.show_console_ui return;
 
     console_top_y := app.current_window_height * .6;
     ImGui.SetNextWindowPos(pos=*make_vector2(0, xx console_top_y), pivot=*make_vector2(0,0));

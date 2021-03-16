@@ -1,9 +1,5 @@
-// Eventually this will actually be a viewcube :)
-// Interpolate the motion
 
-render_viewcube :: () {
-    if !app.show_viewcube_ui return;
-
+show_camera_controls :: () {
     window_pos := make_vector2(ImGui.GetIO().DisplaySize.x - 10., 10.);
     window_pivot := make_vector2(1, 0);
 
@@ -13,55 +9,54 @@ render_viewcube :: () {
     // ImGui.SetNextWindowContentWidth(135.);
     // ImGui.SetNextWindowBgAlpha(.3);
     ImGui.Begin("Camera shortcuts", flags = NoTitleBar | AlwaysAutoResize | NoMove /*| NoNav*/);
-    // ImGui.Text("Look Along");
 
-    if ImGui.Button("+X ", size=*make_vector2(0,0)) {
-        // sim_data_.camera3d_mover.set_look_along_x();
-    }
-    ImGui.SameLine();
-    if ImGui.Button("+Y ", size=*make_vector2(0,0)) {
-        // sim_data_.camera3d_mover.set_look_along_y();
-    }
-    ImGui.SameLine();
-    if ImGui.Button("+Z ", size=*make_vector2(0,0)) {
-        // sim_data_.camera3d_mover.set_look_along_z();
-    }
+    X_AXIS :: Vector3.{1, 0, 0};
+    Y_AXIS :: Vector3.{0, 1, 0};
+    Z_AXIS :: Vector3.{0, 0, 1};
 
-    if ImGui.Button("-X ", size=*make_vector2(0,0)) {
-        // sim_data_.camera3d_mover.set_look_along_x(false);
+    // @Incomplete Interpolate the motion
+
+    if ImGui.Button("+X ", size=*V2_ZERO) {
+        set_look_along_direction(direction=X_AXIS, up=Z_AXIS);
     }
     ImGui.SameLine();
-    if ImGui.Button("-Y ", size=*make_vector2(0,0)) {
-        // sim_data_.camera3d_mover.set_look_along_y(false);
+    if ImGui.Button("+Y ", size=*V2_ZERO) {
+        set_look_along_direction(direction=Y_AXIS, up=Z_AXIS);
     }
     ImGui.SameLine();
-    if ImGui.Button("-Z ", size=*make_vector2(0,0)) {
-        // sim_data_.camera3d_mover.set_look_along_z(false);
+    if ImGui.Button("+Z ", size=*V2_ZERO) {
+        set_look_along_direction(direction=Z_AXIS, up=Y_AXIS);
     }
 
-    /*
+    if ImGui.Button("-X ", size=*V2_ZERO) {
+        set_look_along_direction(direction=-X_AXIS, up=Z_AXIS);
+    }
+    ImGui.SameLine();
+    if ImGui.Button("-Y ", size=*V2_ZERO) {
+        set_look_along_direction(direction=-Y_AXIS, up=Z_AXIS);
+    }
+    ImGui.SameLine();
+    if ImGui.Button("-Z ", size=*V2_ZERO) {
+        set_look_along_direction(direction=-Z_AXIS, up=Y_AXIS);
+    }
+
     ImGui.Separator();
-    if ImGui.Button(" << ", size=*make_vector2(0,0)) {
-        // sim_data_.camera3d_mover.rotate_45_deg_around_z(false);
+
+    if ImGui.Button(" < ", size=*V2_ZERO) {
+        rotate_look_along_around_up(45);
     }
     ImGui.SameLine();
-    if ImGui.Button("XYZ", size=*make_vector2(0,0)) {
-        // sim_data_.camera3d_mover.set_look_along_xyz();
+    if ImGui.Button("XYZ", size=*V2_ZERO) {
+        up := normalize(cross(.{-1, 1, 0}, .{-1, -1, -1}));
+        set_look_along_direction(direction=.{-1, -1, -1}, up=up);
     }
     ImGui.SameLine();
-    if ImGui.Button(" >> ", size=*make_vector2(0,0)) {
-        // sim_data_.camera3d_mover.rotate_45_deg_around_z();
+    if ImGui.Button(" > ", size=*V2_ZERO) {
+        rotate_look_along_around_up(-45);
     }
 
-    if (ImGui.Button(sim_data_.get_camera3d().is_using_perspective() ? "orthographic " : "  perspective  ")) {
-        sim_data_.get_camera3d().set_use_perspective(!sim_data_.get_camera3d().is_using_perspective());
-    }
-
-    if (!num::exactly_equal(sim_data_.camera3d_mover.get_origin(), num.vec3(0))
-        && ImGui.Button("  reset origin  ")) {
-        sim_data_.camera3d_mover.set_origin({0, 0, 0});
-    }
-    */
+    // @Incomplete add perspective/orthographic toggle
+    // @Incomplete add button to reset look position
 
     ImGui.End();
 }

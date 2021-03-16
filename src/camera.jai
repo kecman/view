@@ -24,6 +24,27 @@ Camera :: struct {
     far :  float;
 }
 
+// Undo look history
+
+set_look_along_direction :: (direction : Vector3, up : Vector3)
+{
+    using *app.camera;
+    d := distance(look_position, eye_position) / length(direction);
+    eye_position = look_position - d * direction;
+    up_direction = up;
+}
+
+rotate_look_along_around_up :: (degrees : float)
+{
+    using *app.camera;
+
+    rotation : Quaternion = ---;
+    set_from_axis_and_angle(*rotation, up_direction, to_radians(degrees));
+
+    look_position_to_eye_position := rotate(eye_position - look_position, rotation);
+    eye_position = look_position + look_position_to_eye_position;
+}
+
 init_camera :: () {
     camera := *app.camera;
 
@@ -203,6 +224,11 @@ io_mouse_right_down :: () -> bool { return io().MouseDown[1]; }
 io_mouse_middle_down :: () -> bool { return io().MouseDown[2]; }
 
 #scope_file
+
+to_radians :: (degrees : float) -> float {
+    scale :: PI / 180;
+    return degrees * scale;
+}
 
 arcball_vector :: (mouse_position_px : Vector2) -> Vector3
 {

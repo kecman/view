@@ -21,6 +21,9 @@
 - [UI/UX] Implement sliding to show/hide the terminal
 - [UI/UX] Scroll to the bottom of the terminal
 - [UI/UX] If file is hovered make it flash to white so it's easy to find
+- [UI/UX] Implement a view cube
+- [UI/UX] Implement arcball constraints cf. http://graphicsinterface.org/wp-content/uploads/gi1992-18.pdf
+- [UI/UX] Camera position history
 - Compiled at time in Window, after version?
 - [Cleanup] memory management for things returned by boost polygon module, should copy them on jai side and add a function to the bindings which free the mesh :Cleanup_Construction_Destruction:
 - Transparency with order as it is in the entity list
@@ -43,8 +46,6 @@
 - Extend the imgui_inspector example to allow you to drag+drop jai files and have show you all the types in the file
 - Use automatic differentiation in shape generation
 - Sounds for a more satifying UI?
-- Implement a view cube
-- Implement arcball constraints cf. http://graphicsinterface.org/wp-content/uploads/gi1992-18.pdf
 - [Commands] save_obj <filename>, load_obj <filename> to load files (loading files by drag and drop should effectively run this command)
 - [Commands] save_wkt <filename>, load_wkt <filename> to load files (loading files by drag and drop should effectively run this command)
 - [Commands] save_session <filename>, load_session <session> to write all commands in the session

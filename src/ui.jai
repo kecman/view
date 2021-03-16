@@ -3,6 +3,7 @@ show_main_panel :: (world_axes : Axes_Triad) // @nocommit pointer!!
     using app;
 
     ImGui.Begin("", flags = ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar);
+    defer ImGui.End();
     ImGui.ColorEdit4("Canvas", *clear_color.component, ImGui.ColorEditFlags.NoInputs);
     ImGui.SameLine();
     ImGui.Checkbox("World Axes", *world_axes.origin.visible);
@@ -112,6 +113,4 @@ show_main_panel :: (world_axes : Axes_Triad) // @nocommit pointer!!
     //     // cursor_text.count = str_length(cursor_text.data);
     // }
     // ImGui.Text("%", cursor_text);
-
-    ImGui.End();
 }

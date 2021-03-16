@@ -23,7 +23,6 @@ app : struct {
 
     show_ui := true;
     show_console_ui := false;
-    show_viewcube_ui := false;
 
     camera : Camera;
     console : Console;
@@ -219,9 +218,9 @@ main :: () {
         if app.show_ui {
             ImGui.SetNextWindowPos(pos=*make_vector2(10, 10), pivot=*V2_ZERO);
             show_main_panel(triad);
+            show_camera_controls();
+            console_draw();
         }
-
-        console_draw();
 
         if ImGui.GetMouseCursor() == {
             case .Arrow;         SDL_SetCursor(cursor_arrow);
@@ -263,7 +262,6 @@ main :: () {
         render_mesh(triad.y_axis, .{point_size=0, line_width=1});
         render_mesh(triad.z_axis, .{point_size=0, line_width=1});
 
-        render_viewcube();
         ImGui.Render();
 
         if false { // @Cleanup: remove this
