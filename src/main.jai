@@ -1,10 +1,16 @@
 // Shared global state is stored here
 app : struct {
+    window : *SDL_Window = null;
+
     INITIAL_WINDOW_WIDTH  : s32 : 1280;
     INITIAL_WINDOW_HEIGHT : s32 : 720;
 
     current_window_width := INITIAL_WINDOW_WIDTH;
     current_window_height := INITIAL_WINDOW_HEIGHT;
+
+    // clear_color := make_vector4(0.45, 0.55, 0.60, 1.00);
+    // clear_color := make_vector4(87./256, 194./256, 248./256, 1.00); // light blue
+    clear_color : Vector4 = .{170./256, 170./256, 170./256, 1.00}; // light grey
 
     text_shader : GLuint;
     text_vao : GLuint;
@@ -21,6 +27,8 @@ app : struct {
 
     camera : Camera;
     console : Console;
+
+    vertex_label_style : VertexLabelStyle;
 }
 
 V2_ZERO :: Vector2.{0, 0};
@@ -33,13 +41,13 @@ main :: () {
 
     SDL_Init(SDL_INIT_VIDEO);
 
-    window := SDL_CreateWindow(tprint("View v%", VIEW_VERSION_STRING).data,
-                               SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                               app.INITIAL_WINDOW_WIDTH, app.INITIAL_WINDOW_HEIGHT,
-                               SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);
+    app.window = SDL_CreateWindow(tprint("View v%", VIEW_VERSION_STRING).data,
+                                  SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                                  app.INITIAL_WINDOW_WIDTH, app.INITIAL_WINDOW_HEIGHT,
+                                  SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);
 
     // Check that the window was successfully created
-    if window == null {
+    if app.window == null {
         // In the case that the window could not be made...
         print("Could not create window: %\n", to_string(SDL_GetError()));
         return;
@@ -52,7 +60,7 @@ main :: () {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, xx SDL_GL_CONTEXT_PROFILE_CORE);
 
-    gl_context := SDL_GL_CreateContext(window);
+    gl_context := SDL_GL_CreateContext(app.window);
     if !gl_context {
         print( "Could not create OpenGL context: %\n", to_string(SDL_GetError()));
         return;
@@ -113,13 +121,11 @@ main :: () {
 
     triad := make_axes_triad(10);
 
-    vertex_label_style : VertexLabelStyle;
-
     init_font();
     init_commands();
 
     ImGui.CreateContext();
-    ImGui_ImplSdl_Init(window);
+    ImGui_ImplSdl_Init(app.window);
 
     if false {
         ImGui.SetWindowPos(pos=*V2_ZERO);
@@ -129,11 +135,6 @@ main :: () {
     // ImGui.StyleColorsClassic();
     // ImGui.StyleColorsLight();
     ImGui.StyleColorsDark();
-
-    show_demo_window := false;
-    // clear_color := make_vector4(0.45, 0.55, 0.60, 1.00);
-    // clear_color := make_vector4(87./256, 194./256, 248./256, 1.00); // light blue
-    clear_color := make_vector4(170./256, 170./256, 170./256, 1.00); // light grey
 
     // cursor_text := alloc_string(16);
     // defer free(cursor_text);
@@ -190,8 +191,8 @@ main :: () {
                 case SDL_KEYUP; {
                     if event.key.keysym.sym == SDLK_ESCAPE done = true;
                     if event.key.keysym.sym == SDLK_r fit_on_screen();
-                    if event.key.keysym.sym == SDLK_v cycle_vertex_label_style(*vertex_label_style);
-                    if event.key.keysym.sym == SDLK_l cycle_line_style(*vertex_label_style);
+                    if event.key.keysym.sym == SDLK_v cycle_vertex_label_style(*app.vertex_label_style);
+                    if event.key.keysym.sym == SDLK_l cycle_line_style(*app.vertex_label_style);
 
                     if event.key.keysym.sym == SDLK_RIGHTBRACKET {
                         amount : float = 45;
@@ -213,123 +214,11 @@ main :: () {
         }
 
         ImGui.GetStyle().WindowRounding = 0;
-        ImGui_ImplSdl_NewFrame(window);
+        ImGui_ImplSdl_NewFrame(app.window);
 
         if app.show_ui {
             ImGui.SetNextWindowPos(pos=*make_vector2(10, 10), pivot=*V2_ZERO);
-            ImGui.Begin("", flags = ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar);
-            ImGui.ColorEdit4("Canvas", *clear_color.component, ImGui.ColorEditFlags.NoInputs);
-            ImGui.SameLine();
-            ImGui.Checkbox("World Axes", *triad.origin.visible);
-            set_visibility(*triad, triad.origin.visible);
-
-
-            #if false {
-                if ImGui.Button("Demo Window", size=*V2_ZERO) show_demo_window ^= true;
-                if show_demo_window {
-                    ImGui.SetNextWindowPos(*make_vector2(650, 20), ImGui.Cond.FirstUseEver, *V2_ZERO);
-                    ImGui.ShowDemoWindow(*show_demo_window);
-                }
-            }
-
-            if ImGui.Button("Reset Window          ", size=*V2_ZERO) SDL_SetWindowSize(window, app.INITIAL_WINDOW_WIDTH, app.INITIAL_WINDOW_HEIGHT);
-            if ImGui.Button("Reset Camera       (R)", size=*V2_ZERO) fit_on_screen();
-            if ImGui.Button("Cycle vertex style (V)", size=*V2_ZERO) cycle_vertex_label_style(*vertex_label_style);
-            if ImGui.Button("Cycle line style   (L)", size=*V2_ZERO) cycle_line_style(*vertex_label_style);
-
-            imgui_label :: (label : string, ptr : *void) -> *u8 {
-                return to_c_string(concatenate(label, tprint("##%", ptr)));
-            }
-
-            entity_to_remove := -1;
-            for entities {
-                mesh := get_mesh(it);
-                if mesh {
-
-                    ShowTooltip :: (description : string) #expand {
-                        if (ImGui.IsItemHovered()) {
-                            ImGui.BeginTooltip();
-                            // ImGui.PushTextWrapPos(450);
-                            ImGui.TextUnformatted(description);
-                            // ImGui.PopTextWrapPos();
-                            ImGui.EndTooltip();
-                        }
-                    }
-
-                    // Entity index used to refer to geometry in console
-                    ImGui.Text(to_c_string(tprint("%", it_index)));
-
-                    // Remove button
-                    ImGui.SameLine();
-                    if ImGui.Button(imgui_label("Remove", it), size=*V2_ZERO) {
-                        entity_to_remove = it_index;
-                        break;
-                    }
-
-                    // Color picker
-                    ImGui.SameLine();
-                    ImGui.ColorEdit4(imgui_label("##color", it), *mesh.color.component, ImGui.ColorEditFlags.NoInputs);
-
-                    // Toggle visibility checkbox
-                    ImGui.SameLine();
-                    ImGui.Checkbox(imgui_label("##visible", it), *mesh.visible);
-                    ShowTooltip("Visible");
-
-                    // Extra settings accessible with RMB
-                    ImGui.SameLine();
-                    ImGui.Text("...");
-                    if ImGui.BeginPopupContextItem(imgui_label("##context_menu", it)) {
-                        defer ImGui.EndPopup();
-
-                        // Combo box to select display mode enum value
-                        info_enum := type_info(type_of(mesh.display_mode));
-                        value := get_enum_value(*mesh.display_mode, info_enum);
-                        value_name := "";
-                        for info_enum.names {
-                            if value == info_enum.values[it_index]  value_name = it;
-                        }
-                        if ImGui.BeginCombo("Display mode", temp_c_string(value_name)) {
-                            for info_enum.names {
-                                is_selected := value == info_enum.values[it_index];
-                                if ImGui.Selectable(temp_c_string(it), is_selected, size=*V2_ZERO) {
-                                    set_enum_value(*mesh.display_mode, info_enum, info_enum.values[it_index]);
-                                }
-                                if is_selected ImGui.SetItemDefaultFocus();
-                            }
-
-                            ImGui.EndCombo();
-                        }
-
-                        // Toggle visibility checkbox
-                        ImGui.Checkbox(imgui_label("Visible", it), *mesh.visible);
-
-                        // Toggle wireframe checkbox
-                        if it.type == .MESH || it.type == .POLYGON_SOUP {
-                            ImGui.Checkbox(imgui_label("Wireframe", it), *mesh.wireframe);
-                        }
-                    }
-
-                    // Write filename
-                    if mesh.fully_pathed_filename.count {
-                        ImGui.SameLine();
-                        ImGui.Text(path_filename(mesh.fully_pathed_filename)); // @CompilerBug?
-                    }
-                }
-            }
-
-            if entity_to_remove >= 0 && entity_to_remove < entities.count {
-                deinit(entities[entity_to_remove]);
-                free(entities[entity_to_remove]);
-                array_ordered_remove_by_index(*entities, entity_to_remove);
-            }
-
-            // @FIXME
-            // if ImGui.InputText("Cursor Text", cursor_text.data, xx cursor_text.count) {
-            //     // cursor_text.count = str_length(cursor_text.data);
-            // }
-            // ImGui.Text("%", cursor_text);
-
-            ImGui.End();
+            show_main_panel(triad);
         }
 
         console_draw();
@@ -351,7 +240,7 @@ main :: () {
 
         // Rendering
         glViewport(0, 0, xx io().DisplaySize.x, xx io().DisplaySize.y); // @TODO Is DisplaySize updated with window resizing? Use current_window_height/width here?
-        glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+        glClearColor(app.clear_color.x, app.clear_color.y, app.clear_color.z, app.clear_color.w);
         glEnable(GL_DEPTH_TEST);
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
@@ -363,9 +252,9 @@ main :: () {
         for entities {
             mesh := get_mesh(it);
             if mesh && mesh.visible {
-                render_mesh(<<mesh, vertex_label_style);
+                render_mesh(<<mesh, app.vertex_label_style);
                 // @Cleanup so the transform is also available for text rendering
-                render_vertex_labels(mesh.positions, vertex_label_style);
+                render_vertex_labels(mesh.positions, app.vertex_label_style);
             }
         }
 
@@ -396,7 +285,7 @@ main :: () {
                              make_vector4(1., 1., 1., 1));
         }
 
-        SDL_GL_SwapWindow(window);
+        SDL_GL_SwapWindow(app.window);
 
         reset_temporary_storage();
     }
@@ -404,7 +293,7 @@ main :: () {
     // Cleanup
     ImGui_ImplSdl_Shutdown();
     SDL_GL_DeleteContext(gl_context);
-    SDL_DestroyWindow(window);
+    SDL_DestroyWindow(app.window);
     SDL_Quit();
 }
 
@@ -428,7 +317,85 @@ geom :: #import "geometry";
 #load "entities.jai";
 #load "mesh_utils.jai";
 #load "widgets.jai";
+#load "ui.jai";
 //#load "commands.jai"; // @CompilerBug loading here triggers incorrect (?) compilation error
+
+fit_on_screen :: () {
+    view_from_world := make_look_at_matrix(app.camera);
+    world_from_view := inverse(view_from_world);
+
+    // Compute the bounding box of the scene in view coords
+    bbox_view : geom.AxisBox3;
+    for entities {
+        mesh := get_mesh(it);
+        if mesh && mesh.visible {
+            view_from_model := view_from_world * mesh.world_from_model;
+
+            mesh_bbox_view : AxisBox3;
+            for point_model : mesh.positions {
+                point_view := (view_from_model * make_vector4(point_model, 1)).xyz;
+                expand(*mesh_bbox_view, point_view);
+            }
+            expand(*bbox_view, mesh_bbox_view);
+        }
+    }
+
+    if geom.is_empty(bbox_view) {
+        init_camera(); // Reset to initial view
+        return;
+    }
+
+    // Offset by a bit so the geometry doesn't end right on window boundaries
+    geom.offset(*bbox_view, 0.05 * geom.extents(bbox_view));
+
+    center_world := (world_from_view * make_vector4(geom.center_point(bbox_view), 1)).xyz;
+    app.camera.look_position = center_world;
+
+    extents := geom.extents(bbox_view);
+    scale := (extents.y / 2) / app.camera.top;
+    if scale * app.camera.right < (extents.x / 2) {
+        scale = (extents.x / 2) / app.camera.right;
+    }
+
+    app.camera.top *= scale;
+    app.camera.bottom *= scale;
+    app.camera.right *= scale;
+    app.camera.left *= scale;
+
+    // @TODO pick these numbers so details at 5um are clearly visible e.g., fill up whole screen?
+    app.camera.top = max(app.camera.top, 0.1);
+    app.camera.bottom = min(app.camera.bottom, -0.1);
+    app.camera.right = max(app.camera.right, current_window_aspect_ratio_width_over_height() * 0.1);
+    app.camera.left = min(app.camera.left, -current_window_aspect_ratio_width_over_height() * 0.1);;
+}
+
+VertexLabelStyle :: struct {
+    show_position := false;
+    show_index := false;
+
+    point_size : int = 0; // 0, 2, 4, 6
+    line_width : int = 1; // 1, 1, 2, 3
+}
+
+cycle_vertex_label_style :: (using style : *VertexLabelStyle) {
+    if show_index && show_position show_position = false;
+    else if show_index && !show_position show_index = false;
+    else if !show_index && !show_position show_position = true;
+    else show_index = true;
+}
+
+cycle_line_style :: (using style : *VertexLabelStyle) {
+    if point_size == 0 && line_width == 1 {
+        point_size = 2; line_width = 1;
+    } else if point_size == 2 && line_width == 1 {
+        point_size = 4; line_width = 2;
+    } else if point_size == 4 && line_width == 2 {
+        point_size = 6; line_width = 3;
+    } else {
+        point_size = 0; line_width = 1;
+    }
+}
+
 
 #scope_file
 
@@ -638,81 +605,6 @@ render_vertex_labels :: (points : []Vector3, style : VertexLabelStyle, label_ind
     }
 }
 
-fit_on_screen :: () {
-    view_from_world := make_look_at_matrix(app.camera);
-    world_from_view := inverse(view_from_world);
-
-    // Compute the bounding box of the scene in view coords
-    bbox_view : geom.AxisBox3;
-    for entities {
-        mesh := get_mesh(it);
-        if mesh && mesh.visible {
-            view_from_model := view_from_world * mesh.world_from_model;
-
-            mesh_bbox_view : AxisBox3;
-            for point_model : mesh.positions {
-                point_view := (view_from_model * make_vector4(point_model, 1)).xyz;
-                expand(*mesh_bbox_view, point_view);
-            }
-            expand(*bbox_view, mesh_bbox_view);
-        }
-    }
-
-    if geom.is_empty(bbox_view) {
-        init_camera(); // Reset to initial view
-        return;
-    }
-
-    // Offset by a bit so the geometry doesn't end right on window boundaries
-    geom.offset(*bbox_view, 0.05 * geom.extents(bbox_view));
-
-    center_world := (world_from_view * make_vector4(geom.center_point(bbox_view), 1)).xyz;
-    app.camera.look_position = center_world;
-
-    extents := geom.extents(bbox_view);
-    scale := (extents.y / 2) / app.camera.top;
-    if scale * app.camera.right < (extents.x / 2) {
-        scale = (extents.x / 2) / app.camera.right;
-    }
-
-    app.camera.top *= scale;
-    app.camera.bottom *= scale;
-    app.camera.right *= scale;
-    app.camera.left *= scale;
-
-    // @TODO pick these numbers so details at 5um are clearly visible e.g., fill up whole screen?
-    app.camera.top = max(app.camera.top, 0.1);
-    app.camera.bottom = min(app.camera.bottom, -0.1);
-    app.camera.right = max(app.camera.right, current_window_aspect_ratio_width_over_height() * 0.1);
-    app.camera.left = min(app.camera.left, -current_window_aspect_ratio_width_over_height() * 0.1);;
-}
-
-VertexLabelStyle :: struct {
-    show_position := false;
-    show_index := false;
-
-    point_size : int = 0; // 0, 2, 4, 6
-    line_width : int = 1; // 1, 1, 2, 3
-}
-
-cycle_vertex_label_style :: (using style : *VertexLabelStyle) {
-    if show_index && show_position show_position = false;
-    else if show_index && !show_position show_index = false;
-    else if !show_index && !show_position show_position = true;
-    else show_index = true;
-}
-
-cycle_line_style :: (using style : *VertexLabelStyle) {
-    if point_size == 0 && line_width == 1 {
-        point_size = 2; line_width = 1;
-    } else if point_size == 2 && line_width == 1 {
-        point_size = 4; line_width = 2;
-    } else if point_size == 4 && line_width == 2 {
-        point_size = 6; line_width = 3;
-    } else {
-        point_size = 0; line_width = 1;
-    }
-}
 
 debug_print_active_uniforms :: (shader : GLuint) {
     using app;
