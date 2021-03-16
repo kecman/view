@@ -17,42 +17,42 @@ show_camera_controls :: () {
     // @Incomplete Interpolate the motion
 
     if ImGui.Button("+X ", size=*V2_ZERO) {
-        set_look_along_direction(direction=X_AXIS, up=Z_AXIS);
+        set_look_direction(direction=X_AXIS, up=Z_AXIS);
     }
     ImGui.SameLine();
     if ImGui.Button("+Y ", size=*V2_ZERO) {
-        set_look_along_direction(direction=Y_AXIS, up=Z_AXIS);
+        set_look_direction(direction=Y_AXIS, up=Z_AXIS);
     }
     ImGui.SameLine();
     if ImGui.Button("+Z ", size=*V2_ZERO) {
-        set_look_along_direction(direction=Z_AXIS, up=Y_AXIS);
+        set_look_direction(direction=Z_AXIS, up=Y_AXIS);
     }
 
     if ImGui.Button("-X ", size=*V2_ZERO) {
-        set_look_along_direction(direction=-X_AXIS, up=Z_AXIS);
+        set_look_direction(direction=-X_AXIS, up=Z_AXIS);
     }
     ImGui.SameLine();
     if ImGui.Button("-Y ", size=*V2_ZERO) {
-        set_look_along_direction(direction=-Y_AXIS, up=Z_AXIS);
+        set_look_direction(direction=-Y_AXIS, up=Z_AXIS);
     }
     ImGui.SameLine();
     if ImGui.Button("-Z ", size=*V2_ZERO) {
-        set_look_along_direction(direction=-Z_AXIS, up=Y_AXIS);
+        set_look_direction(direction=-Z_AXIS, up=Y_AXIS);
     }
 
     ImGui.Separator();
 
     if ImGui.Button(" < ", size=*V2_ZERO) {
-        rotate_look_along_around_up(45);
+        rotate_look_direction_around_up_direction(45);
     }
     ImGui.SameLine();
     if ImGui.Button("XYZ", size=*V2_ZERO) {
         up := normalize(cross(.{-1, 1, 0}, .{-1, -1, -1}));
-        set_look_along_direction(direction=.{-1, -1, -1}, up=up);
+        set_look_direction(direction=.{-1, -1, -1}, up=up);
     }
     ImGui.SameLine();
     if ImGui.Button(" > ", size=*V2_ZERO) {
-        rotate_look_along_around_up(-45);
+        rotate_look_direction_around_up_direction(-45);
     }
 
     // @Incomplete add perspective/orthographic toggle

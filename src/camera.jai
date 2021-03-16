@@ -26,7 +26,7 @@ Camera :: struct {
 
 // Undo look history
 
-set_look_along_direction :: (direction : Vector3, up : Vector3)
+set_look_direction :: (direction : Vector3, up : Vector3)
 {
     using *app.camera;
     d := distance(look_position, eye_position) / length(direction);
@@ -34,7 +34,7 @@ set_look_along_direction :: (direction : Vector3, up : Vector3)
     up_direction = up;
 }
 
-rotate_look_along_around_up :: (degrees : float)
+rotate_look_direction_around_up_direction :: (degrees : float)
 {
     using *app.camera;
 

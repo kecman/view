@@ -87,7 +87,7 @@ load_obj :: (filename : string) -> Mesh {
                 array_add(*result.indices, cast(u32)triangle.indices[1] - 1);
                 array_add(*result.indices, cast(u32)triangle.indices[2] - 1);
             case;
-                error(handler, "Unexpected '%'.\n", rhs);
+                // error(handler, "Unexpected '%'.\n", key_name); // @Cleanup: lots of spam for a point cloud file
                 continue;
         }
     }

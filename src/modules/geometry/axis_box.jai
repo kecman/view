@@ -7,7 +7,9 @@ AxisBox :: struct(Point : Type) {
     min_point : Point;
     max_point : Point;
 
-    // Initialize min and max to a state where `is_empty` returns true and where we can start calling `expand`
+    // Initialize min and max to a state where:
+    // 1. is_empty returns true
+    // 2. we can start calling `expand`
     #insert #run generate_initializer(DIM);
 };
 

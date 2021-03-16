@@ -26,6 +26,21 @@ angle :: (a : Vector3, b : Vector3, normalize : bool = false) -> float
 
 angle_unit :: #bake_arguments angle(normalize = false);
 
+cwise_max :: (v : Vector3) -> float, int
+{
+    max_component := v.component[0];
+    max_index     := 0;
+
+    for d : 0..2 {
+        if v.component[d] > max_component {
+            max_component = v.component[d];
+            max_index     = d;
+        }
+    }
+
+    return max_component, max_index;
+}
+
 /*
 Bivector3 :: struct {
     x, y, z : float;
