@@ -178,17 +178,17 @@ main :: () {
                 case SDL_WINDOWEVENT;
                     if event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED {
 
-                        width_scale := cast(float) event.window.data1 / app.current_window_width;
+                        width_scale  := cast(float) event.window.data1 / app.current_window_width;
                         height_scale := cast(float) event.window.data2 / app.current_window_height;
 
-                        camera_delta_rl := (1. - width_scale) * (app.camera.right - app.camera.left) / 2;
-                        camera_delta_tb := (1. - height_scale) * (app.camera.top - app.camera.bottom) / 2;
-                        app.camera.right -= camera_delta_rl;
-                        app.camera.left += camera_delta_rl;
-                        app.camera.top -= camera_delta_tb;
+                        camera_delta_rl   := (1. -  width_scale) * (app.camera.right - app.camera.left) / 2;
+                        camera_delta_tb   := (1. - height_scale) * (app.camera.top   - app.camera.bottom) / 2;
+                        app.camera.right  -= camera_delta_rl;
+                        app.camera.left   += camera_delta_rl;
+                        app.camera.top    -= camera_delta_tb;
                         app.camera.bottom += camera_delta_tb;
 
-                        app.current_window_width = event.window.data1;
+                        app.current_window_width  = event.window.data1;
                         app.current_window_height = event.window.data2;
                     }
                 case SDL_KEYDOWN; {
