@@ -351,7 +351,7 @@ fit_on_screen :: () {
     }
 
     // Offset by a bit so the geometry doesn't end right on window boundaries
-    geom.offset(*scene_bbox, 0.05 * geom.diagonal(scene_bbox)); // @Cleanup this is a bit fishy...
+    geom.offset(*scene_bbox, 0.05 * geom.diagonal(scene_bbox));
 
     scale : float;
     {
@@ -375,11 +375,7 @@ fit_on_screen :: () {
     app.camera.left   *= scale;
     app.camera.right  *= scale;
 
-    // @TODO pick these numbers so details at 5um are clearly visible e.g., fill up whole screen?
-    app.camera.top    = max(app.camera.top,     0.1);
-    app.camera.bottom = min(app.camera.bottom, -0.1);
-    app.camera.right  = max(app.camera.right,   0.1 * current_window_aspect_ratio_width_over_height());
-    app.camera.left   = min(app.camera.left,   -0.1 * current_window_aspect_ratio_width_over_height());;
+    camera_clamp_orthographic_view_planes();
 }
 
 VertexLabelStyle :: struct {

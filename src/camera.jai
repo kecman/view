@@ -79,7 +79,7 @@ init_camera :: () {
 
     camera.fov_vertical_radians = 2 * atan2(camera.top, camera.eye_position.z);
 
-    camera.near = 0.1;
+    camera.near = 0.001;
     camera.far = 400;
 }
 
@@ -148,7 +148,7 @@ update_camera :: (delta_time : float) {
                 defer deinit(debug_mesh_ps);
 
                 par_shapes_rotate(debug_mesh_ps, angle(Vector3.{0,0,1}, unit_vector(vector_world)), unit_vector(cross_product(Vector3.{0,0,1}, unit_vector(vector_world))));
-                par_shapes_translate(debug_mesh_ps, camera.look_position);
+                par_shapes_translate(debug_mesh_ps, app.camera.look_position);
 
                 debug_mesh := to_Mesh(debug_mesh_ps);
                 defer deinit(*debug_mesh);
@@ -185,14 +185,23 @@ update_camera :: (delta_time : float) {
         camera.right  += current_window_aspect_ratio_width_over_height() * increment;
         camera.left   -= current_window_aspect_ratio_width_over_height() * increment;
 
-        // @Cleanup Make the 0.1 a fixed/user adjustable parameter? or remove it entirely
-        camera.top    = max(camera.top,     0.1);
-        camera.bottom = min(camera.bottom, -0.1);
-        camera.right  = max(camera.right,   0.1 * current_window_aspect_ratio_width_over_height());
-        camera.left   = min(camera.left,   -0.1 * current_window_aspect_ratio_width_over_height());;
+        camera_clamp_orthographic_view_planes();
     }
 
-    // print("update_camera: %\n", camera);
+    // print("update_camera: %\n", <<camera);
+}
+
+camera_clamp_orthographic_view_planes :: ()
+{
+    camera := *app.camera;
+
+    // This number is picked so details at 5um (literals are in mm) fill up the whole screen
+    // @Cleanup Make this an adjustable parameter. Or remove it entirely
+
+    camera.top    = max(camera.top,     0.005);
+    camera.bottom = min(camera.bottom, -0.005);
+    camera.right  = max(camera.right,   0.005 * current_window_aspect_ratio_width_over_height());
+    camera.left   = min(camera.left,   -0.005 * current_window_aspect_ratio_width_over_height());;
 }
 
 // @Cleanup use Math.make_look_at_matrix here
