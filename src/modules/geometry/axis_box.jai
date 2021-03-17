@@ -72,11 +72,16 @@ corners_iterator :: (using box : *$T/AxisBox, body : Code, flags : For_Flags) #e
     }
 }
 
+// make_axis_box :: (points : ..$T.Point/AxisBox) -> T #must // @CompilerBug?
 make_axis_box :: (points : ..Vector2) -> AxisBox2 #must {
     box : AxisBox2;
-
     for points expand(*box, it);
+    return box;
+}
 
+make_axis_box3 :: (points : ..Vector3) -> AxisBox3 #must {
+    box : AxisBox3;
+    for points expand(*box, it);
     return box;
 }
 

@@ -1,4 +1,3 @@
-
 show_camera_controls :: () {
     window_pos := make_vector2(ImGui.GetIO().DisplaySize.x - 10., 10.);
     window_pivot := make_vector2(1, 0);

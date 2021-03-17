@@ -26,19 +26,31 @@ angle :: (a : Vector3, b : Vector3, normalize : bool = false) -> float
 
 angle_unit :: #bake_arguments angle(normalize = false);
 
+
 cwise_max :: (v : Vector3) -> float, int
 {
     max_component := v.component[0];
     max_index     := 0;
-
     for d : 0..2 {
         if v.component[d] > max_component {
             max_component = v.component[d];
             max_index     = d;
         }
     }
-
     return max_component, max_index;
+}
+
+cwise_min :: (v : Vector3) -> float, int
+{
+    min_component := v.component[0];
+    min_index     := 0;
+    for d : 0..2 {
+        if v.component[d] < min_component {
+            min_component = v.component[d];
+            min_index     = d;
+        }
+    }
+    return min_component, min_index;
 }
 
 /*

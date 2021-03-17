@@ -171,15 +171,16 @@ update_camera :: (delta_time : float) {
         } else {
             increment = -io().MouseWheel;
         }
-        camera.top += increment;
+        camera.top    += increment;
         camera.bottom -= increment;
-        camera.right += current_window_aspect_ratio_width_over_height() * increment;
-        camera.left -= current_window_aspect_ratio_width_over_height() * increment;
+        camera.right  += current_window_aspect_ratio_width_over_height() * increment;
+        camera.left   -= current_window_aspect_ratio_width_over_height() * increment;
 
-        camera.top = max(camera.top, 0.1);
+        // @Cleanup Make the 0.1 a fixed/user adjustable parameter? or remove it entirely
+        camera.top    = max(camera.top,     0.1);
         camera.bottom = min(camera.bottom, -0.1);
-        camera.right = max(camera.right, current_window_aspect_ratio_width_over_height() * 0.1);
-        camera.left = min(camera.left, -current_window_aspect_ratio_width_over_height() * 0.1);;
+        camera.right  = max(camera.right,   0.1 * current_window_aspect_ratio_width_over_height());
+        camera.left   = min(camera.left,   -0.1 * current_window_aspect_ratio_width_over_height());;
     }
 
     // print("update_camera: %\n", camera);
