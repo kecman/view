@@ -318,53 +318,68 @@ geom :: #import "geometry";
 #load "ui.jai";
 //#load "commands.jai"; // @CompilerBug loading here triggers incorrect (?) compilation error
 
+// Adjust the camera position and viewing volume to fit the visible geometry while preserving the camera look direction
 fit_on_screen :: () {
+
+    current_view_bbox := current_orthographic_view_volume();
+
+    look_direction := app.camera.look_position - app.camera.eye_position;
+
     view_from_world := make_look_at_matrix(app.camera);
     world_from_view := inverse(view_from_world);
 
-    // Compute the bounding box of the scene in view coords
-    bbox_view : geom.AxisBox3;
+    // Compute the bounding box of the scene in current view coords
+    scene_bbox : geom.AxisBox3;
     for entities {
         mesh := get_mesh(it);
         if mesh && mesh.visible {
             view_from_model := view_from_world * mesh.world_from_model;
 
-            mesh_bbox_view : AxisBox3;
+            mesh_bbox_vs : AxisBox3;
             for point_model : mesh.positions {
                 point_view := (view_from_model * make_vector4(point_model, 1)).xyz;
-                expand(*mesh_bbox_view, point_view);
+                expand(*mesh_bbox_vs, point_view);
             }
-            expand(*bbox_view, mesh_bbox_view);
+
+            expand(*scene_bbox, mesh_bbox_vs);
         }
     }
 
-    if geom.is_empty(bbox_view) {
+    if geom.is_empty(scene_bbox) {
         init_camera(); // Reset to initial view
         return;
     }
 
     // Offset by a bit so the geometry doesn't end right on window boundaries
-    geom.offset(*bbox_view, 0.05 * geom.diagonal(bbox_view));
+    geom.offset(*scene_bbox, 0.05 * geom.diagonal(scene_bbox)); // @Cleanup this is a bit fishy...
 
-    // Look at the center of the bbox
-    app.camera.look_position = (world_from_view * make_vector4(geom.center_point(bbox_view), 1)).xyz;
-
-    extents := geom.diagonal(bbox_view);
-    scale := (extents.y / 2) / app.camera.top;
-    if scale * app.camera.right < (extents.x / 2) {
-        scale = (extents.x / 2) / app.camera.right;
+    scale : float;
+    {
+        current_extents := geom.diagonal(current_view_bbox);
+        desired_extents := geom.diagonal(scene_bbox);
+        for d : 0..2 {
+            scale_d := desired_extents.component[d] / current_extents.component[d];
+            if scale_d > scale {
+                scale = scale_d;
+            }
+        }
     }
 
-    app.camera.top *= scale;
+    // Look at the center of the bbox and position the clipping planes
+    app.camera.look_position = (world_from_view * make_vector4(geom.center_point(scene_bbox), 1.)).xyz;
+    app.camera.eye_position = app.camera.look_position - scale * look_direction;
+    app.camera.near   *= scale;
+    app.camera.far    *= scale;
     app.camera.bottom *= scale;
-    app.camera.right *= scale;
-    app.camera.left *= scale;
+    app.camera.top    *= scale;
+    app.camera.left   *= scale;
+    app.camera.right  *= scale;
 
     // @TODO pick these numbers so details at 5um are clearly visible e.g., fill up whole screen?
-    app.camera.top = max(app.camera.top, 0.1);
+    app.camera.top    = max(app.camera.top,     0.1);
     app.camera.bottom = min(app.camera.bottom, -0.1);
-    app.camera.right = max(app.camera.right, current_window_aspect_ratio_width_over_height() * 0.1);
-    app.camera.left = min(app.camera.left, -current_window_aspect_ratio_width_over_height() * 0.1);;
+    app.camera.right  = max(app.camera.right,   0.1 * current_window_aspect_ratio_width_over_height());
+    app.camera.left   = min(app.camera.left,   -0.1 * current_window_aspect_ratio_width_over_height());;
 }
 
 VertexLabelStyle :: struct {
