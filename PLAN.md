@@ -23,7 +23,7 @@
 - [UI/UX] If file is hovered make it flash to white so it's easy to find
 - [UI/UX] Implement a view cube
 - [UI/UX] Implement arcball constraints cf. http://graphicsinterface.org/wp-content/uploads/gi1992-18.pdf
-- [UI/UX] Camera position history
+- [UI/UX] Camera position history/bookmarks with notes/annotations
 - Compiled at time in Window, after version?
 - [Cleanup] memory management for things returned by boost polygon module, should copy them on jai side and add a function to the bindings which free the mesh :Cleanup_Construction_Destruction:
 - Transparency with order as it is in the entity list
