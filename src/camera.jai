@@ -24,8 +24,6 @@ Camera :: struct {
     far :  float;
 }
 
-// Undo look history
-
 set_look_direction :: (direction : Vector3, up : Vector3)
 {
     using *app.camera;
@@ -43,6 +41,16 @@ rotate_look_direction_around_up_direction :: (degrees : float)
 
     look_position_to_eye_position := rotate(eye_position - look_position, rotation);
     eye_position = look_position + look_position_to_eye_position;
+}
+
+rotate_look_direction_around_look_along :: (degrees : float)
+{
+    using *app.camera;
+
+    rotation : Quaternion = ---;
+    set_from_axis_and_angle(*rotation, look_position - eye_position, to_radians(degrees));
+
+    up_direction = rotate(up_direction, rotation);
 }
 
 init_camera :: () {

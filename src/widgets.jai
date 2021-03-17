@@ -43,16 +43,19 @@ show_camera_controls :: () {
     ImGui.Separator();
 
     if ImGui.Button(" < ", size=*V2_ZERO) {
-        rotate_look_direction_around_up_direction(45);
+        // rotate_look_direction_around_up_direction(45);
+        rotate_look_direction_around_look_along(45);
     }
     ImGui.SameLine();
     if ImGui.Button("XYZ", size=*V2_ZERO) {
+        // Having up = Z_AXIS instead is actually kinda nice, hmm...
         up := normalize(cross(.{-1, 1, 0}, .{-1, -1, -1}));
         set_look_direction(direction=.{-1, -1, -1}, up=up);
     }
     ImGui.SameLine();
     if ImGui.Button(" > ", size=*V2_ZERO) {
-        rotate_look_direction_around_up_direction(-45);
+        // rotate_look_direction_around_up_direction(-45);
+        rotate_look_direction_around_look_along(-45);
     }
 
     // @Incomplete add perspective/orthographic toggle
