@@ -1,4 +1,4 @@
-entities : [..]*Entity; // @Cleanup: Why bother with pointers here??
+entities : [..]*Entity;
 
 Entity :: struct {
     Entity_Type :: enum {

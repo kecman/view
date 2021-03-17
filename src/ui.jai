@@ -114,3 +114,7 @@ show_main_panel :: (world_axes : Axes_Triad) // @nocommit pointer!!
     // }
     // ImGui.Text("%", cursor_text);
 }
+
+show_help_ui :: ()
+{
+}

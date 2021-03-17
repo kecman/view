@@ -41,9 +41,14 @@ show_camera_controls :: () {
 
     ImGui.Separator();
 
-    if ImGui.Button(" < ", size=*V2_ZERO) {
-        // rotate_look_direction_around_up_direction(45);
-        rotate_look_direction_around_look_along(45);
+    right_label, left_label, amount := "<< ", " >>", 45.;
+    if app.modifier_flags.shift_pressed {
+        right_label, left_label, amount = " < ", " > ", 15.;
+    }
+
+    if ImGui.Button(to_c_string(right_label), size=*V2_ZERO) {
+        // rotate_look_direction_around_up_direction(amount);
+        rotate_look_direction_around_look_along(amount);
     }
     ImGui.SameLine();
     if ImGui.Button("XYZ", size=*V2_ZERO) {
@@ -52,9 +57,9 @@ show_camera_controls :: () {
         set_look_direction(direction=.{-1, -1, -1}, up=up);
     }
     ImGui.SameLine();
-    if ImGui.Button(" > ", size=*V2_ZERO) {
-        // rotate_look_direction_around_up_direction(-45);
-        rotate_look_direction_around_look_along(-45);
+    if ImGui.Button(to_c_string(left_label), size=*V2_ZERO) {
+        // rotate_look_direction_around_up_direction(-amount);
+        rotate_look_direction_around_look_along(-amount);
     }
 
     if ImGui.Button(" Reset Focus ", size=*V2_ZERO) {

@@ -21,13 +21,21 @@ app : struct {
     polyline_shader : GLuint;
     polyline_vao : GLuint;
 
+    modifier_flags : Modifier_Flags;
     show_ui := true;
+    show_help_ui := false;
     show_console_ui := false;
 
     camera : Camera;
     console : Console;
 
     vertex_label_style : VertexLabelStyle;
+}
+
+Modifier_Flags :: struct {
+    shift_pressed   := false;
+    control_pressed := false;
+    alt_pressed     := false;
 }
 
 V2_ZERO :: Vector2.{0, 0};
@@ -158,6 +166,11 @@ main :: () {
         event: SDL_Event;
         while SDL_PollEvent(*event) {
             ImGui_ImplSdl_ProcessEvent(*event);
+
+            app.modifier_flags.shift_pressed   = xx (SDL_GetModState() & KMOD_SHIFT);
+            app.modifier_flags.control_pressed = xx (SDL_GetModState() & KMOD_CTRL);
+            app.modifier_flags.alt_pressed     = xx (SDL_GetModState() & KMOD_ALT);
+
             if event.type == {
                 case SDL_QUIT; {
                     done = true;
@@ -180,12 +193,14 @@ main :: () {
                     }
                 case SDL_KEYDOWN; {
                     if event.key.keysym.sym == SDLK_BACKQUOTE {
-                        if SDL_GetModState() & KMOD_CTRL {
+                        if app.modifier_flags.control_pressed {
                             app.show_ui = !app.show_ui;
                         } else {
                             app.show_console_ui = !app.show_console_ui;
                         }
                     }
+
+                    app.show_help_ui = (event.key.keysym.sym == SDLK_SLASH);
                 }
                 case SDL_KEYUP; {
                     if event.key.keysym.sym == SDLK_ESCAPE done = true;
@@ -193,16 +208,9 @@ main :: () {
                     if event.key.keysym.sym == SDLK_v cycle_vertex_label_style(*app.vertex_label_style);
                     if event.key.keysym.sym == SDLK_l cycle_line_style(*app.vertex_label_style);
 
-                    if event.key.keysym.sym == SDLK_RIGHTBRACKET {
-                        amount : float = 45;
-                        if SDL_GetModState() & KMOD_SHIFT amount = 15;
-                        app.camera.up_direction.xy = rotate(app.camera.up_direction.xy, to_radians(amount));
-                    }
-                    if event.key.keysym.sym == SDLK_LEFTBRACKET {
-                        amount : float = 45;
-                        if SDL_GetModState() & KMOD_SHIFT amount = 15;
-                        app.camera.up_direction.xy = rotate(app.camera.up_direction.xy, to_radians(-amount));
-                    }
+                    amount : float = ifx app.modifier_flags.shift_pressed then 15. else 45.;
+                    if event.key.keysym.sym == SDLK_RIGHTBRACKET rotate_look_direction_around_look_along(-amount);
+                    if event.key.keysym.sym == SDLK_LEFTBRACKET  rotate_look_direction_around_look_along( amount);
                 }
                 case SDL_DROPFILE; {
                     // @Leak @Cleanup event.drop.file should be free'd using SDL_free
@@ -219,6 +227,7 @@ main :: () {
             ImGui.SetNextWindowPos(pos=*make_vector2(10, 10), pivot=*V2_ZERO);
             show_main_panel(triad);
             show_camera_controls();
+            show_help_ui();
             console_draw();
         }
 
@@ -488,7 +497,6 @@ render_mesh :: (mesh : Mesh, style : VertexLabelStyle) {
     glUseProgram(mesh_shader);
 
     assert(camera.projection_type == .ORTHOGRAPHIC);
-
 
     {
         model_loc := glGetUniformLocation(mesh_shader, "world_from_model");
