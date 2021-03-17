@@ -58,6 +58,10 @@ show_camera_controls :: () {
         rotate_look_direction_around_look_along(-45);
     }
 
+    if ImGui.Button(" Reset Focus ", size=*V2_ZERO) {
+        app.camera.look_position = .{0, 0, 0};
+    }
+
     // @Incomplete add perspective/orthographic toggle
     // @Incomplete add button to reset look position
 
