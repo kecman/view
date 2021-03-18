@@ -323,7 +323,6 @@ geom :: #import "geometry";
 #load "console.jai";
 #load "entities.jai";
 #load "mesh_utils.jai";
-#load "widgets.jai";
 #load "ui.jai";
 //#load "commands.jai"; // @CompilerBug loading here triggers incorrect (?) compilation error
 
