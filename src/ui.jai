@@ -19,8 +19,8 @@ show_main_panel :: (world_axes : Axes_Triad) // @nocommit pointer!!
 
     if ImGui.Button("Reset Window          ", size=*V2_ZERO) SDL_SetWindowSize(window, app.INITIAL_WINDOW_WIDTH, app.INITIAL_WINDOW_HEIGHT);
     if ImGui.Button("Reset Camera       (R)", size=*V2_ZERO) fit_on_screen();
-    if ImGui.Button("Cycle vertex style (V)", size=*V2_ZERO) cycle_vertex_label_style(*vertex_label_style);
-    if ImGui.Button("Cycle line style   (L)", size=*V2_ZERO) cycle_line_style(*vertex_label_style);
+    if ImGui.Button("Cycle vertex style (V)", size=*V2_ZERO) cycle_vertex_label_style();
+    if ImGui.Button("Cycle line style   (L)", size=*V2_ZERO) cycle_line_style();
 
     imgui_label :: (label : string, ptr : *void) -> *u8 {
         return to_c_string(concatenate(label, tprint("##%", ptr)));
@@ -187,8 +187,4 @@ show_camera_controls :: () {
     // @Incomplete add button to reset look position
 
     ImGui.End();
-}
-
-show_help_ui :: ()
-{
 }

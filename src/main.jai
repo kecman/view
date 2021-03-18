@@ -30,6 +30,11 @@ app : struct {
     console : Console;
 
     vertex_label_style : VertexLabelStyle;
+
+    keymap : Keymap;
+    keymap_keydown : Keymap;
+
+    closing_application := false; // Set this to true to close the application
 }
 
 Modifier_Flags :: struct {
@@ -130,6 +135,7 @@ main :: () {
 
     init_font();
     init_commands();
+    init_keymap();
 
     ImGui.CreateContext();
     ImGui_ImplSdl_Init(app.window);
@@ -157,8 +163,7 @@ main :: () {
     }
 
     // Main loop
-    done := false;
-    while !done {
+    while !app.closing_application {
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
         // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
         // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
@@ -173,7 +178,7 @@ main :: () {
 
             if event.type == {
                 case SDL_QUIT; {
-                    done = true;
+                    app.closing_application = true;
                 }
                 case SDL_WINDOWEVENT;
                     if event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED {
@@ -192,25 +197,26 @@ main :: () {
                         app.current_window_height = event.window.data2;
                     }
                 case SDL_KEYDOWN; {
-                    if event.key.keysym.sym == SDLK_BACKQUOTE {
-                        if app.modifier_flags.control_pressed {
-                            app.show_ui = !app.show_ui;
-                        } else {
-                            app.show_console_ui = !app.show_console_ui;
+                    for app.keymap_keydown.mappings {
+                        if to_sdl_keycode(it.key_code) == event.key.keysym.sym {
+                            if app.modifier_flags.shift_pressed    == it.modifier_flags.shift_pressed &&
+                               app.modifier_flags.control_pressed  == it.modifier_flags.control_pressed  &&
+                               app.modifier_flags.alt_pressed      == it.modifier_flags.alt_pressed {
+                                it.proc_info.proc();
+                            }
                         }
                     }
-
-                    app.show_help_ui = (event.key.keysym.sym == SDLK_SLASH);
                 }
                 case SDL_KEYUP; {
-                    if event.key.keysym.sym == SDLK_ESCAPE done = true;
-                    if event.key.keysym.sym == SDLK_r fit_on_screen();
-                    if event.key.keysym.sym == SDLK_v cycle_vertex_label_style(*app.vertex_label_style);
-                    if event.key.keysym.sym == SDLK_l cycle_line_style(*app.vertex_label_style);
-
-                    amount : float = ifx app.modifier_flags.shift_pressed then 15. else 45.;
-                    if event.key.keysym.sym == SDLK_RIGHTBRACKET rotate_look_direction_around_look_along(-amount);
-                    if event.key.keysym.sym == SDLK_LEFTBRACKET  rotate_look_direction_around_look_along( amount);
+                    for app.keymap.mappings {
+                        if to_sdl_keycode(it.key_code) == event.key.keysym.sym {
+                            if app.modifier_flags.shift_pressed    == it.modifier_flags.shift_pressed &&
+                               app.modifier_flags.control_pressed  == it.modifier_flags.control_pressed  &&
+                               app.modifier_flags.alt_pressed      == it.modifier_flags.alt_pressed {
+                                it.proc_info.proc();
+                            }
+                        }
+                    }
                 }
                 case SDL_DROPFILE; {
                     // @Leak @Cleanup event.drop.file should be free'd using SDL_free
@@ -227,7 +233,6 @@ main :: () {
             ImGui.SetNextWindowPos(pos=*make_vector2(10, 10), pivot=*V2_ZERO);
             show_main_panel(triad);
             show_camera_controls();
-            show_help_ui();
             console_draw();
         }
 
@@ -324,6 +329,7 @@ geom :: #import "geometry";
 #load "entities.jai";
 #load "mesh_utils.jai";
 #load "ui.jai";
+#load "keymap.jai";
 //#load "commands.jai"; // @CompilerBug loading here triggers incorrect (?) compilation error
 
 // Adjust the camera position and viewing volume to fit the visible geometry while preserving the camera look direction
@@ -394,14 +400,16 @@ VertexLabelStyle :: struct {
     line_width : int = 1; // 1, 1, 2, 3
 }
 
-cycle_vertex_label_style :: (using style : *VertexLabelStyle) {
+cycle_vertex_label_style :: () {
+    using app.vertex_label_style;
     if show_index && show_position show_position = false;
     else if show_index && !show_position show_index = false;
     else if !show_index && !show_position show_position = true;
     else show_index = true;
 }
 
-cycle_line_style :: (using style : *VertexLabelStyle) {
+cycle_line_style :: () {
+    using app.vertex_label_style;
     if point_size == 0 && line_width == 1 {
         point_size = 2; line_width = 1;
     } else if point_size == 2 && line_width == 1 {
@@ -445,7 +453,6 @@ load_entity_from_file :: (filename : string) {
     if #complete mesh.geometry_format == {
         case .LINES;
             bbox := geom.bounding_box(mesh);
-            print("bbox = %\n", bbox);
             if diagonal(bbox).z == 0 {
                 shape, ok := to_Polyline_Soup2(mesh);
                 assert(ok);
@@ -673,6 +680,16 @@ debug_callback :: (source: GLenum, type: GLenum, id: GLuint, severity: GLenum, l
         print("message: %\n", message);
         print("userParam: %\n", userParam);
     }
+}
+
+to_sdl_keycode :: (key_code : u32) -> SDL_Keycode {
+    if key_code >= 32 return xx key_code;
+
+    special_key_code : Special_Key_Code = xx key_code;
+    if #complete special_key_code == {
+        case Special_Key_Code.ESCAPE; return SDLK_ESCAPE;
+    }
+    return SDLK_UNKNOWN;
 }
 
 #import "Compiler";
