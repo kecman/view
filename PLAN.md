@@ -18,6 +18,9 @@
 - Implement geometric equals functions for testing, can be used to compare Jai/C++ implementations
 - Don't pass pointers for arguments that aren't modified
 - [Rendering] Alternate segment colours (two draw calls?)
+- [UI/UX] Add a defaults.settings file containing options like default visualisation, scroll velocity, ui response dt's etc
+- [UI/UX] Add a defaults.keymap file containing bindings, also add files for blender, paraview and cloudnc settings
+- [UI/UX] Dynamically generate some UI windows a la imgui_inspector.jai
 - [UI/UX] Hold shift to change size of arcball, and project across x/y direction so you can do full 90degree rotations of the part, draw regions in the far plane and cicle on the near plane
 - [UI/UX] Implement sliding to show/hide the terminal
 - [UI/UX] Scroll to the bottom of the terminal
@@ -34,7 +37,6 @@
 - Sort by time loaded
 - Write * to indicate an identical first and last point
 - Mode line showing the style info etc
-- Custom key-bindings and sensitivity of parameters, dynamically generate UI for this? and save to the text file
 - Understand and use context stuff (logging, assertions, allocators), watch https://youtu.be/ciGQCP6HgqI
 - Give each polyline a number 1-9 then pressing that number before some modifier for colour/vertex etc only modifies that one, number 0 means everything?
 - Toggle fullscreen/maximise
