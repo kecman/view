@@ -22,6 +22,25 @@ Special_Key_Code :: enum u32 #specified {
     // F1     :: 4;
 }
 
+to_string :: (using mapping : Single_Key_Mapping) -> string
+{
+    builder : String_Builder;
+    defer free_buffers(*builder);
+    if modifier_flags.control_pressed print_to_builder(*builder, "C-");
+    if modifier_flags.alt_pressed     print_to_builder(*builder, "M-");
+    if modifier_flags.shift_pressed   print_to_builder(*builder, "S-");
+    if key_code >= 32 {
+        cstr: string;   // This is a dumb way to make a one-character string so you can print it.
+        cstr.data  = xx *key_code;
+        cstr.count = 1;
+        print_to_builder(*builder, "%", cstr);
+    } else if #complete cast(Special_Key_Code)key_code == {
+        case .ESCAPE; print_to_builder(*builder, "ESC");
+    }
+
+    return builder_to_string(*builder);
+}
+
 Keymap :: struct {
     // These are fixed at startup. When you load a keymap, we bind keys to procedures from this array.
     procs : [..] Keymap_Proc_Info;
@@ -42,8 +61,10 @@ init_keymap :: ()
     add_key(*app.keymap, rotate_look_direction_around_look_along_15_ccw, "rotate_look_direction_around_look_along_15_ccw", xx #char "[", .{shift_pressed=true});
 
     // Triggered on key down
-    add_key(*app.keymap_keydown, toggle_show_ui,  "toggle_show_ui",  xx #char "`");
-    add_key(*app.keymap_keydown, toggle_show_console_ui,  "toggle_show_console_ui",  xx #char "`", .{control_pressed=true});
+    add_key(*app.keymap_keydown, toggle_show_ui, "toggle_show_ui",  xx #char "`");
+    add_key(*app.keymap_keydown, toggle_show_help_ui, "toggle_show_help_ui",  xx #char "/");
+    add_key(*app.keymap_keydown, toggle_show_help_ui, "toggle_show_help_ui",  xx #char "/", .{shift_pressed=true});
+    add_key(*app.keymap_keydown, toggle_show_console_ui, "toggle_show_console_ui",  xx #char "`", .{control_pressed=true});
 
     add_key :: (keymap: *Keymap, proc: () -> (), name: string, key_code : u32, modifier_flags : Modifier_Flags = .{}) {
         info := array_add(*keymap.procs); // @TODO: try *`app.keymap.procs
@@ -68,6 +89,10 @@ close_application :: () {
 
 toggle_show_ui :: () {
     app.show_ui = !app.show_ui;
+}
+
+toggle_show_help_ui :: () {
+    app.show_help_ui = !app.show_help_ui;
 }
 
 toggle_show_console_ui :: () {

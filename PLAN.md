@@ -1,4 +1,5 @@
 ## Soon
+- Add option to select the axis of camera rotation
 - Support loading wkt file format, so we can load Polygons in a reasonable way
 - Implement a polyline soup segment_iterator
 - Implement commands to change the render settings on stuff
@@ -29,6 +30,7 @@
 - Transparency with order as it is in the entity list
 - [Cleanup] Make the polygon/polyline types use slices, not dynamic arrays, put allocators in the top level
 - [Meta-programming] Autogenerate the console registering code to add commands to the console
+- [Meta-programming] Generate a list of used ImGui functions, to simplify transitioning to a newer version
 - Sort by time loaded
 - Write * to indicate an identical first and last point
 - Mode line showing the style info etc

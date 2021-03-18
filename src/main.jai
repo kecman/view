@@ -197,6 +197,7 @@ main :: () {
                         app.current_window_height = event.window.data2;
                     }
                 case SDL_KEYDOWN; {
+                    if io().WantCaptureKeyboard break;
                     for app.keymap_keydown.mappings {
                         if to_sdl_keycode(it.key_code) == event.key.keysym.sym {
                             if app.modifier_flags.shift_pressed    == it.modifier_flags.shift_pressed &&
@@ -208,6 +209,7 @@ main :: () {
                     }
                 }
                 case SDL_KEYUP; {
+                    if io().WantCaptureKeyboard break;
                     for app.keymap.mappings {
                         if to_sdl_keycode(it.key_code) == event.key.keysym.sym {
                             if app.modifier_flags.shift_pressed    == it.modifier_flags.shift_pressed &&
@@ -230,9 +232,9 @@ main :: () {
         ImGui_ImplSdl_NewFrame(app.window);
 
         if app.show_ui {
-            ImGui.SetNextWindowPos(pos=*make_vector2(10, 10), pivot=*V2_ZERO);
             show_main_panel(triad);
             show_camera_controls();
+            show_help_ui();
             console_draw();
         }
 

@@ -2,6 +2,7 @@ show_main_panel :: (world_axes : Axes_Triad) // @nocommit pointer!!
 {
     using app;
 
+    ImGui.SetNextWindowPos(pos=*make_vector2(10, 10), pivot=*V2_ZERO);
     ImGui.Begin("", flags = ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar);
     defer ImGui.End();
     ImGui.ColorEdit4("Canvas", *clear_color.component, ImGui.ColorEditFlags.NoInputs);
@@ -10,11 +11,9 @@ show_main_panel :: (world_axes : Axes_Triad) // @nocommit pointer!!
     set_visibility(*world_axes, world_axes.origin.visible);
 
     #if false {
-        if ImGui.Button("Demo Window", size=*V2_ZERO) show_demo_window ^= true;
-        if show_demo_window {
-            ImGui.SetNextWindowPos(*make_vector2(650, 20), ImGui.Cond.FirstUseEver, *V2_ZERO);
-            ImGui.ShowDemoWindow(*show_demo_window);
-        }
+        ImGui.SetNextWindowPos(*make_vector2(650, 20), ImGui.Cond.FirstUseEver, *V2_ZERO);
+        SHOW_DEMO_WINDOW :: true;
+        ImGui.ShowDemoWindow(*SHOW_DEMO_WINDOW);
     }
 
     if ImGui.Button("Reset Window          ", size=*V2_ZERO) SDL_SetWindowSize(window, app.INITIAL_WINDOW_WIDTH, app.INITIAL_WINDOW_HEIGHT);
@@ -125,6 +124,7 @@ show_camera_controls :: () {
     // ImGui.SetNextWindowContentWidth(135.);
     // ImGui.SetNextWindowBgAlpha(.3);
     ImGui.Begin("Camera shortcuts", flags = NoTitleBar | AlwaysAutoResize | NoMove /*| NoNav*/);
+    defer ImGui.End();
 
     X_AXIS :: Vector3.{1, 0, 0};
     Y_AXIS :: Vector3.{0, 1, 0};
@@ -185,6 +185,40 @@ show_camera_controls :: () {
 
     // @Incomplete add perspective/orthographic toggle
     // @Incomplete add button to reset look position
+}
 
-    ImGui.End();
+show_help_ui :: ()
+{
+    if !app.show_help_ui return;
+
+    ImGui.SetNextWindowPos(pos=*make_vector2(10, 10), pivot=*V2_ZERO);
+    ImGui.Begin("##show_help_ui", flags = ImGui.WindowFlags.NoTitleBar | .AlwaysAutoResize | .NoMove /*| .NoNav*/);
+    defer ImGui.End();
+
+    ImGui.Text("Keymap:                                                    "); // @Hack
+    ImGui.Columns(2);
+    ImGui.Separator();
+    ImGui.SetColumnWidth(-1, 80);
+    ImGui.Text("Binding");
+    ImGui.NextColumn();
+    ImGui.SetColumnWidth(-1, 350);
+    ImGui.Text("Function");
+    ImGui.NextColumn();
+    ImGui.Separator();
+
+    for app.keymap.mappings {
+        ImGui.Text(to_c_string(tprint("%", to_string(it))));
+        ImGui.NextColumn();
+        ImGui.Text(to_c_string(tprint("%", it.proc_info.name)));
+        ImGui.NextColumn();
+    }
+
+    for app.keymap_keydown.mappings {
+        ImGui.Text(to_c_string(tprint("%", to_string(it))));
+        ImGui.NextColumn();
+        ImGui.Text(to_c_string(tprint("%", it.proc_info.name)));
+        ImGui.NextColumn();
+    }
+
+    // @Incomplete add a message about where the keymap is for editing
 }

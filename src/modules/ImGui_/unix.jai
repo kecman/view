@@ -146,11 +146,11 @@ ImGui :: struct {
 
     // Columns
     // You can also use SameLine(pos_x) for simplified columns. The columns API is still work-in-progress and rather lacking.
-    // IMGUI_API void          Columns(int count = 1, const char* id = NULL, bool border = true);
-    // IMGUI_API void          NextColumn();                                                       // next column, defaults to current row or next row if the current row is finished
+    Columns :: (count : s32 = 1, id : *u8 = null, border : bool = true) -> () #foreign imgui "_ZN5ImGui7ColumnsEiPKcb";
+    NextColumn :: () -> () #foreign imgui "_ZN5ImGui10NextColumnEv";                               // next column, defaults to current row or next row if the current row is finished
     // IMGUI_API int           GetColumnIndex();                                                   // get current column index
     // IMGUI_API float         GetColumnWidth(int column_index = -1);                              // get column width (in pixels). pass -1 to use current column
-    // IMGUI_API void          SetColumnWidth(int column_index, float width);                      // set column width (in pixels). pass -1 to use current column
+    SetColumnWidth :: (column_index : s32, width : float) -> () #foreign imgui "_ZN5ImGui14SetColumnWidthEif" // set column width (in pixels). pass -1 to use current column
     // IMGUI_API float         GetColumnOffset(int column_index = -1);                             // get position of column line (in pixels, from the left side of the contents region). pass -1 to use current column, otherwise 0..GetColumnsCount() inclusive. column 0 is typically 0.0f
     // IMGUI_API void          SetColumnOffset(int column_index, float offset_x);                  // set position of column line (in pixels, from the left side of the contents region). pass -1 to use current column
     // IMGUI_API int           GetColumnsCount();
