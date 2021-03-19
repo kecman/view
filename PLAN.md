@@ -1,5 +1,4 @@
 ## Soon
-- Compute normals if they aren't present in the obj
 - Option to render the cumulative vertex number for polyline soups and polygon inner/outer rings or polygon soups
 - Options on what options to include in the vertex cycling
 - Show number of vertices/triangles in mesh

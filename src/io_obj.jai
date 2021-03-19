@@ -92,6 +92,22 @@ load_obj :: (filename : string) -> Mesh {
         }
     }
 
+    if !result.normals.count {
+        log("Computing and assigning triangle normals to vertices since .obj file was missing vn data\n", filename);
+        if result.indices.count % 3 == 0 {
+            array_reserve(*result.normals, result.indices.count / 3);
+            for i : 0..result.indices.count/3-1 {
+                e01 := result.positions[3 * i] - result.positions[3 * i + 1];
+                e02 := result.positions[3 * i] - result.positions[3 * i + 2];
+                n   := normalize(cross(e01, e02));
+                array_add(*result.normals, n);
+                array_add(*result.normals, n);
+                array_add(*result.normals, n);
+            }
+            assert(result.normals.count == result.positions.count);
+        }
+    }
+
     buffer_mesh(*result);
 
     // for result.points print("points: %\n", it);
