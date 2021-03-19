@@ -25,6 +25,8 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
 
 show_scene_ui :: ()
 {
+    if !entities.count return;
+
     using app;
 
     ImGui.SetNextWindowPos(pos=*make_vector2(10, 10), pivot=*V2_ZERO);

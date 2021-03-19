@@ -268,12 +268,49 @@ main :: () {
         update_camera(1);
 
 
-        for entities {
-            mesh := get_mesh(it);
-            if mesh && mesh.visible {
-                render_mesh(<<mesh, app.vertex_label_style);
-                // @Cleanup so the transform is also available for text rendering
-                render_vertex_labels(mesh.positions, app.vertex_label_style);
+        for entity : entities {
+            if entity.type == {
+                case .POLYLINE_SOUP2;
+
+                    soup := cast(*Polyline_Soup2_Entity) entity;
+                    if soup.mesh.visible {
+                        render_mesh(soup.mesh, app.vertex_label_style);
+                        for polyline : soup.shape.polylines {
+                            render_vertex_labels(polyline.points, app.vertex_label_style);
+                        }
+                    }
+
+                case .POLYLINE_SOUP3;
+
+                    soup := cast(*Polyline_Soup2_Entity) entity;
+                    if soup.mesh.visible {
+                        render_mesh(soup.mesh, app.vertex_label_style);
+                        for polyline : soup.shape.polylines {
+                            render_vertex_labels(polyline.points, app.vertex_label_style);
+                        }
+                    }
+
+                case .POLYGON_SOUP;
+
+                    soup := cast(*Polygon_Soup_Entity) entity;
+                    if soup.mesh.visible {
+                        render_mesh(soup.mesh, app.vertex_label_style);
+                        for polygon : soup.shape.polygons {
+                            render_vertex_labels(polygon.outer_ring.points, app.vertex_label_style);
+                            for inner_ring : polygon.inner_rings {
+                                render_vertex_labels(inner_ring.points, app.vertex_label_style);
+                            }
+                        }
+                    }
+
+                case .MESH;
+
+                    mesh := cast(*Mesh_Entity) entity;
+                    if mesh.mesh.visible {
+                        render_mesh(mesh.mesh, app.vertex_label_style);
+                        // @Cleanup so the transform is also available for text rendering
+                        render_vertex_labels(mesh.mesh.positions, app.vertex_label_style);
+                    }
             }
         }
 
@@ -597,7 +634,10 @@ render_mesh :: (mesh : Mesh, style : VertexLabelStyle) {
     glDrawArrays(GL_POINTS, 0, xx mesh.positions.count);
 }
 
-render_vertex_labels :: (points : []Vector3, style : VertexLabelStyle, label_index_offset : int = 0) {
+render_vertex_labels :: (points : []$T, style : VertexLabelStyle, label_index_offset : int = 0) {
+    #assert(T == Vector2 || T == Vector3);
+    dim :: #run geom.dimension_of(T);
+
     RENDER_LIMIT :: 1000;
     if points.count > RENDER_LIMIT && (style.show_index || style.show_position) {
         // logprint("view", "Sorry text rendering sucks at the moment, can only render up to % labels!\n", RENDER_LIMIT);
@@ -617,23 +657,31 @@ render_vertex_labels :: (points : []Vector3, style : VertexLabelStyle, label_ind
     // @TODO call render_text_quad once with a list of points
     for points {
         text : string;
-        if style.show_index && style.show_position text = tprint("% (% %)", label_index_offset + it_index, it.x, it.y);
-        if style.show_index && !style.show_position text = tprint("%", label_index_offset + it_index);
-        if !style.show_index && style.show_position text = tprint("(% %)", it.x, it.y);
+#if dim == 2 {
+        if  style.show_index &&  style.show_position text = tprint("% (% %)", label_index_offset + it_index, it.x, it.y);
+        if !style.show_index &&  style.show_position text = tprint("(% %)", it.x, it.y);
+} else {
+        if style.show_index && style.show_position text = tprint("% (% % %)", label_index_offset + it_index, it.x, it.y, it.z);
+        if !style.show_index && style.show_position text = tprint("(% % %)", it.x, it.y, it.z);
+}
+        if  style.show_index && !style.show_position text = tprint("%", label_index_offset + it_index);
         if !style.show_index && !style.show_position break;
 
         text_w := get_text_width_in_pixels(text, 1.0);
         scale := 0.3;
 
         // [-1, 1]x[-1,1] -> [0, current_window_width]x[0, current_window_height]
+#if dim == 2 {
+        text_position_px := projection_from_model * make_vector4(it.x, it.y, 0, 1.);
+} else {
         text_position_px := projection_from_model * make_vector4(it.x, it.y, it.z, 1.);
+}
         text_position_px.x = cast(float)app.current_window_width * (text_position_px.x + 1) / 2;
         text_position_px.y = cast(float)app.current_window_height * (text_position_px.y + 1) / 2;
 
         render_text_quad(app.text_shader, text, text_position_px.xy, scale, make_vector4(1., 1., 1., 1));
     }
 }
-
 
 debug_print_active_uniforms :: (shader : GLuint) {
     using app;

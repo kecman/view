@@ -1,5 +1,8 @@
 ## Soon
-- Add option to select the axis of camera rotation
+- Compute normals if they aren't present in the obj
+- Option to render the cumulative vertex number for polyline soups and polygon inner/outer rings or polygon soups
+- Options on what options to include in the vertex cycling
+- Show number of vertices/triangles in mesh
 - Support loading wkt file format, so we can load Polygons in a reasonable way
 - Implement a polyline soup segment_iterator
 - Implement commands to change the render settings on stuff

@@ -16,8 +16,6 @@ to_degrees :: (radians : float) -> float {
     return radians * scale;
 }
 
-#scope_module
-
 ensure_2d_or_3d :: (T : Type, loc := #caller_location) {
     dim := dimension_of(T);
     if dim < 2 || dim > 3 {
