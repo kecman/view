@@ -23,6 +23,7 @@ app : struct {
 
     modifier_flags : Modifier_Flags;
     show_ui := true;
+    show_global_settings_ui := false;
     show_help_ui := false;
     show_console_ui := false;
 
@@ -234,7 +235,8 @@ main :: () {
         ImGui_ImplSdl_NewFrame(app.window);
 
         if app.show_ui {
-            show_main_panel(triad);
+            show_global_settings_ui(*triad);
+            show_scene_ui();
             show_camera_controls();
             show_help_ui();
             console_draw();

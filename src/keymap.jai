@@ -57,18 +57,18 @@ init_keymap :: ()
     add_key(*app.keymap, cycle_vertex_label_style, "cycle_vertex_label_style", xx #char "v");
     add_key(*app.keymap, cycle_line_style, "cycle_line_style", xx #char "l");
     add_key(*app.keymap, rotate_look_direction_45_cw,  "rotate_look_direction_45_cw",  xx #char "]");
-    add_key(*app.keymap, rotate_look_direction_15_cw,  "rotate_look_direction_15_cw",  xx #char "]", .{shift_pressed=true});
     add_key(*app.keymap, rotate_look_direction_45_ccw, "rotate_look_direction_45_ccw", xx #char "[");
+    add_key(*app.keymap, rotate_look_direction_15_cw,  "rotate_look_direction_15_cw",  xx #char "]", .{shift_pressed=true});
     add_key(*app.keymap, rotate_look_direction_15_ccw, "rotate_look_direction_15_ccw", xx #char "[", .{shift_pressed=true});
 
     // Triggered on key down
     add_key(*app.keymap_keydown, toggle_show_ui, "toggle_show_ui",  xx #char "`");
-    add_key(*app.keymap_keydown, toggle_show_help_ui, "toggle_show_help_ui",  xx #char "/");
     add_key(*app.keymap_keydown, toggle_show_help_ui, "toggle_show_help_ui",  xx #char "h");
+    add_key(*app.keymap_keydown, toggle_show_global_settings_ui, "toggle_show_global_settings_ui",  xx #char "h", .{shift_pressed=true});
     add_key(*app.keymap_keydown, toggle_show_console_ui, "toggle_show_console_ui",  xx #char "`", .{control_pressed=true});
 
     add_key :: (keymap: *Keymap, proc: () -> (), name: string, key_code : u32, modifier_flags : Modifier_Flags = .{}) {
-        info := array_add(*keymap.procs); // @TODO: try *`app.keymap.procs
+        info := array_add(*keymap.procs);
         info.name = name;
         info.proc = proc;
 
@@ -90,6 +90,10 @@ close_application :: () {
 
 toggle_show_ui :: () {
     app.show_ui = !app.show_ui;
+}
+
+toggle_show_global_settings_ui :: () {
+    app.show_global_settings_ui = !app.show_global_settings_ui;
 }
 
 toggle_show_help_ui :: () {

@@ -1,25 +1,35 @@
-show_main_panel :: (world_axes : Axes_Triad) // @nocommit pointer!!
+show_global_settings_ui :: (world_axes : *Axes_Triad)
 {
+    if !app.show_global_settings_ui return;
+
     using app;
 
     ImGui.SetNextWindowPos(pos=*make_vector2(10, 10), pivot=*V2_ZERO);
-    ImGui.Begin("", flags = ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar);
+    ImGui.Begin("Main Panel", flags = ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar);
     defer ImGui.End();
-    ImGui.ColorEdit4("Canvas", *clear_color.component, ImGui.ColorEditFlags.NoInputs);
-    ImGui.SameLine();
+    ImGui.ColorEdit4("Background Color", *clear_color.component, ImGui.ColorEditFlags.NoInputs);
     ImGui.Checkbox("World Axes", *world_axes.origin.visible);
-    set_visibility(*world_axes, world_axes.origin.visible);
+    set_visibility(world_axes, world_axes.origin.visible);
+
+    // if ImGui.Button("Reset Window          ", size=*V2_ZERO) SDL_SetWindowSize(window, app.INITIAL_WINDOW_WIDTH, app.INITIAL_WINDOW_HEIGHT);
+    // if ImGui.Button("Reset Camera       (R)", size=*V2_ZERO) fit_on_screen();
+    // if ImGui.Button("Cycle vertex style (V)", size=*V2_ZERO) cycle_vertex_label_style();
+    // if ImGui.Button("Cycle line style   (L)", size=*V2_ZERO) cycle_line_style();
 
     #if false {
         ImGui.SetNextWindowPos(*make_vector2(650, 20), ImGui.Cond.FirstUseEver, *V2_ZERO);
         SHOW_DEMO_WINDOW :: true;
         ImGui.ShowDemoWindow(*SHOW_DEMO_WINDOW);
     }
+}
 
-    if ImGui.Button("Reset Window          ", size=*V2_ZERO) SDL_SetWindowSize(window, app.INITIAL_WINDOW_WIDTH, app.INITIAL_WINDOW_HEIGHT);
-    if ImGui.Button("Reset Camera       (R)", size=*V2_ZERO) fit_on_screen();
-    if ImGui.Button("Cycle vertex style (V)", size=*V2_ZERO) cycle_vertex_label_style();
-    if ImGui.Button("Cycle line style   (L)", size=*V2_ZERO) cycle_line_style();
+show_scene_ui :: ()
+{
+    using app;
+
+    ImGui.SetNextWindowPos(pos=*make_vector2(10, 10), pivot=*V2_ZERO);
+    ImGui.Begin("Main Panel", flags = ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar);
+    defer ImGui.End();
 
     imgui_label :: (label : string, ptr : *void) -> *u8 {
         return to_c_string(concatenate(label, tprint("##%", ptr)));
@@ -52,18 +62,24 @@ show_main_panel :: (world_axes : Axes_Triad) // @nocommit pointer!!
             // Extra settings accessible with RMB
             ImGui.SameLine();
             ImGui.Text("...");
-            if ImGui.BeginPopupContextItem(imgui_label("##context_menu", it)) {
+            ShowTooltip("Show item options");
+            if ImGui.BeginPopupContextItem(imgui_label("##context_menu", it), 0) {
                 defer ImGui.EndPopup();
 
-                combo_box("Display mode", *mesh.display_mode, type_info(type_of(mesh.display_mode)));
+                if mesh.fully_pathed_filename.count {
+                    ImGui.Text(path_filename(mesh.fully_pathed_filename)); // @CompilerBug?
+                }
 
                 // Toggle visibility checkbox
                 ImGui.Checkbox(imgui_label("Visible", it), *mesh.visible);
 
                 // Toggle wireframe checkbox
                 if it.type == .MESH || it.type == .POLYGON_SOUP {
-                    ImGui.Checkbox(imgui_label("Wireframe", it), *mesh.wireframe);
+                    ImGui.Checkbox(imgui_label("Wireframe   ", it), *mesh.wireframe);
                 }
+
+                ImGui.PushItemWidth(-1);
+                combo_box("", *mesh.display_mode, type_info(type_of(mesh.display_mode)));
             }
 
             // Write filename
@@ -131,8 +147,6 @@ show_camera_controls :: () {
         set_look_direction(direction=-Z_AXIS, up=Y_AXIS);
     }
     ImGui.NextColumn();
-
-    ImGui.Separator();
 
     right_label, left_label, amount := "<<<", ">>>", 45.;
     if app.modifier_flags.shift_pressed {
@@ -206,7 +220,7 @@ show_help_ui :: ()
         ImGui.NextColumn();
     }
     ImGui.Columns(1);
-    ImGui.Text("                                        "); // @Hack
+    ImGui.Text("                                          "); // @Hack
 
     // @Incomplete add a message about where the keymap is for editing
 }
