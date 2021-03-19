@@ -26,12 +26,13 @@ to_string :: (using mapping : Single_Key_Mapping) -> string
 {
     builder : String_Builder;
     defer free_buffers(*builder);
-    if modifier_flags.control_pressed print_to_builder(*builder, "C-");
-    if modifier_flags.alt_pressed     print_to_builder(*builder, "M-");
-    if modifier_flags.shift_pressed   print_to_builder(*builder, "S-");
+    if modifier_flags.control_pressed print_to_builder(*builder, "Ctrl-");
+    if modifier_flags.alt_pressed     print_to_builder(*builder, "Alt-");
+    if modifier_flags.shift_pressed   print_to_builder(*builder, "Shift-");
     if key_code >= 32 {
+        upper_case := to_upper(cast(u8) key_code);
         cstr: string;   // This is a dumb way to make a one-character string so you can print it.
-        cstr.data  = xx *key_code;
+        cstr.data  = xx *upper_case;
         cstr.count = 1;
         print_to_builder(*builder, "%", cstr);
     } else if #complete cast(Special_Key_Code)key_code == {
@@ -55,15 +56,15 @@ init_keymap :: ()
     add_key(*app.keymap, fit_on_screen, "fit_on_screen", xx #char "r");
     add_key(*app.keymap, cycle_vertex_label_style, "cycle_vertex_label_style", xx #char "v");
     add_key(*app.keymap, cycle_line_style, "cycle_line_style", xx #char "l");
-    add_key(*app.keymap, rotate_look_direction_around_look_along_45_cw,  "rotate_look_direction_around_look_along_45_cw",  xx #char "]");
-    add_key(*app.keymap, rotate_look_direction_around_look_along_15_cw,  "rotate_look_direction_around_look_along_15_cw",  xx #char "]", .{shift_pressed=true});
-    add_key(*app.keymap, rotate_look_direction_around_look_along_45_ccw, "rotate_look_direction_around_look_along_45_ccw", xx #char "[");
-    add_key(*app.keymap, rotate_look_direction_around_look_along_15_ccw, "rotate_look_direction_around_look_along_15_ccw", xx #char "[", .{shift_pressed=true});
+    add_key(*app.keymap, rotate_look_direction_45_cw,  "rotate_look_direction_45_cw",  xx #char "]");
+    add_key(*app.keymap, rotate_look_direction_15_cw,  "rotate_look_direction_15_cw",  xx #char "]", .{shift_pressed=true});
+    add_key(*app.keymap, rotate_look_direction_45_ccw, "rotate_look_direction_45_ccw", xx #char "[");
+    add_key(*app.keymap, rotate_look_direction_15_ccw, "rotate_look_direction_15_ccw", xx #char "[", .{shift_pressed=true});
 
     // Triggered on key down
     add_key(*app.keymap_keydown, toggle_show_ui, "toggle_show_ui",  xx #char "`");
     add_key(*app.keymap_keydown, toggle_show_help_ui, "toggle_show_help_ui",  xx #char "/");
-    add_key(*app.keymap_keydown, toggle_show_help_ui, "toggle_show_help_ui",  xx #char "/", .{shift_pressed=true});
+    add_key(*app.keymap_keydown, toggle_show_help_ui, "toggle_show_help_ui",  xx #char "h");
     add_key(*app.keymap_keydown, toggle_show_console_ui, "toggle_show_console_ui",  xx #char "`", .{control_pressed=true});
 
     add_key :: (keymap: *Keymap, proc: () -> (), name: string, key_code : u32, modifier_flags : Modifier_Flags = .{}) {
@@ -99,20 +100,24 @@ toggle_show_console_ui :: () {
     app.show_console_ui = !app.show_console_ui;
 }
 
-rotate_look_direction_around_look_along_45_cw :: () {
-    rotate_look_direction_around_look_along(-45);
+rotate_look_direction_45_cw :: () {
+    axis := camera_rotation_axis();
+    rotate_look_direction(axis, -45);
 }
 
-rotate_look_direction_around_look_along_15_cw :: () {
-    rotate_look_direction_around_look_along(-15);
+rotate_look_direction_15_cw :: () {
+    axis := camera_rotation_axis();
+    rotate_look_direction(axis, -15);
 }
 
-rotate_look_direction_around_look_along_45_ccw :: () {
-    rotate_look_direction_around_look_along(45);
+rotate_look_direction_45_ccw :: () {
+    axis := camera_rotation_axis();
+    rotate_look_direction(axis, 45);
 }
 
-rotate_look_direction_around_look_along_15_ccw :: () {
-    rotate_look_direction_around_look_along(15);
+rotate_look_direction_15_ccw :: () {
+    axis := camera_rotation_axis();
+    rotate_look_direction(axis, 15);
 }
 
 #scope_file

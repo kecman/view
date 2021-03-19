@@ -24,6 +24,28 @@ Camera :: struct {
     far :  float;
 }
 
+Camera_Rotation_Axis :: enum {
+    ROLL :: 0;
+    PITCH;
+    YAW;
+    WORLD_X;
+    WORLD_Y;
+    WORLD_Z;
+}
+
+camera_rotation_axis :: () -> Vector3 {
+    axis : Vector3 = ---;
+    if #complete app.camera_rotation_axis == {
+        case .ROLL;    axis = current_look_direction();
+        case .PITCH;   axis = cross(current_look_direction(), app.camera.up_direction);
+        case .YAW;     axis = app.camera.up_direction;
+        case .WORLD_X; axis = .{1, 0, 0};
+        case .WORLD_Y; axis = .{0, 1, 0};
+        case .WORLD_Z; axis = .{0, 0, 1};
+    }
+    return axis;
+}
+
 set_look_direction :: (direction : Vector3, up : Vector3)
 {
     using *app.camera;
@@ -32,24 +54,21 @@ set_look_direction :: (direction : Vector3, up : Vector3)
     up_direction = up;
 }
 
-rotate_look_direction_around_up_direction :: (degrees : float)
-{
+// Return the vector from the current eye position to the look position
+current_look_direction :: () -> Vector3 {
     using *app.camera;
-
-    rotation : Quaternion = ---;
-    set_from_axis_and_angle(*rotation, up_direction, to_radians(degrees));
-
-    look_position_to_eye_position := rotate(eye_position - look_position, rotation);
-    eye_position = look_position + look_position_to_eye_position;
+    return look_position - eye_position;
 }
 
-rotate_look_direction_around_look_along :: (degrees : float)
+rotate_look_direction :: (axis : Vector3, degrees : float)
 {
     using *app.camera;
 
     rotation : Quaternion = ---;
-    set_from_axis_and_angle(*rotation, look_position - eye_position, to_radians(degrees));
+    set_from_axis_and_angle(*rotation, axis, to_radians(degrees));
 
+    look_direction := rotate(current_look_direction(), rotation);
+    eye_position = look_position - look_direction;
     up_direction = rotate(up_direction, rotation);
 }
 

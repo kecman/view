@@ -30,16 +30,6 @@ show_main_panel :: (world_axes : Axes_Triad) // @nocommit pointer!!
         mesh := get_mesh(it);
         if mesh {
 
-            ShowTooltip :: (description : string) #expand {
-                if (ImGui.IsItemHovered()) {
-                    ImGui.BeginTooltip();
-                    // ImGui.PushTextWrapPos(450);
-                    ImGui.TextUnformatted(description);
-                    // ImGui.PopTextWrapPos();
-                    ImGui.EndTooltip();
-                }
-            }
-
             // Entity index used to refer to geometry in console
             ImGui.Text(to_c_string(tprint("%", it_index)));
 
@@ -65,24 +55,7 @@ show_main_panel :: (world_axes : Axes_Triad) // @nocommit pointer!!
             if ImGui.BeginPopupContextItem(imgui_label("##context_menu", it)) {
                 defer ImGui.EndPopup();
 
-                // Combo box to select display mode enum value
-                info_enum := type_info(type_of(mesh.display_mode));
-                value := get_enum_value(*mesh.display_mode, info_enum);
-                value_name := "";
-                for info_enum.names {
-                    if value == info_enum.values[it_index]  value_name = it;
-                }
-                if ImGui.BeginCombo("Display mode", temp_c_string(value_name)) {
-                    for info_enum.names {
-                        is_selected := value == info_enum.values[it_index];
-                        if ImGui.Selectable(temp_c_string(it), is_selected, size=*V2_ZERO) {
-                            set_enum_value(*mesh.display_mode, info_enum, info_enum.values[it_index]);
-                        }
-                        if is_selected ImGui.SetItemDefaultFocus();
-                    }
-
-                    ImGui.EndCombo();
-                }
+                combo_box("Display mode", *mesh.display_mode, type_info(type_of(mesh.display_mode)));
 
                 // Toggle visibility checkbox
                 ImGui.Checkbox(imgui_label("Visible", it), *mesh.visible);
@@ -132,53 +105,65 @@ show_camera_controls :: () {
 
     // @Incomplete Interpolate the motion
 
+    ImGui.Columns(3, border=false);
     if ImGui.Button("+X ", size=*V2_ZERO) {
         set_look_direction(direction=X_AXIS, up=Z_AXIS);
     }
-    ImGui.SameLine();
+    ImGui.NextColumn();
     if ImGui.Button("+Y ", size=*V2_ZERO) {
         set_look_direction(direction=Y_AXIS, up=Z_AXIS);
     }
-    ImGui.SameLine();
+    ImGui.NextColumn();
     if ImGui.Button("+Z ", size=*V2_ZERO) {
         set_look_direction(direction=Z_AXIS, up=Y_AXIS);
     }
+    ImGui.NextColumn();
 
     if ImGui.Button("-X ", size=*V2_ZERO) {
         set_look_direction(direction=-X_AXIS, up=Z_AXIS);
     }
-    ImGui.SameLine();
+    ImGui.NextColumn();
     if ImGui.Button("-Y ", size=*V2_ZERO) {
         set_look_direction(direction=-Y_AXIS, up=Z_AXIS);
     }
-    ImGui.SameLine();
+    ImGui.NextColumn();
     if ImGui.Button("-Z ", size=*V2_ZERO) {
         set_look_direction(direction=-Z_AXIS, up=Y_AXIS);
     }
+    ImGui.NextColumn();
 
     ImGui.Separator();
 
-    right_label, left_label, amount := "<< ", " >>", 45.;
+    right_label, left_label, amount := "<<<", ">>>", 45.;
     if app.modifier_flags.shift_pressed {
-        right_label, left_label, amount = " < ", " > ", 15.;
+        right_label, left_label, amount = "<< ", " >>", 15.;
+    } else if app.modifier_flags.alt_pressed {
+        right_label, left_label, amount = " < ", " > ", 1.;
     }
 
     if ImGui.Button(to_c_string(right_label), size=*V2_ZERO) {
-        // rotate_look_direction_around_up_direction(amount);
-        rotate_look_direction_around_look_along(amount);
+        axis := camera_rotation_axis();
+        rotate_look_direction(axis, amount);
     }
-    ImGui.SameLine();
+    ImGui.NextColumn();
     if ImGui.Button("XYZ", size=*V2_ZERO) {
-        // Having up = Z_AXIS instead is actually kinda nice, hmm...
         up := normalize(cross(.{-1, 1, 0}, .{-1, -1, -1}));
         set_look_direction(direction=.{-1, -1, -1}, up=up);
     }
-    ImGui.SameLine();
+    ImGui.NextColumn();
     if ImGui.Button(to_c_string(left_label), size=*V2_ZERO) {
-        // rotate_look_direction_around_up_direction(-amount);
-        rotate_look_direction_around_look_along(-amount);
+        axis := camera_rotation_axis();
+        rotate_look_direction(axis, -amount);
     }
+    ImGui.NextColumn();
 
+    ImGui.Columns(1, border=false);
+
+    ImGui.PushItemWidth(-1);
+    combo_box("", *app.camera_rotation_axis, type_info(type_of(app.camera_rotation_axis)));
+    ShowTooltip("Scene Rotation Axis");
+
+    ImGui.PushItemWidth(-1);
     if ImGui.Button(" Reset Focus ", size=*V2_ZERO) {
         app.camera.look_position = .{0, 0, 0};
     }
@@ -191,17 +176,18 @@ show_help_ui :: ()
 {
     if !app.show_help_ui return;
 
-    ImGui.SetNextWindowPos(pos=*make_vector2(10, 10), pivot=*V2_ZERO);
+    window_pos := make_vector2(ImGui.GetIO().DisplaySize.x - 10., 10.);
+    window_pivot := make_vector2(1, 0);
+
+    ImGui.SetNextWindowPos(pos=*window_pos, pivot=*window_pivot);
     ImGui.Begin("##show_help_ui", flags = ImGui.WindowFlags.NoTitleBar | .AlwaysAutoResize | .NoMove /*| .NoNav*/);
     defer ImGui.End();
 
-    ImGui.Text("Keymap:                                                    "); // @Hack
     ImGui.Columns(2);
-    ImGui.Separator();
     ImGui.SetColumnWidth(-1, 80);
     ImGui.Text("Binding");
     ImGui.NextColumn();
-    ImGui.SetColumnWidth(-1, 350);
+    // ImGui.SetColumnWidth(-1, 250);
     ImGui.Text("Function");
     ImGui.NextColumn();
     ImGui.Separator();
@@ -219,6 +205,40 @@ show_help_ui :: ()
         ImGui.Text(to_c_string(tprint("%", it.proc_info.name)));
         ImGui.NextColumn();
     }
+    ImGui.Columns(1);
+    ImGui.Text("                                        "); // @Hack
 
     // @Incomplete add a message about where the keymap is for editing
+}
+
+#scope_file
+
+// Combo box to select display mode enum value
+combo_box :: (label : string, data: *void, info_enum: *Type_Info_Enum) {
+    value := get_enum_value(data, info_enum);
+    value_name := "";
+    for info_enum.names {
+        if value == info_enum.values[it_index]  value_name = it;
+    }
+    if ImGui.BeginCombo(to_c_string(label), temp_c_string(value_name)) {
+        for info_enum.names {
+            is_selected := value == info_enum.values[it_index];
+            if ImGui.Selectable(temp_c_string(it), is_selected, size=*V2_ZERO) {
+                set_enum_value(data, info_enum, info_enum.values[it_index]);
+            }
+            if is_selected ImGui.SetItemDefaultFocus();
+        }
+
+        ImGui.EndCombo();
+    }
+}
+
+ShowTooltip :: (description : string) #expand {
+    if (ImGui.IsItemHovered()) {
+        ImGui.BeginTooltip();
+        // ImGui.PushTextWrapPos(450);
+        ImGui.TextUnformatted(description);
+        // ImGui.PopTextWrapPos();
+        ImGui.EndTooltip();
+    }
 }
