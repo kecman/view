@@ -9,6 +9,8 @@ Entity :: struct {
         MESH;
     }
     type : Entity_Type = .UNKNOWN;
+
+    visible : bool = true;
 }
 
 Polyline_Soup2_Entity :: struct {

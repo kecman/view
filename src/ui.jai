@@ -8,8 +8,7 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
     ImGui.Begin("Main Panel", flags = ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar);
     defer ImGui.End();
     ImGui.ColorEdit4("Background Color", *clear_color.component, ImGui.ColorEditFlags.NoInputs);
-    ImGui.Checkbox("World Axes", *world_axes.origin.visible);
-    set_visibility(world_axes, world_axes.origin.visible);
+    ImGui.Checkbox("World Axes", *world_axes.visible);
 
     // if ImGui.Button("Reset Window          ", size=*V2_ZERO) SDL_SetWindowSize(window, app.INITIAL_WINDOW_WIDTH, app.INITIAL_WINDOW_HEIGHT);
     // if ImGui.Button("Reset Camera       (R)", size=*V2_ZERO) fit_on_screen();
@@ -59,7 +58,7 @@ show_scene_ui :: ()
 
             // Toggle visibility checkbox
             ImGui.SameLine();
-            ImGui.Checkbox(imgui_label("##visible", it), *mesh.visible);
+            ImGui.Checkbox(imgui_label("##visible", it), *it.visible);
             ShowTooltip("Visible");
 
             // Extra settings accessible with RMB
@@ -74,7 +73,7 @@ show_scene_ui :: ()
                 }
 
                 // Toggle visibility checkbox
-                ImGui.Checkbox(imgui_label("Visible", it), *mesh.visible);
+                ImGui.Checkbox(imgui_label("Visible", it), *it.visible);
 
                 // Toggle wireframe checkbox
                 if it.type == .MESH || it.type == .POLYGON_SOUP {

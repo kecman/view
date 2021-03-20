@@ -21,8 +21,9 @@ Mesh :: struct {
 }
 
     is_dirty := true;
+
+    // @Cleanup move these into Mesh_Entity
     fully_pathed_filename : string;
-    visible : bool = true;
     wireframe : bool = false;
     color : Vector4;
     display_mode : Display_Mode = .BLINN_PHONG;

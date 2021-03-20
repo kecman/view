@@ -269,55 +269,51 @@ main :: () {
 
 
         for entity : entities {
+            if !entity.visible continue;
+
             if entity.type == {
                 case .POLYLINE_SOUP2;
 
                     soup := cast(*Polyline_Soup2_Entity) entity;
-                    if soup.mesh.visible {
-                        render_mesh(soup.mesh, app.vertex_label_style);
-                        for polyline : soup.shape.polylines {
-                            render_vertex_labels(polyline.points, app.vertex_label_style);
-                        }
+                    render_mesh(soup.mesh, app.vertex_label_style);
+                    for polyline : soup.shape.polylines {
+                        render_vertex_labels(polyline.points, app.vertex_label_style);
                     }
 
                 case .POLYLINE_SOUP3;
 
                     soup := cast(*Polyline_Soup2_Entity) entity;
-                    if soup.mesh.visible {
-                        render_mesh(soup.mesh, app.vertex_label_style);
-                        for polyline : soup.shape.polylines {
-                            render_vertex_labels(polyline.points, app.vertex_label_style);
-                        }
+                    render_mesh(soup.mesh, app.vertex_label_style);
+                    for polyline : soup.shape.polylines {
+                        render_vertex_labels(polyline.points, app.vertex_label_style);
                     }
 
                 case .POLYGON_SOUP;
 
                     soup := cast(*Polygon_Soup_Entity) entity;
-                    if soup.mesh.visible {
-                        render_mesh(soup.mesh, app.vertex_label_style);
-                        for polygon : soup.shape.polygons {
-                            render_vertex_labels(polygon.outer_ring.points, app.vertex_label_style);
-                            for inner_ring : polygon.inner_rings {
-                                render_vertex_labels(inner_ring.points, app.vertex_label_style);
-                            }
+                    render_mesh(soup.mesh, app.vertex_label_style);
+                    for polygon : soup.shape.polygons {
+                        render_vertex_labels(polygon.outer_ring.points, app.vertex_label_style);
+                        for inner_ring : polygon.inner_rings {
+                            render_vertex_labels(inner_ring.points, app.vertex_label_style);
                         }
                     }
 
                 case .MESH;
 
                     mesh := cast(*Mesh_Entity) entity;
-                    if mesh.mesh.visible {
-                        render_mesh(mesh.mesh, app.vertex_label_style);
-                        // @Cleanup so the transform is also available for text rendering
-                        render_vertex_labels(mesh.mesh.positions, app.vertex_label_style);
-                    }
+                    render_mesh(mesh.mesh, app.vertex_label_style);
+                    // @Cleanup so the transform is also available for text rendering
+                    render_vertex_labels(mesh.mesh.positions, app.vertex_label_style);
             }
         }
 
-        render_mesh(triad.origin, .{point_size=0, line_width=1});
-        render_mesh(triad.x_axis, .{point_size=0, line_width=1});
-        render_mesh(triad.y_axis, .{point_size=0, line_width=1});
-        render_mesh(triad.z_axis, .{point_size=0, line_width=1});
+        if triad.visible {
+            render_mesh(triad.origin, .{point_size=0, line_width=1});
+            render_mesh(triad.x_axis, .{point_size=0, line_width=1});
+            render_mesh(triad.y_axis, .{point_size=0, line_width=1});
+            render_mesh(triad.z_axis, .{point_size=0, line_width=1});
+        }
 
         ImGui.Render();
 
@@ -388,8 +384,9 @@ fit_on_screen :: () {
     // Compute the bounding box of the scene in current view coords
     scene_bbox : geom.AxisBox3;
     for entities {
+        if !it.visible continue;
         mesh := get_mesh(it);
-        if mesh && mesh.visible {
+        if mesh {
             view_from_model := view_from_world * mesh.world_from_model;
 
             mesh_bbox_vs : AxisBox3;
@@ -530,10 +527,6 @@ load_entity_from_file :: (filename : string) {
 
 render_mesh :: (mesh : Mesh, style : VertexLabelStyle) {
     using app;
-
-    if !mesh.visible {
-        return;
-    }
 
     assert(!mesh.is_dirty);
 
