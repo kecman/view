@@ -180,9 +180,10 @@ show_camera_controls :: () {
     }
     ImGui.NextColumn();
 
-    right_label, left_label, amount := "<<<", ">>>", 45.;
+    // @Volatile: button text should be kept in sync with keymap!
+    right_label, left_label, amount := "<< ", " >>", 45.;
     if app.modifier_flags.shift_pressed {
-        right_label, left_label, amount = "<< ", " >>", 15.;
+        right_label, left_label, amount = "<<<", ">>>", 15.;
     } else if app.modifier_flags.alt_pressed {
         right_label, left_label, amount = " < ", " > ", 1.;
     }
@@ -240,16 +241,18 @@ show_help_ui :: ()
     ImGui.Separator();
 
     for app.keymap.mappings {
+        Push_Temporary();
         ImGui.Text(to_c_string(tprint("%", to_string(it))));
         ImGui.NextColumn();
-        ImGui.Text(to_c_string(tprint("%", it.proc_info.name)));
+        ImGui.Text(to_c_string(tprint("%", app.keymap.procs[it.proc_info_index].name)));
         ImGui.NextColumn();
     }
 
     for app.keymap_keydown.mappings {
+        Push_Temporary();
         ImGui.Text(to_c_string(tprint("%", to_string(it))));
         ImGui.NextColumn();
-        ImGui.Text(to_c_string(tprint("%", it.proc_info.name)));
+        ImGui.Text(to_c_string(tprint("%", app.keymap_keydown.procs[it.proc_info_index].name)));
         ImGui.NextColumn();
     }
     ImGui.Columns(1);

@@ -201,24 +201,28 @@ main :: () {
                     }
                 case SDL_KEYDOWN; {
                     if io().WantCaptureKeyboard break;
+
                     for app.keymap_keydown.mappings {
                         if to_sdl_keycode(it.key_code) == event.key.keysym.sym {
-                            if app.modifier_flags.shift_pressed    == it.modifier_flags.shift_pressed &&
-                               app.modifier_flags.control_pressed  == it.modifier_flags.control_pressed  &&
-                               app.modifier_flags.alt_pressed      == it.modifier_flags.alt_pressed {
-                                it.proc_info.proc();
+                            if app.modifier_flags.shift_pressed   == it.modifier_flags.shift_pressed   &&
+                               app.modifier_flags.control_pressed == it.modifier_flags.control_pressed &&
+                               app.modifier_flags.alt_pressed     == it.modifier_flags.alt_pressed {
+                                app.keymap_keydown.procs[it.proc_info_index].proc();
+                                break;
                             }
                         }
                     }
                 }
                 case SDL_KEYUP; {
                     if io().WantCaptureKeyboard break;
+
                     for app.keymap.mappings {
                         if to_sdl_keycode(it.key_code) == event.key.keysym.sym {
-                            if app.modifier_flags.shift_pressed    == it.modifier_flags.shift_pressed &&
-                               app.modifier_flags.control_pressed  == it.modifier_flags.control_pressed  &&
-                               app.modifier_flags.alt_pressed      == it.modifier_flags.alt_pressed {
-                                it.proc_info.proc();
+                            if app.modifier_flags.shift_pressed   == it.modifier_flags.shift_pressed   &&
+                               app.modifier_flags.control_pressed == it.modifier_flags.control_pressed &&
+                               app.modifier_flags.alt_pressed     == it.modifier_flags.alt_pressed {
+                                app.keymap.procs[it.proc_info_index].proc();
+                                break;
                             }
                         }
                     }
