@@ -1,4 +1,5 @@
 ## Soon
+- [Build] Distribution stuff, make a single executable if possible or executable + boost dll, bake fonts into the executable at least.
 - Option to render the cumulative vertex number for polyline soups and polygon inner/outer rings or polygon soups
 - Options on what options to include in the vertex cycling
 - Render vertex labels on top of other geometry always
@@ -9,9 +10,9 @@
 - [Commands] [Meta-programming] Autogenerate ui code for bingings
 - [Bug] Show points in the specific entity, not on the mesh, so this works better with polygons
 - [Bug] Fix vertex numbering with meshes
+- Scale zoom speed with scene bounding box when shift is held?
 
 ## Backlog
-- [Build] Distribution stuff, how to make this a single executable? statically link?
 - [Performance] Speed up text rendering, it's so slow right now!
 - [XXL] Build and add bindings for gmp
 - [XXL] Hotload the C++ bindings, and console commands, so you can keep same UI state while you iterate on your code

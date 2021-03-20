@@ -18,13 +18,13 @@ init_font :: () {
     // FreeType Init
     ft : *FT_Library;
     if (FT_Init_FreeType(*ft) != 0) {
-        print("[Invaders] Could not init FreeType lib.\n");
+        print("Could not init FreeType lib.\n");
         exit(1); // Hard-exit for now.
     }
 
     face : FT_Face; // KarminaBold.otf
     if (FT_New_Face(ft, temp_c_string("data/Inconsolata.otf"), 0, *face)) {
-        print("[Invaders] Could not load data/KarminaBold.otf\n");
+        print("Could not load data/Inconsolata.otf\n");
         exit(1); // Hard-exit for now.
     }
 
@@ -37,7 +37,7 @@ init_font :: () {
 
     for 0..ASCII_COUNT-1 {
         if FT_Load_Char(face, xx it, FT_LOAD_RENDER) {
-            print("[Invaders] Failed to load ascii char %\n", it);
+            print("Failed to load ascii char %\n", it);
             continue;
         }
 

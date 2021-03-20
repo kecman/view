@@ -630,7 +630,7 @@ render_vertex_labels :: (points : []$T, style : VertexLabelStyle, label_index_of
     #assert(T == Vector2 || T == Vector3);
     dim :: #run geom.dimension_of(T);
 
-    RENDER_LIMIT :: 1000;
+    RENDER_LIMIT :: 2000;
     if points.count > RENDER_LIMIT && (style.show_index || style.show_position) {
         // logprint("view", "Sorry text rendering sucks at the moment, can only render up to % labels!\n", RENDER_LIMIT);
         return;
