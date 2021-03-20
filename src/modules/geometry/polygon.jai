@@ -55,6 +55,15 @@ area :: (using polygon : Polygon) -> float
     return result;
 }
 
+point_count :: (using polygon : Polygon) -> int
+{
+    count := outer_ring.points.count;
+    for ring : inner_rings {
+        count += ring.points.count;
+    }
+    return count;
+}
+
 //
 // Iterators.
 //
@@ -121,6 +130,15 @@ deinit :: (shape : *Polygon_Soup)
 {
     for * shape.polygons deinit(it);
     array_reset(*shape.polygons);
+}
+
+point_count :: (using polygon_soup : Polygon_Soup) -> int
+{
+    count : int;
+    for polygon : polygon_soup.polygons {
+        count += point_count(polygon);
+    }
+    return count;
 }
 
 print_Polygon_Soup :: (shape : Polygon_Soup, print_points : bool = false)

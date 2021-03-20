@@ -34,6 +34,7 @@ show_scene_ui :: ()
     defer ImGui.End();
 
     imgui_label :: (label : string, ptr : *void) -> *u8 {
+        Push_Temporary();
         return to_c_string(concatenate(label, tprint("##%", ptr)));
     }
 
@@ -65,7 +66,7 @@ show_scene_ui :: ()
             ImGui.SameLine();
             ImGui.Text("...");
             ShowTooltip("Show item options");
-            if ImGui.BeginPopupContextItem(imgui_label("##context_menu", it), 0) {
+            if ImGui.BeginPopupContextItem(imgui_label("##context_menu", it)) {
                 defer ImGui.EndPopup();
 
                 if mesh.fully_pathed_filename.count {
@@ -82,6 +83,34 @@ show_scene_ui :: ()
 
                 ImGui.PushItemWidth(-1);
                 combo_box("", *mesh.display_mode, type_info(type_of(mesh.display_mode)));
+
+                if it.type == {
+                    case .POLYLINE_SOUP2;
+
+                        using soup := cast(*Polyline_Soup2_Entity)it;
+                        ImGui.Text(to_c_string(tprint("# points    %", point_count(shape))));
+                        ImGui.Text(to_c_string(tprint("# polylines %", shape.polylines.count)));
+
+                    case .POLYLINE_SOUP3;
+
+                        using soup := cast(*Polyline_Soup3_Entity)it;
+                        ImGui.Text(to_c_string(tprint("# points    %", point_count(shape))));
+                        ImGui.Text(to_c_string(tprint("# polylines %", shape.polylines.count)));
+
+                    case .POLYGON_SOUP;
+
+                        using soup := cast(*Polygon_Soup_Entity)it;
+                        ImGui.Text(to_c_string(tprint("# points   %", point_count(shape))));
+                        ImGui.Text(to_c_string(tprint("# polygons %", shape.polygons.count)));
+
+                    case .MESH;
+
+                        mesh := cast(*Mesh_Entity)it;
+                        ImGui.Text(to_c_string(tprint("# points    %", mesh.mesh.positions.count)));
+                        ImGui.Text(to_c_string(tprint("# triangles %", mesh.mesh.indices.count / 3)));
+                }
+
+
             }
 
             // Write filename
