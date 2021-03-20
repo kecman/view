@@ -88,29 +88,23 @@ show_scene_ui :: ()
                     case .POLYLINE_SOUP2;
 
                         using soup := cast(*Polyline_Soup2_Entity)it;
-                        ImGui.Text(to_c_string(tprint("# points    %", point_count(shape))));
-                        ImGui.Text(to_c_string(tprint("# polylines %", shape.polylines.count)));
+                        ImGui.Text(to_c_string(tprint("#points, #polylines = %, %", point_count(shape), shape.polylines.count)));
 
                     case .POLYLINE_SOUP3;
 
                         using soup := cast(*Polyline_Soup3_Entity)it;
-                        ImGui.Text(to_c_string(tprint("# points    %", point_count(shape))));
-                        ImGui.Text(to_c_string(tprint("# polylines %", shape.polylines.count)));
+                        ImGui.Text(to_c_string(tprint("#points, #polylines = %, %", point_count(shape), shape.polylines.count)));
 
                     case .POLYGON_SOUP;
 
                         using soup := cast(*Polygon_Soup_Entity)it;
-                        ImGui.Text(to_c_string(tprint("# points   %", point_count(shape))));
-                        ImGui.Text(to_c_string(tprint("# polygons %", shape.polygons.count)));
+                        ImGui.Text(to_c_string(tprint("#points, #polygons = %, %", point_count(shape), shape.polygons.count)));
 
                     case .MESH;
 
                         mesh := cast(*Mesh_Entity)it;
-                        ImGui.Text(to_c_string(tprint("# points    %", mesh.mesh.positions.count)));
-                        ImGui.Text(to_c_string(tprint("# triangles %", mesh.mesh.indices.count / 3)));
+                        ImGui.Text(to_c_string(tprint("#points, #triangles = %, %", mesh.mesh.positions.count, mesh.mesh.indices.count / 3)));
                 }
-
-
             }
 
             // Write filename
@@ -209,7 +203,7 @@ show_camera_controls :: () {
 
     ImGui.PushItemWidth(100);
     combo_box("", *app.camera_rotation_axis, type_info(type_of(app.camera_rotation_axis)));
-    ShowTooltip("Scene Rotation Axis");
+    ShowTooltip("Camera Rotation Axis");
 
     if app.camera.look_position != Vector3.{0, 0, 0} {
         if ImGui.Button(" Reset Focus ", size=*V2_ZERO) {
