@@ -42,8 +42,14 @@ show_scene_ui :: ()
         mesh := get_mesh(it);
         if mesh {
 
+            // Toggle visibility checkbox
+            checkbox_press_or_sweep_to_toggle(*it.visible, *it.hovered, imgui_label("##Visible", it));
+            ShowTooltip("Visible");
+
             // Entity index used to refer to geometry in console
+            ImGui.SameLine();
             ImGui.Text(to_c_string(tprint("%", it_index)));
+            ShowTooltip("Entity index for console commands");
 
             // Remove button
             ImGui.SameLine();
@@ -55,11 +61,6 @@ show_scene_ui :: ()
             // Color picker
             ImGui.SameLine();
             ImGui.ColorEdit4(imgui_label("##color", it), *mesh.color.component, ImGui.ColorEditFlags.NoInputs);
-
-            // Toggle visibility checkbox
-            ImGui.SameLine();
-            ImGui.Checkbox(imgui_label("##visible", it), *it.visible);
-            ShowTooltip("Visible");
 
             // Extra settings accessible with RMB
             ImGui.SameLine();
@@ -281,6 +282,25 @@ combo_box :: (label : string, data: *void, info_enum: *Type_Info_Enum) {
 
         ImGui.EndCombo();
     }
+}
+
+// Toggle visibility if the checkbox was pressed or if we swept over it with the LMB down
+checkbox_press_or_sweep_to_toggle :: (state : *bool, hovered : *bool, label : *u8) {
+
+    state_copy := <<state;
+    pressed := ImGui.Checkbox(label, *state_copy);
+
+    previous_frame_hovered := <<hovered;
+    current_frame_hovered := ImGui.IsItemHovered(.RectOnly);
+
+    swept_into := !previous_frame_hovered && current_frame_hovered;
+    left_mouse_button_down := io().MouseDown[0];
+
+    if (pressed || (swept_into && left_mouse_button_down)) {
+        <<state = !<<state;
+    }
+
+    <<hovered = current_frame_hovered;
 }
 
 ShowTooltip :: (description : string) #expand {

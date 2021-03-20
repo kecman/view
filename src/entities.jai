@@ -9,6 +9,7 @@ Entity :: struct {
     type : Entity_Type = .UNKNOWN;
 
     visible : bool = true;
+    hovered : bool = false;
 }
 
 Polyline_Soup2_Entity :: struct {
