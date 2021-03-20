@@ -140,7 +140,9 @@ show_camera_controls :: () {
     using ImGui.WindowFlags;
 
     ImGui.SetNextWindowPos(*window_pos, .Always, *window_pivot);
-    // ImGui.SetNextWindowContentWidth(135.);
+    // SetNextWindowSize(ImVec2(400,400), ImGuiCond_FirstUseEver);
+    // ImGui.SetNextWindowSize(*ImVec2.{150., 0.});
+    ImGui.SetNextWindowContentSize(*ImVec2.{110., 0.});
     // ImGui.SetNextWindowBgAlpha(.3);
     ImGui.Begin("Camera shortcuts", flags = NoTitleBar | AlwaysAutoResize | NoMove /*| NoNav*/);
     defer ImGui.End();
@@ -203,13 +205,14 @@ show_camera_controls :: () {
 
     ImGui.Columns(1, border=false);
 
-    ImGui.PushItemWidth(-1);
+    ImGui.PushItemWidth(100);
     combo_box("", *app.camera_rotation_axis, type_info(type_of(app.camera_rotation_axis)));
     ShowTooltip("Scene Rotation Axis");
 
-    ImGui.PushItemWidth(-1);
-    if ImGui.Button(" Reset Focus ", size=*V2_ZERO) {
-        app.camera.look_position = .{0, 0, 0};
+    if !(app.camera.look_position == Vector3.{0, 0, 0}) {
+        if ImGui.Button(" Reset Focus ", size=*V2_ZERO) {
+            app.camera.look_position = .{0, 0, 0};
+        }
     }
 
     // @Incomplete add perspective/orthographic toggle
