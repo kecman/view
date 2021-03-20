@@ -40,7 +40,39 @@ Mesh :: struct {
     world_from_model : Matrix4 = .{_11 = 1, _22 = 1, _33 = 1, _44 = 1};
 }
 
+compute_vertex_normals_from_triangles :: (using mesh : *Mesh)
+{
+    if mesh.geometry_format != .TRIANGLES return;
+
+    if mesh.indices.count % 3 == 0 {
+        array_resize(*mesh.normals, mesh.positions.count, initialize=false);
+        for i : 0..mesh.indices.count/3-1 {
+
+            i0 := mesh.indices[3 * i + 0];
+            i1 := mesh.indices[3 * i + 1];
+            i2 := mesh.indices[3 * i + 2];
+
+            e01 := mesh.positions[i0] - mesh.positions[i1];
+            e02 := mesh.positions[i0] - mesh.positions[i2];
+            n   := normalize(cross(e01, e02));
+
+            mesh.normals[i0] = n;
+            mesh.normals[i1] = n;
+            mesh.normals[i2] = n;
+        }
+        assert(mesh.normals.count == mesh.positions.count);
+    }
+
+    return;
+}
+
 buffer_mesh :: (using mesh : *Mesh) {
+
+    if mesh.geometry_format == .TRIANGLES && !mesh.normals.count {
+        log("Computing and assigning triangle normals to vertices\n");
+        compute_vertex_normals_from_triangles(mesh);
+    }
+
 #if USE_GRAPHICS {
     if is_dirty {
         if !vbo glGenBuffers(1, *vbo);
