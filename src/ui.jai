@@ -209,7 +209,7 @@ show_camera_controls :: () {
     combo_box("", *app.camera_rotation_axis, type_info(type_of(app.camera_rotation_axis)));
     ShowTooltip("Scene Rotation Axis");
 
-    if !(app.camera.look_position == Vector3.{0, 0, 0}) {
+    if app.camera.look_position != Vector3.{0, 0, 0} {
         if ImGui.Button(" Reset Focus ", size=*V2_ZERO) {
             app.camera.look_position = .{0, 0, 0};
         }

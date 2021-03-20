@@ -70,7 +70,7 @@ compute_vertex_normals_from_triangles :: (using mesh : *Mesh)
 buffer_mesh :: (using mesh : *Mesh) {
 
     if mesh.geometry_format == .TRIANGLES && !mesh.normals.count {
-        log("Computing and assigning triangle normals to vertices\n");
+        // log("Computing and assigning triangle normals to vertices\n");
         compute_vertex_normals_from_triangles(mesh);
     }
 

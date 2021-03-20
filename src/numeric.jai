@@ -53,6 +53,11 @@ cwise_min :: (v : Vector3) -> float, int
     return min_component, min_index;
 }
 
+// @CompilerBug remove this when != is added to the Jai Math module
+operator!= :: (a: Vector3, b: Vector3) -> bool {
+    return a.x != b.x || a.y != b.y || a.z != b.z;
+}
+
 /*
 Bivector3 :: struct {
     x, y, z : float;
