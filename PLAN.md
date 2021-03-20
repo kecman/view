@@ -1,25 +1,28 @@
 ## Soon
+- [UI/UX,Bug] Make sweep toggle also turn off the checkbox that is clicked to start the sweep
 - [Build] Distribution stuff, make a single executable if possible or executable + boost dll, bake fonts into the executable at least.
-- Option to render the cumulative vertex number for polyline soups and polygon inner/outer rings or polygon soups
-- Options on what options to include in the vertex cycling
-- Render vertex labels on top of other geometry always
+- [Performance] Speed up text rendering, it's so slow right now!
 - Support loading wkt file format, so we can load Polygons in a reasonable way
+- Scale zoom speed with scene bounding box when shift is held?
+- [UI/UX] Implement a view cube using the Simp module
+- [UI/UX] Implement hovering over item in entity list causes it to flash white
+
+## Backlog
 - Implement commands to change the render settings on stuff
 - [Testing] [Meta-programming] Use @test to tag/run tests
 - [Commands] [Meta-programming] Autogenerate code for bingings
 - [Commands] [Meta-programming] Autogenerate ui code for bingings
-- [Bug] Show points in the specific entity, not on the mesh, so this works better with polygons
-- [Bug] Fix vertex numbering with meshes
-- Scale zoom speed with scene bounding box when shift is held?
-
-## Backlog
-- [Performance] Speed up text rendering, it's so slow right now!
 - [XXL] Build and add bindings for gmp
 - [XXL] Hotload the C++ bindings, and console commands, so you can keep same UI state while you iterate on your code
 - [XXL] Hotload jai code so that you can keep state while you change your algorithm
 - Implement geometric equals functions for testing, can be used to compare Jai/C++ implementations
 - Don't pass pointers for arguments that aren't modified
 - [Rendering] Alternate segment colours (two draw calls?)
+- [UI/UX] Sweep drag for removing items from the scene?
+- [UI/UX] Render vertex labels on top of other geometry always
+- [UI/UX] Option to render the cumulative vertex number for polyline soups and polygon inner/outer rings or polygon soups
+- [UI/UX] Options on what options to include in the vertex cycling
+- [UI/UX] Put model stats in a bar along the bottom
 - [UI/UX] Add a defaults.settings file containing options like default visualisation, scroll velocity, ui response dt's etc
 - [UI/UX] Add a defaults.keymap file containing bindings, also add files for blender, paraview and cloudnc settings
 - [UI/UX] Dynamically generate some UI windows a la imgui_inspector.jai
@@ -27,7 +30,6 @@
 - [UI/UX] Implement sliding to show/hide the terminal
 - [UI/UX] Scroll to the bottom of the terminal
 - [UI/UX] If file is hovered make it flash to white so it's easy to find
-- [UI/UX] Implement a view cube
 - [UI/UX] Implement arcball constraints cf. http://graphicsinterface.org/wp-content/uploads/gi1992-18.pdf
 - [UI/UX] Camera position history/bookmarks with notes/annotations
 - Compiled at time in Window, after version?
