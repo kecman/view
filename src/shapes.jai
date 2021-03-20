@@ -1,5 +1,3 @@
-// Based on https://github.com/prideout/par
-
 #import "Basic";
 
 par_shapes_mesh :: struct
@@ -508,3 +506,5 @@ par_shapes_mesh* par_shapes_clone(par_shapes_mesh const* mesh, par_shapes_mesh* 
     return clone;
 }
 */
+
+// Based on https://github.com/prideout/par
