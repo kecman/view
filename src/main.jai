@@ -468,11 +468,6 @@ cycle_line_style :: () {
 #scope_file
 
 load_entity_from_file :: (filename : string) {
-    MAGIC_COMPILE_FILE :: "item_Part.obj";
-    if !contains(filename, MAGIC_COMPILE_FILE) && running_at_compile_time() {
-        compiler_report(tprint("Oi! You can only load % at compile time, got %", MAGIC_COMPILE_FILE, filename));
-    }
-
     skip := false;
     for entities {
         mesh := get_mesh(it);
@@ -501,7 +496,6 @@ load_entity_from_file :: (filename : string) {
                 assert(ok);
 
                 entity := New(Polyline_Soup2_Entity);
-                // entity := New(Polyline_Soup3_Entity);
                 entity.mesh = mesh;
                 entity.shape = shape;
                 array_add(*entities, entity);
