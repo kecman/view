@@ -24,9 +24,9 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
 
 show_scene_ui :: ()
 {
-    if !entities.count return;
-
     using app;
+
+    if !entities.count return;
 
     ImGui.SetNextWindowPos(pos=*make_vector2(10, 10), pivot=*V2_ZERO);
     ImGui.Begin("Main Panel", flags = ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar);

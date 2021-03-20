@@ -31,6 +31,7 @@ app : struct {
 
     camera : Camera;
     console : Console;
+    entities : [..]*Entity;
 
     vertex_label_style : VertexLabelStyle;
 
@@ -272,7 +273,7 @@ main :: () {
         update_camera(1);
 
 
-        for entity : entities {
+        for entity : app.entities {
             if !entity.visible continue;
 
             if entity.type == {
@@ -387,7 +388,7 @@ fit_on_screen :: () {
 
     // Compute the bounding box of the scene in current view coords
     scene_bbox : geom.AxisBox3;
-    for entities {
+    for app.entities {
         if !it.visible continue;
         mesh := get_mesh(it);
         if mesh {
@@ -470,7 +471,7 @@ cycle_line_style :: () {
 
 load_entity_from_file :: (filename : string) {
     skip := false;
-    for entities {
+    for app.entities {
         mesh := get_mesh(it);
         if mesh && mesh.fully_pathed_filename == filename {
             skip = true;
@@ -499,7 +500,7 @@ load_entity_from_file :: (filename : string) {
                 entity := New(Polyline_Soup2_Entity);
                 entity.mesh = mesh;
                 entity.shape = shape;
-                array_add(*entities, entity);
+                array_add(*app.entities, entity);
 
                 log("Loaded 2d polyline soup file: '%'\n", filename);
             } else {
@@ -509,7 +510,7 @@ load_entity_from_file :: (filename : string) {
                 entity := New(Polyline_Soup3_Entity);
                 entity.mesh = mesh;
                 entity.shape = shape;
-                array_add(*entities, entity);
+                array_add(*app.entities, entity);
 
                 log("Loaded 3d polyline soup file: '%'\n", filename);
             }
@@ -517,7 +518,7 @@ load_entity_from_file :: (filename : string) {
         case .TRIANGLES;
             entity := New(Mesh_Entity);
             entity.mesh = mesh;
-            array_add(*entities, entity);
+            array_add(*app.entities, entity);
 
             log("Loaded triangle mesh file: '%'\n", filename);
 

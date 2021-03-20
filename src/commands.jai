@@ -93,7 +93,7 @@ get_geometry_index :: (arg : string) -> int, bool #must {
         return -1, false;
     }
 
-    if result < 0 || result >= entities.count {
+    if result < 0 || result >= app.entities.count {
         console_add_log("[error] invalid/out of range geometry index");
         return -1, false;
     }
@@ -113,7 +113,7 @@ tmp_clockwise_boundaries :: (args : []string) {
     if !ok_geometry_index return;
 
 
-    it := entities[geometry_index];
+    it := app.entities[geometry_index];
 
     if it.type != .POLYGON_SOUP {
         console_add_log("[error] clockwise_boundaries not supported for entity type %", it.type);
@@ -136,7 +136,7 @@ tmp_clockwise_boundaries :: (args : []string) {
     entity.mesh = mesh;
     entity.shape = boundary;
 
-    array_add(*entities, entity);
+    array_add(*app.entities, entity);
 } else {
     log("Feature unavailable: compile with ENABLE_BOOST_POLYGON\n");
     return;
@@ -167,7 +167,7 @@ tmp_offset :: (args : []string) {
 
     // @CompilerBug I don't see the entities global in gdb here??
 
-    it := entities[geometry_index];
+    it := app.entities[geometry_index];
 
     if it.type != .POLYLINE_SOUP2 {
         console_add_log("[error] offset not supported for entity type %", it.type);
@@ -191,7 +191,7 @@ tmp_offset :: (args : []string) {
     entity := New(Polygon_Soup_Entity);
     entity.mesh = mesh;
     entity.shape = offset_polygon;
-    array_add(*entities, entity);
+    array_add(*app.entities, entity);
 } else {
     log("Feature unavailable: compile with ENABLE_BOOST_POLYGON\n");
     return;

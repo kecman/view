@@ -1,5 +1,3 @@
-entities : [..]*Entity;
-
 Entity :: struct {
     Entity_Type :: enum {
         UNKNOWN;
