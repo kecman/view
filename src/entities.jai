@@ -7,7 +7,6 @@ Entity :: struct {
         POLYLINE_SOUP3;
         POLYGON_SOUP;
         MESH;
-        FLOAT;
     }
     type : Entity_Type = .UNKNOWN;
 }
@@ -66,7 +65,6 @@ deinit :: (base : *Entity) {
             deinit(*entity.mesh);
         }
         case .UNKNOWN;
-        case .FLOAT;
     }
 }
 
@@ -89,9 +87,6 @@ get_mesh :: (base : *Entity) -> *Mesh {
             return *entity.mesh;
         }
         case .UNKNOWN; {
-            return null;
-        }
-        case .FLOAT; {
             return null;
         }
     }
