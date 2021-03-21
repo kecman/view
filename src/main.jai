@@ -280,7 +280,7 @@ main :: () {
                 case .POLYLINE_SOUP2;
 
                     soup := cast(*Polyline_Soup2_Entity) entity;
-                    render_mesh(soup.mesh, app.vertex_label_style);
+                    render_mesh(soup.mesh, app.vertex_label_style, entity.flash_wave_dt);
                     for polyline : soup.shape.polylines {
                         render_vertex_labels(polyline.points, app.vertex_label_style);
                     }
@@ -288,7 +288,7 @@ main :: () {
                 case .POLYLINE_SOUP3;
 
                     soup := cast(*Polyline_Soup2_Entity) entity;
-                    render_mesh(soup.mesh, app.vertex_label_style);
+                    render_mesh(soup.mesh, app.vertex_label_style, entity.flash_wave_dt);
                     for polyline : soup.shape.polylines {
                         render_vertex_labels(polyline.points, app.vertex_label_style);
                     }
@@ -296,7 +296,7 @@ main :: () {
                 case .POLYGON_SOUP;
 
                     soup := cast(*Polygon_Soup_Entity) entity;
-                    render_mesh(soup.mesh, app.vertex_label_style);
+                    render_mesh(soup.mesh, app.vertex_label_style, entity.flash_wave_dt);
                     for polygon : soup.shape.polygons {
                         render_vertex_labels(polygon.outer_ring.points, app.vertex_label_style);
                         for inner_ring : polygon.inner_rings {
@@ -307,7 +307,7 @@ main :: () {
                 case .MESH;
 
                     mesh := cast(*Mesh_Entity) entity;
-                    render_mesh(mesh.mesh, app.vertex_label_style);
+                    render_mesh(mesh.mesh, app.vertex_label_style, entity.flash_wave_dt);
                     // @Cleanup so the transform is also available for text rendering
                     render_vertex_labels(mesh.mesh.positions, app.vertex_label_style);
             }
@@ -469,7 +469,7 @@ load_entity_from_file :: (filename : string) {
     }
 }
 
-render_mesh :: (mesh : Mesh, style : VertexLabelStyle) {
+render_mesh :: (mesh : Mesh, style : VertexLabelStyle, flash_dt : float = 0) {
     using app;
 
     assert(!mesh.is_dirty);
@@ -499,6 +499,12 @@ render_mesh :: (mesh : Mesh, style : VertexLabelStyle) {
     {
         mode_loc := glGetUniformLocation(mesh_shader, "display_mode");
         glUniform1i(mode_loc, xx mesh.display_mode);
+    }
+
+    {
+        loc := glGetUniformLocation(mesh_shader, "wave");
+        wave := ifx flash_dt == 0 then -1 else cos(5 * flash_dt);
+        glUniform1f(loc, wave);
     }
 
     {

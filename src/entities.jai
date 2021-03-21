@@ -9,7 +9,9 @@ Entity :: struct {
     type : Entity_Type = .UNKNOWN;
 
     visible : bool = true;
-    hovered : bool = false;
+    visible_sweep_hovered : bool = false;
+    flash_hovered : bool = false;
+    flash_wave_dt : float = 0.;
 }
 
 Polyline_Soup2_Entity :: struct {

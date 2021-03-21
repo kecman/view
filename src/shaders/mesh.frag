@@ -4,6 +4,7 @@ struct Camera {
     vec3 eye_position;
 };
 
+uniform float wave; // time varying value in range [-1,1]
 uniform Camera camera;
 uniform int display_mode = 0;
 uniform vec4 color; // rgba
@@ -65,14 +66,14 @@ void main() {
         // Normal shading
         case 0: {
 
-            out_color = vec4(N, 1.f) * .5f + .5f;
+            out_color = mix(vec4(N, 1.f) * .5f + .5f, vec4(1.f), wave * .5f + .5f);
 
         } break;
 
         // Solid color
         case 1: {
 
-            out_color = color;
+            out_color = mix(color, vec4(1.f), wave * .5f + .5f);
 
         } break;
 
@@ -96,7 +97,7 @@ void main() {
             }
 
             vec4 color_gamma_corrected = vec4(pow(ambient_color + color_linear.xyz, vec3(1 / gamma)), 1);
-            out_color = color_gamma_corrected;
+            out_color = mix(color_gamma_corrected, vec4(1.f), wave * .5f + .5f);
 
         } break;
     }

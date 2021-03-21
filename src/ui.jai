@@ -50,7 +50,7 @@ show_scene_ui :: ()
             }
 
             // Toggle visibility checkbox
-            checkbox_press_or_sweep_to_toggle(*it.visible, *it.hovered, imgui_label("##Visible", it));
+            checkbox_press_or_sweep_to_toggle(*it.visible, *it.visible_sweep_hovered, imgui_label("##Visible", it));
             ShowTooltip("Visible");
 
             // Remove button
@@ -64,12 +64,24 @@ show_scene_ui :: ()
             ImGui.SameLine();
             ImGui.ColorEdit4(imgui_label("##color", it), *mesh.color.component, ImGui.ColorEditFlags.NoInputs);
 
-            // Extra settings accessible with RMB
+            // Write filename
             ImGui.SameLine();
-            ImGui.Text("...");
+            if mesh.fully_pathed_filename.count {
+                ImGui.Text(path_filename(mesh.fully_pathed_filename)); // @CompilerBug?
+            } else {
+                ImGui.Text("---");
+            }
             ShowTooltip("LMB: Focus item\nRMB: Show item options\n");
             if ImGui.IsItemClicked() {
                 fit_on_screen(it);
+            }
+            was_flash_hovered := it.flash_hovered;
+            if ImGui.IsItemHovered() {
+                it.flash_hovered = true;
+                it.flash_wave_dt += io().DeltaTime;
+            } else if was_flash_hovered {
+                it.flash_hovered = false;
+                it.flash_wave_dt = 0;
             }
 
             if ImGui.BeginPopupContextItem(imgui_label("##context_menu", it)) {
@@ -111,12 +123,6 @@ show_scene_ui :: ()
                         mesh := cast(*Mesh_Entity)it;
                         ImGui.Text(to_c_string(tprint("#points, #triangles = %, %", mesh.mesh.positions.count, mesh.mesh.indices.count / 3)));
                 }
-            }
-
-            // Write filename
-            if mesh.fully_pathed_filename.count {
-                ImGui.SameLine();
-                ImGui.Text(path_filename(mesh.fully_pathed_filename)); // @CompilerBug?
             }
         }
     }
