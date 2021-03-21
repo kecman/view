@@ -219,7 +219,9 @@ show_camera_controls :: () {
 
     if app.camera.look_position != Vector3.{0, 0, 0} {
         if ImGui.Button(" Reset Orbit ", size=*V2_ZERO) {
+            look_direction := current_look_direction();
             app.camera.look_position = .{0, 0, 0};
+            app.camera.eye_position = app.camera.look_position - look_direction;
         }
     }
 
