@@ -1,6 +1,7 @@
 ## Soon
-- [UI/UX] Sliders to select visible range of indices
+- [Cleanup] Add examples to the obj folder
 - [Presentation] Improve readme, add gif "as-of"/feature list, mention limitations on obj import suppport, clear on high-level goals: fun to use
+- [UI/UX] Sliders to select visible range of indices
 - [Cleanup] Remove geometry module, just load files
 - [UI/UX] Add mouse buttons to keymap help window
 - [UI/UX] Scale the axes according to the bbox of the scene?
