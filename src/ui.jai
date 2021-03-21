@@ -42,14 +42,16 @@ show_scene_ui :: ()
         mesh := get_mesh(it);
         if mesh {
 
+            // Entity index used to refer to geometry in console
+            if app.show_console_ui {
+                ImGui.Text(to_c_string(tprint("%", it_index)));
+                ShowTooltip("Entity index for console commands");
+                ImGui.SameLine();
+            }
+
             // Toggle visibility checkbox
             checkbox_press_or_sweep_to_toggle(*it.visible, *it.hovered, imgui_label("##Visible", it));
             ShowTooltip("Visible");
-
-            // Entity index used to refer to geometry in console
-            ImGui.SameLine();
-            ImGui.Text(to_c_string(tprint("%", it_index)));
-            ShowTooltip("Entity index for console commands");
 
             // Remove button
             ImGui.SameLine();
