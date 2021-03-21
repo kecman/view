@@ -1,23 +1,31 @@
 ## Soon
+- [UI/UX] Sliders to select visible range of indices
+- [Presentation] Improve readme, add gif "as-of"/feature list, mention limitations on obj import suppport, clear on high-level goals: fun to use
+- [Cleanup] Remove geometry module, just load files
+- [UI/UX] Add mouse buttons to keymap help window
+- [UI/UX] Scale the axes according to the bbox of the scene?
+- [UI/UX] Arrow keys pan across bounding box?
+- [UI/UX] Render the axes origin in different color when it's a model origin
 - [UI/UX,Bug] Make sweep toggle also turn off the checkbox that is clicked to start the sweep
+- [UI/UX,Bug] Include axes in fit_on_screen, and fix positioning of near and far planes
 - [Build] Distribution stuff, make a single executable if possible or executable + boost dll, bake fonts into the executable at least.
 - [Performance] Speed up text rendering, it's so slow right now!
-- Support loading wkt file format, so we can load Polygons in a reasonable way
-- Scale zoom speed with scene bounding box when shift is held?
+- [UI/UX] Support loading wkt file format, so we can load Polygons in a reasonable way
+- [UI/UX] Scale zoom speed with scene bounding box when shift is held?
 - [UI/UX] Implement a view cube using the Simp module
-- [UI/UX] Implement hovering over item in entity list causes it to flash white
 
 ## Backlog
 - Implement commands to change the render settings on stuff
-- [Testing] [Meta-programming] Use @test to tag/run tests
-- [Commands] [Meta-programming] Autogenerate code for bingings
-- [Commands] [Meta-programming] Autogenerate ui code for bingings
+- [Meta-programming,Testing] Use @test to tag/run tests
+- [Meta-programming,Commands] Autogenerate code for bingings
+- [Meta-programming,Commands] Autogenerate ui code for bingings
 - [XXL] Build and add bindings for gmp
 - [XXL] Hotload the C++ bindings, and console commands, so you can keep same UI state while you iterate on your code
 - [XXL] Hotload jai code so that you can keep state while you change your algorithm
 - Implement geometric equals functions for testing, can be used to compare Jai/C++ implementations
 - Don't pass pointers for arguments that aren't modified
 - [Rendering] Alternate segment colours (two draw calls?)
+- [Rendering] Render normals using geometry shader
 - [UI/UX] Sweep drag for removing items from the scene?
 - [UI/UX] Render vertex labels on top of other geometry always
 - [UI/UX] Option to render the cumulative vertex number for polyline soups and polygon inner/outer rings or polygon soups
@@ -29,7 +37,6 @@
 - [UI/UX] Hold shift to change size of arcball, and project across x/y direction so you can do full 90degree rotations of the part, draw regions in the far plane and cicle on the near plane
 - [UI/UX] Implement sliding to show/hide the terminal
 - [UI/UX] Scroll to the bottom of the terminal
-- [UI/UX] If file is hovered make it flash to white so it's easy to find
 - [UI/UX] Implement arcball constraints cf. http://graphicsinterface.org/wp-content/uploads/gi1992-18.pdf
 - [UI/UX] Camera position history/bookmarks with notes/annotations
 - Compiled at time in Window, after version?
@@ -39,21 +46,19 @@
 - [Meta-programming] Autogenerate the console registering code to add commands to the console
 - [Meta-programming] Generate a list of used ImGui functions, to simplify transitioning to a newer version
 - Sort by time loaded
-- Write * to indicate an identical first and last point
-- Mode line showing the style info etc
+- [UI/UX] Write * to indicate an identical first and last point
+- [UI/UX] Mode line showing the style info etc
 - Understand and use context stuff (logging, assertions, allocators), watch https://youtu.be/ciGQCP6HgqI
 - Give each polyline a number 1-9 then pressing that number before some modifier for colour/vertex etc only modifies that one, number 0 means everything?
 - Toggle fullscreen/maximise
 - Some kind of ui cooldown for removing files? So that you don't loose track of what's being deleted
-- Zoom to origin
 - Show grid lines and label
 - Transparent imgui window so UI is like Fusion?
 - Distribute shaders with source for hot loading/editing them. Pass them lots of unused data then
-- Fix orbit/rotation location when many files are loaded but some aren't visible
 - Just log warnings and ignore the context allocator if it's not malloc, or create a new polygon allocated with malloc if passing to c
 - Extend the imgui_inspector example to allow you to drag+drop jai files and have show you all the types in the file
 - Use automatic differentiation in shape generation
-- Sounds for a more satifying UI?
+- [UI/UX] Sounds for a more satifying UI?
 - [Commands] save_obj <filename>, load_obj <filename> to load files (loading files by drag and drop should effectively run this command)
 - [Commands] save_wkt <filename>, load_wkt <filename> to load files (loading files by drag and drop should effectively run this command)
 - [Commands] save_session <filename>, load_session <session> to write all commands in the session
@@ -66,8 +71,6 @@
 - [Bindings] Can these declarations have notes? Check Preload.jai?
 - [Bindings] Write a function to print in wkt format? simpler custom format?
 - [Bindings] Add libIGL bindings?
-- [Bug] Fix camera frustrum contain all visible items
-- [Bug] Fix memory leaks, need to use a new version of valgrind for --keep-debuginfo=yes option but it seems like getting to show line numbers properly isn't working
 - [Bug] ImGui bindings for unix don't write declare CreateContext arguments #c_call
 
 ## Miscellaneous
