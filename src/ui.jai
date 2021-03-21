@@ -7,13 +7,21 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
     ImGui.SetNextWindowPos(pos=*make_vector2(10, 10), pivot=*V2_ZERO);
     ImGui.Begin("Main Panel", flags = ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar);
     defer ImGui.End();
-    ImGui.ColorEdit4("Background Color", *clear_color.component, ImGui.ColorEditFlags.NoInputs);
-    ImGui.Checkbox("World Axes", *world_axes.visible);
+    ImGui.Text("Global Settings:");
+    ImGui.Separator();
+    defer ImGui.Separator();
 
-    // if ImGui.Button("Reset Window          ", size=*V2_ZERO) SDL_SetWindowSize(window, app.INITIAL_WINDOW_WIDTH, app.INITIAL_WINDOW_HEIGHT);
-    // if ImGui.Button("Reset Camera       (R)", size=*V2_ZERO) fit_on_screen();
-    // if ImGui.Button("Cycle vertex style (V)", size=*V2_ZERO) cycle_vertex_label_style();
-    // if ImGui.Button("Cycle line style   (L)", size=*V2_ZERO) cycle_line_style();
+    ImGui.ColorEdit4("Background color", *clear_color.component, ImGui.ColorEditFlags.NoInputs);
+    ImGui.Checkbox("Show world axes", *world_axes.visible);
+    ImGui.Checkbox("Show point index labels", *vertex_label_style.show_index);
+    ImGui.Checkbox("Show point position labels", *vertex_label_style.show_position);
+
+    if current_window_width  != INITIAL_WINDOW_WIDTH  &&
+       current_window_height != INITIAL_WINDOW_HEIGHT &&
+       ImGui.Button("Reset Window", size=*V2_ZERO)
+    {
+        SDL_SetWindowSize(window, app.INITIAL_WINDOW_WIDTH, app.INITIAL_WINDOW_HEIGHT);
+    }
 
     #if false {
         ImGui.SetNextWindowPos(*make_vector2(650, 20), ImGui.Cond.FirstUseEver, *V2_ZERO);
@@ -249,6 +257,14 @@ show_help_ui :: ()
     ImGui.NextColumn();
     ImGui.Separator();
 
+    for app.keymap_keydown.mappings {
+        Push_Temporary();
+        ImGui.Text(to_c_string(tprint("%", to_string(it))));
+        ImGui.NextColumn();
+        ImGui.Text(to_c_string(tprint("%", app.keymap_keydown.procs[it.proc_info_index].name)));
+        ImGui.NextColumn();
+    }
+
     for app.keymap.mappings {
         Push_Temporary();
         ImGui.Text(to_c_string(tprint("%", to_string(it))));
@@ -257,13 +273,6 @@ show_help_ui :: ()
         ImGui.NextColumn();
     }
 
-    for app.keymap_keydown.mappings {
-        Push_Temporary();
-        ImGui.Text(to_c_string(tprint("%", to_string(it))));
-        ImGui.NextColumn();
-        ImGui.Text(to_c_string(tprint("%", app.keymap_keydown.procs[it.proc_info_index].name)));
-        ImGui.NextColumn();
-    }
     ImGui.Columns(1);
     ImGui.Text("                                          "); // @Hack
 

@@ -398,28 +398,6 @@ VertexLabelStyle :: struct {
     line_width : int = 1; // 1, 1, 2, 3
 }
 
-cycle_vertex_label_style :: () {
-    using app.vertex_label_style;
-    if show_index && show_position show_position = false;
-    else if show_index && !show_position show_index = false;
-    else if !show_index && !show_position show_position = true;
-    else show_index = true;
-}
-
-cycle_line_style :: () {
-    using app.vertex_label_style;
-    if point_size == 0 && line_width == 1 {
-        point_size = 2; line_width = 1;
-    } else if point_size == 2 && line_width == 1 {
-        point_size = 4; line_width = 2;
-    } else if point_size == 4 && line_width == 2 {
-        point_size = 6; line_width = 3;
-    } else {
-        point_size = 0; line_width = 1;
-    }
-}
-
-
 #scope_file
 
 load_entity_from_file :: (filename : string) {

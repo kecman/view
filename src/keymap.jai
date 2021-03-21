@@ -51,25 +51,27 @@ Keymap :: struct {
 
 init_keymap :: ()
 {
-    // Triggered on key up
+    // @Incomplete that we don't have clashing key mappings
+
+    add_key(*app.keymap_keydown, toggle_show_help_ui, "toggle_show_help_ui",  xx #char "h");
+    add_key(*app.keymap_keydown, toggle_show_global_settings_ui, "toggle_show_global_settings_ui",  xx #char "h", .{shift_pressed=true});
+    add_key(*app.keymap_keydown, toggle_show_ui, "toggle_show_ui",  xx #char "`");
+    add_key(*app.keymap_keydown, toggle_show_console_ui, "toggle_show_console_ui",  xx #char "`", .{control_pressed=true});
+
     add_key(*app.keymap, close_application, "close_application", xx Special_Key_Code.ESCAPE);
     add_key(*app.keymap, fit_on_screen, "fit_on_screen", xx #char "r");
-    add_key(*app.keymap, cycle_vertex_label_style, "cycle_vertex_label_style", xx #char "v");
-    add_key(*app.keymap, cycle_line_style, "cycle_line_style", xx #char "l");
 
-    // @Volatile: modifiers should be kept in sync with button text in ui.jai!
+    add_key(*app.keymap, cycle_line_width, "cycle_line_width", xx #char "l");
+    add_key(*app.keymap, cycle_point_size, "cycle_point_size", xx #char "p");
+    add_key(*app.keymap, cycle_point_index_labels, "cycle_point_index_labels", xx #char "p", .{shift_pressed=true});
+    add_key(*app.keymap, cycle_point_position_labels, "cycle_point_position_labels", xx #char "p", .{alt_pressed=true});
+
     add_key(*app.keymap, rotate_look_direction_15_cw,  "rotate_look_direction_15_cw",  xx #char "]");
     add_key(*app.keymap, rotate_look_direction_15_ccw, "rotate_look_direction_15_ccw", xx #char "[");
     add_key(*app.keymap, rotate_look_direction_45_cw,  "rotate_look_direction_45_cw",  xx #char "]", .{shift_pressed=true});
     add_key(*app.keymap, rotate_look_direction_45_ccw, "rotate_look_direction_45_ccw", xx #char "[", .{shift_pressed=true});
     add_key(*app.keymap, rotate_look_direction_5_cw,   "rotate_look_direction_5_cw",   xx #char "]", .{alt_pressed=true});
     add_key(*app.keymap, rotate_look_direction_5_ccw,  "rotate_look_direction_5_ccw",  xx #char "[", .{alt_pressed=true});
-
-    // Triggered on key down
-    add_key(*app.keymap_keydown, toggle_show_ui, "toggle_show_ui",  xx #char "`");
-    add_key(*app.keymap_keydown, toggle_show_help_ui, "toggle_show_help_ui",  xx #char "h");
-    add_key(*app.keymap_keydown, toggle_show_global_settings_ui, "toggle_show_global_settings_ui",  xx #char "h", .{shift_pressed=true});
-    add_key(*app.keymap_keydown, toggle_show_console_ui, "toggle_show_console_ui",  xx #char "`", .{control_pressed=true});
 
     add_key :: (keymap : *Keymap, proc : () -> (), name : string, key_code : u32, modifier_flags : Modifier_Flags = .{}) {
         info := array_add(*keymap.procs);
@@ -99,6 +101,10 @@ rotate_look_direction_15_cw    :: () { rotate_look_direction(camera_rotation_axi
 rotate_look_direction_15_ccw   :: () { rotate_look_direction(camera_rotation_axis(),  15); }
 rotate_look_direction_45_cw    :: () { rotate_look_direction(camera_rotation_axis(), -45); }
 rotate_look_direction_45_ccw   :: () { rotate_look_direction(camera_rotation_axis(),  45); }
+cycle_point_index_labels       :: () { using app.vertex_label_style; show_index    = !show_index; }
+cycle_point_position_labels    :: () { using app.vertex_label_style; show_position = !show_position; }
+cycle_point_size               :: () { using app.vertex_label_style; if point_size == 0 point_size = 2; else if point_size == 2 point_size = 4; else point_size = 0; }
+cycle_line_width               :: () { using app.vertex_label_style; if line_width == 1 line_width = 2; else if line_width == 2 line_width = 3; else line_width = 1; }
 
 #scope_file
 
