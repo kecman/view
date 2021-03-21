@@ -272,6 +272,8 @@ main :: () {
         // @Cleanup: use delta_time argument?
         update_camera(1);
 
+        label_limit : int = 2000;
+        Reserve_Labels :: (count : int) #expand { `label_limit -= count; }
 
         for entity : app.entities {
             if !entity.visible continue;
@@ -282,7 +284,10 @@ main :: () {
                     soup := cast(*Polyline_Soup2_Entity) entity;
                     render_mesh(soup.mesh, app.vertex_label_style, entity.flash_wave_dt);
                     for polyline : soup.shape.polylines {
-                        render_vertex_labels(polyline.points, app.vertex_label_style);
+                        Reserve_Labels(polyline.points.count);
+                        if label_limit >= 0 {
+                            render_vertex_labels(polyline.points, app.vertex_label_style);
+                        }
                     }
 
                 case .POLYLINE_SOUP3;
@@ -290,7 +295,10 @@ main :: () {
                     soup := cast(*Polyline_Soup2_Entity) entity;
                     render_mesh(soup.mesh, app.vertex_label_style, entity.flash_wave_dt);
                     for polyline : soup.shape.polylines {
-                        render_vertex_labels(polyline.points, app.vertex_label_style);
+                        Reserve_Labels(polyline.points.count);
+                        if label_limit >= 0 {
+                            render_vertex_labels(polyline.points, app.vertex_label_style);
+                        }
                     }
 
                 case .POLYGON_SOUP;
@@ -298,9 +306,12 @@ main :: () {
                     soup := cast(*Polygon_Soup_Entity) entity;
                     render_mesh(soup.mesh, app.vertex_label_style, entity.flash_wave_dt);
                     for polygon : soup.shape.polygons {
-                        render_vertex_labels(polygon.outer_ring.points, app.vertex_label_style);
-                        for inner_ring : polygon.inner_rings {
-                            render_vertex_labels(inner_ring.points, app.vertex_label_style);
+                        Reserve_Labels(point_count(polygon));
+                        if label_limit >= 0 {
+                            render_vertex_labels(polygon.outer_ring.points, app.vertex_label_style);
+                            for inner_ring : polygon.inner_rings {
+                                render_vertex_labels(inner_ring.points, app.vertex_label_style);
+                            }
                         }
                     }
 
@@ -309,7 +320,10 @@ main :: () {
                     mesh := cast(*Mesh_Entity) entity;
                     render_mesh(mesh.mesh, app.vertex_label_style, entity.flash_wave_dt);
                     // @Cleanup so the transform is also available for text rendering
-                    render_vertex_labels(mesh.mesh.positions, app.vertex_label_style);
+                    Reserve_Labels(mesh.mesh.positions.count);
+                    if label_limit >= 0 {
+                        render_vertex_labels(mesh.mesh.positions, app.vertex_label_style);
+                    }
             }
         }
 
@@ -422,10 +436,10 @@ load_entity_from_file :: (filename : string) {
         return;
     }
 
-    // @Incomplete: support polygon types using wkt format
+    // @Incomplete: support polygon types using wkt format and improve reporting here
     mesh := load_obj(filename);
     if !mesh.positions.count {
-        log("Skipped file: '%' (0 vertices)\n", filename);
+        log("Skipped file: '%'\n", filename);
         return;
     }
 
@@ -575,9 +589,7 @@ render_vertex_labels :: (points : []$T, style : VertexLabelStyle, label_index_of
     #assert(T == Vector2 || T == Vector3);
     dim :: #run geom.dimension_of(T);
 
-    RENDER_LIMIT :: 2000;
-    if points.count > RENDER_LIMIT && (style.show_index || style.show_position) {
-        // logprint("view", "Sorry text rendering sucks at the moment, can only render up to % labels!\n", RENDER_LIMIT);
+    if !style.show_index && !style.show_position {
         return;
     }
 

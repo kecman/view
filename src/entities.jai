@@ -12,6 +12,9 @@ Entity :: struct {
     visible_sweep_hovered : bool = false;
     flash_hovered : bool = false;
     flash_wave_dt : float = 0.;
+
+    // @TODO add bounding box
+
 }
 
 Polyline_Soup2_Entity :: struct {

@@ -2,6 +2,12 @@
 // ex1. All verts, l with xy only and no z, or const z => polyline|polylinesoup
 // Probably polyline2 should have a z height too
 
+has_extension :: (name: string, extension: string) -> bool {
+    if name.count < extension.count  return false;
+    test := name;
+    advance(*test, name.count - extension.count);
+    return test == extension;
+}
 
 // @Incomplete use the temp allocator for all intermediate allocation? see the memory management how_to
 load_obj :: (filename : string) -> Mesh {
@@ -9,6 +15,11 @@ load_obj :: (filename : string) -> Mesh {
     // http://paulbourke.net/dataformats/obj/
 
     result : Mesh;
+
+    if !has_extension(filename, "obj") {
+        return result;
+    }
+
     result.fully_pathed_filename = copy_string(filename);
 
     result.wireframe = false;
