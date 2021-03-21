@@ -1,21 +1,24 @@
 ## Soon
 - [Cleanup] Add examples to the obj folder
-- [Presentation] Improve readme, add gif "as-of"/feature list, mention limitations on obj import suppport, clear on high-level goals: fun to use
+- [Refactor] Move data from Mesh type into Entity type
 - [UI/UX] Sliders to select visible range of indices
-- [Cleanup] Remove geometry module, just load files
 - [UI/UX] Add mouse buttons to keymap help window
-- [UI/UX] Scale the axes according to the bbox of the scene?
-- [UI/UX] Arrow keys pan across bounding box?
 - [UI/UX] Render the axes origin in different color when it's a model origin
 - [UI/UX,Bug] Make sweep toggle also turn off the checkbox that is clicked to start the sweep
 - [UI/UX,Bug] Include axes in fit_on_screen, and fix positioning of near and far planes
-- [Build] Distribution stuff, make a single executable if possible or executable + boost dll, bake fonts into the executable at least.
-- [Performance] Speed up text rendering, it's so slow right now!
-- [UI/UX] Support loading wkt file format, so we can load Polygons in a reasonable way
-- [UI/UX] Scale zoom speed with scene bounding box when shift is held?
-- [UI/UX] Implement a view cube using the Simp module
+- [UI/UX] Support loading wkt file format to load Polygons in a reasonable way
 
 ## Backlog
+- [Build] Distribution stuff, make a single executable if possible or executable + boost dll, bake fonts into the executable at least.
+- [UI/UX] Scale zoom speed with scene bounding box when shift is held?
+- [UI/UX] Implement a view cube using the Simp module
+- [Bug] Fix arcball camera weirdness
+- [Bug] Fix clipping plane weirdness
+- [Performance] Speed up text rendering, it's so slow right now!
+- [UI/UX] Scale the axes according to the bbox of the scene?
+- [UI/UX] Arrow keys pan across bounding box?
+- [Presentation] Explain high-level goals
+- [Cleanup] Remove geometry module, just load files
 - Implement commands to change the render settings on stuff
 - [Meta-programming,Testing] Use @test to tag/run tests
 - [Meta-programming,Commands] Autogenerate code for bingings
