@@ -368,7 +368,7 @@ ImGui :: struct {
     // Utilities
     IsItemHovered :: (flags:ImGuiHoveredFlags=0) -> bool #foreign imgui "_ZN5ImGui13IsItemHoveredEi"; // is the last item hovered? (and usable, aka not blocked by a popup, etc.). See ImGuiHoveredFlags for more options.
     // IMGUI_API bool          IsItemActive();                                                     // is the last item active? (e.g. button being held, text field being edited- items that don't interact will always return false)
-    // IMGUI_API bool          IsItemClicked(int mouse_button = 0);                                // is the last item clicked? (e.g. button/node just clicked on)
+    IsItemClicked :: (mouse_button : int = 0) -> bool #foreign imgui "_ZN5ImGui13IsItemClickedEi"; // is the last item clicked? (e.g. button/node just clicked on)
     // IMGUI_API bool          IsItemVisible();                                                    // is the last item visible? (aka not out of sight due to clipping/scrolling.)
     // IMGUI_API bool          IsAnyItemHovered();
     IsAnyItemActive :: () -> bool #foreign imgui "_ZN5ImGui15IsAnyItemActiveEv";

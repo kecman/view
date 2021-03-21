@@ -376,67 +376,6 @@ geom :: #import "geometry";
 #load "keymap.jai";
 //#load "commands.jai"; // @CompilerBug loading here triggers incorrect (?) compilation error
 
-// Adjust the camera position and viewing volume to fit the visible geometry while preserving the camera look direction
-fit_on_screen :: () {
-
-    current_view_bbox := current_orthographic_view_volume();
-
-    look_direction := app.camera.look_position - app.camera.eye_position;
-
-    view_from_world := make_look_at_matrix(app.camera);
-    world_from_view := inverse(view_from_world);
-
-    // Compute the bounding box of the scene in current view coords
-    scene_bbox : geom.AxisBox3;
-    for app.entities {
-        if !it.visible continue;
-        mesh := get_mesh(it);
-        if mesh {
-            view_from_model := view_from_world * mesh.world_from_model;
-
-            mesh_bbox_vs : AxisBox3;
-            for point_model : mesh.positions {
-                point_view := (view_from_model * make_vector4(point_model, 1)).xyz;
-                expand(*mesh_bbox_vs, point_view);
-            }
-
-            expand(*scene_bbox, mesh_bbox_vs);
-        }
-    }
-
-    if geom.is_empty(scene_bbox) {
-        init_camera(); // Reset to initial view
-        return;
-    }
-
-    // Offset by a bit so the geometry doesn't end right on window boundaries
-    geom.offset(*scene_bbox, 0.05 * geom.diagonal(scene_bbox));
-
-    scale : float;
-    {
-        current_extents := geom.diagonal(current_view_bbox);
-        desired_extents := geom.diagonal(scene_bbox);
-        for d : 0..2 {
-            scale_d := desired_extents.component[d] / current_extents.component[d];
-            if scale_d > scale {
-                scale = scale_d;
-            }
-        }
-    }
-
-    // Look at the center of the bbox and position the clipping planes
-    app.camera.look_position = (world_from_view * make_vector4(geom.center_point(scene_bbox), 1.)).xyz;
-    app.camera.eye_position = app.camera.look_position - scale * look_direction;
-    app.camera.near   *= scale;
-    app.camera.far    *= scale;
-    app.camera.bottom *= scale;
-    app.camera.top    *= scale;
-    app.camera.left   *= scale;
-    app.camera.right  *= scale;
-
-    camera_clamp_orthographic_view_planes();
-}
-
 VertexLabelStyle :: struct {
     show_position := false;
     show_index := false;

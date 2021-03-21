@@ -133,6 +133,15 @@ bounding_box :: (using mesh : Mesh) -> AxisBox3 #must {
     return box;
 }
 
+bounding_box :: (using mesh : Mesh, transform : Matrix4) -> AxisBox3 #must {
+    box : AxisBox3;
+    for point_model : mesh.positions {
+        point_transformed := (transform * make_vector4(point_model, 1)).xyz;
+        expand(*box, point_transformed);
+    }
+    return box;
+}
+
 // Or maybe we should have a Renderable_Mesh? bleh..
 #if USE_GRAPHICS {
 #import "GL"; // for GLuint, glGenBuffers, glDeleteBuffers

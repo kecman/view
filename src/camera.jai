@@ -210,6 +210,85 @@ update_camera :: (delta_time : float) {
     // print("update_camera: %\n", <<camera);
 }
 
+// Adjust the camera position and viewing volume to fit the visible geometry while preserving the camera look direction
+fit_on_screen :: ()
+{
+    view_from_world := make_look_at_matrix(app.camera);
+
+    // Compute the bounding box of the scene in current view coords
+    scene_bbox : geom.AxisBox3;
+    for app.entities {
+        if !it.visible continue;
+        mesh := get_mesh(it);
+        if mesh {
+            view_from_model := view_from_world * mesh.world_from_model;
+
+            mesh_bbox_vs := geom.bounding_box(<<mesh, view_from_model);
+
+            expand(*scene_bbox, mesh_bbox_vs);
+        }
+    }
+
+    fit_on_screen(scene_bbox);
+}
+
+// Adjust the camera position and viewing volume to fit the entity while preserving the camera look direction
+fit_on_screen :: (entity : *Entity)
+{
+    if !entity.visible return;
+
+    mesh := get_mesh(entity);
+    if !mesh return;
+
+    view_from_world := make_look_at_matrix(app.camera);
+    view_from_model := view_from_world * mesh.world_from_model;
+    scene_bbox := geom.bounding_box(<<mesh, view_from_model);
+
+    fit_on_screen(scene_bbox);
+}
+
+// Adjust the camera position and viewing volume to fit view space bbox while preserving the camera look direction
+fit_on_screen :: (view_space_bbox : geom.AxisBox3)
+{
+    if geom.is_empty(view_space_bbox) {
+        init_camera(); // Reset to initial view
+        return;
+    }
+
+    // Offset by a bit so the geometry doesn't end right on window boundaries
+    geom.offset(*view_space_bbox, 0.05 * geom.diagonal(view_space_bbox));
+
+    current_view_bbox := current_orthographic_view_volume();
+    look_direction := app.camera.look_position - app.camera.eye_position;
+
+    view_from_world := make_look_at_matrix(app.camera);
+    world_from_view := inverse(view_from_world);
+
+    scale : float;
+    {
+        current_extents := geom.diagonal(current_view_bbox);
+        desired_extents := geom.diagonal(view_space_bbox);
+        for d : 0..2 {
+            scale_d := desired_extents.component[d] / current_extents.component[d];
+            if scale_d > scale {
+                scale = scale_d;
+            }
+        }
+    }
+
+    // Look at the center of the bbox and position the clipping planes
+    app.camera.look_position = (world_from_view * make_vector4(geom.center_point(view_space_bbox), 1.)).xyz;
+    app.camera.eye_position = app.camera.look_position - scale * look_direction;
+    app.camera.near   *= scale;
+    app.camera.far    *= scale;
+    app.camera.bottom *= scale;
+    app.camera.top    *= scale;
+    app.camera.left   *= scale;
+    app.camera.right  *= scale;
+
+    camera_clamp_orthographic_view_planes();
+}
+
 camera_clamp_orthographic_view_planes :: ()
 {
     camera := *app.camera;

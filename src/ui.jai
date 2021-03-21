@@ -65,7 +65,11 @@ show_scene_ui :: ()
             // Extra settings accessible with RMB
             ImGui.SameLine();
             ImGui.Text("...");
-            ShowTooltip("Show item options");
+            ShowTooltip("LMB: Focus item\nRMB: Show item options\n");
+            if ImGui.IsItemClicked() {
+                fit_on_screen(it);
+            }
+
             if ImGui.BeginPopupContextItem(imgui_label("##context_menu", it)) {
                 defer ImGui.EndPopup();
 
