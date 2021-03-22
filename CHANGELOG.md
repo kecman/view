@@ -1,6 +1,7 @@
 # Version: v0.0.1, 21 March 2021
 
 - Load simple obj files with v,vn,f,l codes. If only l codes are present a polyline soup entity type is inferred, otherwise a mesh type is inferred
+- Load files by drag and drop or passing filenames as arguments on the command line
 - Entity list panel with sweep-draggable visibility checkboxes, color selection and per-item options menu
 - Mesh rendering options of solid color, Blinn-Phong and normal shading
 - Text rendering options for point indices and coordinates, currently restricted to 2000 points maximum
