@@ -57,7 +57,7 @@ main :: () {
 
     SDL_Init(SDL_INIT_VIDEO);
 
-    app.window = SDL_CreateWindow(tprint("View v%", VIEW_VERSION_STRING).data,
+    app.window = SDL_CreateWindow(tprint("Garage v%", VERSION_STRING).data,
                                   SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                   app.INITIAL_WINDOW_WIDTH, app.INITIAL_WINDOW_HEIGHT,
                                   SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);

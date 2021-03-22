@@ -40,7 +40,7 @@ build :: () {
 
         if      test_found output_executable_name = "test";
         else if demo_found output_executable_name = "demo";
-        else               output_executable_name = "view";
+        else               output_executable_name = "garage";
 
         if checks_found {
             array_bounds_check = .ON;
@@ -89,7 +89,7 @@ build :: () {
 #run build();
 
 version_string :: #string DONE
-VIEW_VERSION_STRING :: "0.0.1";
+VERSION_STRING :: "0.0.1";
 DONE
 
 help_string :: #string DONE
@@ -101,7 +101,7 @@ Build Options:
   boost_on   compile with boost polygon bindings (default off since the library isn't distributed yet)
 
 Build Targets:
-  view       build view target (default)
+  garage     build garage target (default)
   test       build test target
   demo       build demo target
 
