@@ -7,3 +7,5 @@ A simple geometry processing tool for developing geometric algorithms and having
 - See CHANGELOG.md for a feature list
 - See PLAN.md for a feature roadmap
 - Currently linux only
+
+![Screenshot](https://github.com/kecman/view/blob/master/data/screenshot.png)
