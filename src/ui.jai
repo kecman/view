@@ -305,7 +305,7 @@ combo_box :: (label : string, data: *void, info_enum: *Type_Info_Enum) {
 checkbox_press_or_sweep_to_toggle :: (state : *bool, hovered : *bool, label : *u8) {
 
     state_copy := <<state;
-    pressed := ImGui.Checkbox(label, *state_copy);
+    checkbox_pressed := ImGui.Checkbox(label, *state_copy);
 
     previous_frame_hovered := <<hovered;
     current_frame_hovered := ImGui.IsItemHovered(.RectOnly);
@@ -313,7 +313,11 @@ checkbox_press_or_sweep_to_toggle :: (state : *bool, hovered : *bool, label : *u
     swept_into := !previous_frame_hovered && current_frame_hovered;
     left_mouse_button_down := io().MouseDown[0];
 
-    if (pressed || (swept_into && left_mouse_button_down)) {
+    clicked := ImGui.IsMouseClicked(0) && current_frame_hovered;
+    pressed := checkbox_pressed && !current_frame_hovered;
+    swept   := swept_into && left_mouse_button_down;
+
+    if (clicked || pressed || swept) {
         <<state = !<<state;
     }
 
