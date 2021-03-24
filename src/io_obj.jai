@@ -65,6 +65,22 @@ load_obj :: (filename : string) -> Mesh {
                 }
                 array_add(*result.normals, normal);
             case "vt"; // @Incomplete
+            case "p";
+                point, dim := parse_upto_3d(*handler, rhs);
+                if dim != 1 {
+                    error(handler, "Expected a point specifying a single vertex.\n");
+                    continue;
+                }
+
+                if result.geometry_format == .UNKNOWN {
+                    result.geometry_format = .POINTS;
+                } else if result.geometry_format != .POINTS {
+                    error(handler, "Expected consistent geometry format, got %, wanted %.\n", Geometry_Format.POINTS, result.geometry_format);
+                    continue;
+                }
+
+                // obj indices are 1-based
+                array_add(*result.indices, cast(u32)point.x - 1);
             case "l";
                 segment, dim := parse_upto_3d(*handler, rhs);
                 if dim != 2 {

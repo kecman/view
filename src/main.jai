@@ -21,7 +21,7 @@ app : struct {
     polyline_shader : GLuint;
     polyline_vao : GLuint;
 
-    modifier_flags : Modifier_Flags;
+    modifier_flags : Modifier_Flags; // @Cleanup io should come from one place, probably imgui
     show_ui := true;
     show_global_settings_ui := false;
     show_help_ui := false;
@@ -453,7 +453,13 @@ load_entity_from_file :: (filename : string) {
 
             log("Loaded triangle mesh file: '%'\n", filename);
 
-        case .POINTS; #through;
+        case .POINTS;
+            entity := New(Mesh_Entity);
+            entity.mesh = mesh;
+            array_add(*app.entities, entity);
+
+            log("Loaded point cloud file: '%'\n", filename);
+
         case .UNKNOWN; #through;
         case;
             log("Skipped file: '%' (unsupported geometry type %)\n", filename, mesh.geometry_format);

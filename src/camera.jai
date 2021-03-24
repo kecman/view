@@ -106,21 +106,22 @@ init_camera :: () {
 update_camera :: (delta_time : float) {
     camera := *app.camera;
 
+    if io().WantCaptureMouse return;
+
     if ImGui.IsMouseClicked(0) {
         mouse_down_pos = io().MousePos;
         camera_at_mouse_down = app.camera;
     }
 
-    if io().WantCaptureMouse || (io().MouseDelta.x == 0 && io().MouseDelta.y == 0) {
-        return; // Mouse delta is zero when current or previous mouse positions were invalid
-    }
+    // Mouse delta is zero when current or previous mouse positions were invalid
+    mouse_move_valid := !(io().MouseDelta.x == 0 && io().MouseDelta.y == 0);
 
     camera.fov_vertical_radians = 2 * atan2(camera.top, camera.eye_position.z);
 
     world_from_projection := inverse(make_projection_from_world(<<camera));
 
     // Pan with middle down.
-    if io_mouse_middle_down() {
+    if io_mouse_middle_down() && mouse_move_valid {
 
         get_pan_position :: (mouse_position_px : Vector2, world_from_projection : Matrix4, camera : Camera) -> Vector3 {
             plane := make_hyperplane3(unit_vector(camera.eye_position - camera.look_position), camera.look_position);
@@ -141,10 +142,7 @@ update_camera :: (delta_time : float) {
 
         camera.eye_position += increment;
         camera.look_position += increment;
-    }
-
-    // Orbit about the look position using left button
-    if ImGui.IsMouseDragging(0, 0.) {
+    } else if ImGui.IsMouseDragging(0, 0.) && mouse_move_valid { // Orbit about the look position using left button
 
         world_from_projection_at_mouse_down := inverse(make_projection_from_world(camera_at_mouse_down));
 
@@ -189,16 +187,20 @@ update_camera :: (delta_time : float) {
 
         camera.eye_position = camera_at_mouse_down.look_position + look_to_eye;
         camera.up_direction = rotate(camera_at_mouse_down.up_direction, q);
-    }
 
-    // Zoom with right down or scrolling
-    {
-        increment : float = 0;
-        if io_mouse_right_down() {
-            increment = xx -0.03 * io().MouseDelta.y;
+    } else { // Zoom with right down or scrolling
+
+        factor := -0.1;
+        if app.modifier_flags.shift_pressed    factor *= 5.0;
+        else if app.modifier_flags.alt_pressed factor *= 0.3;
+
+        increment : float;
+        if io_mouse_right_down() && mouse_move_valid {
+            increment = factor * cast(float) io().MouseDelta.y;
         } else {
             increment = -io().MouseWheel;
         }
+
         camera.top    += increment;
         camera.bottom -= increment;
         camera.right  += current_window_aspect_ratio_width_over_height() * increment;

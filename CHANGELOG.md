@@ -1,3 +1,9 @@
+# Unreleased
+
+- Increased speed of RMB drag zoom and added option to increase it further by holding shift, and decrease it by holding alt
+- Point cloud obj files (containing p codes) now supported. Note: you won't see anything unless you cycle point size to a non-zero value (press h for help to find the keybinding)
+- Fixed issue where zooming with mouse scroll was not registered unless the cursor was moving
+
 # Version: v0.0.1, 21 March 2021
 
 - Load simple obj files with v,vn,f,l codes. If only l codes are present a polyline soup entity type is inferred, otherwise a mesh type is inferred
