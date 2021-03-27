@@ -190,16 +190,16 @@ update_camera :: (delta_time : float) {
 
     } else { // Zoom with right down or scrolling
 
-        factor := -0.1;
-        if app.modifier_flags.shift_pressed    factor *= 5.0;
-        else if app.modifier_flags.alt_pressed factor *= 0.3;
-
         increment : float;
         if io_mouse_right_down() && mouse_move_valid {
-            increment = factor * cast(float) io().MouseDelta.y;
+            increment = xx io().MouseDelta.y;
         } else {
-            increment = -io().MouseWheel;
+            increment = 30 * io().MouseWheel;
         }
+
+        if      app.modifier_flags.shift_pressed increment *= -.5 ;
+        else if app.modifier_flags.alt_pressed   increment *= -.03;
+        else                                     increment *= -.1 ;
 
         camera.top    += increment;
         camera.bottom -= increment;
