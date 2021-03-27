@@ -1,9 +1,13 @@
 # Unreleased
 
-- Increased speed of RMB drag zoom and added option to increase it further by holding shift, and decrease it by holding alt
-- Point cloud obj files (containing p codes) now supported. Note: you won't see anything unless you cycle point size to a non-zero value (press h for help to find the keybinding)
-- Fixed issue where zooming with mouse scroll was not registered unless the cursor was moving
-- Fixed issue where sweep-toggle-able checkboxes did not register the initial checkbox if the sweep started within it
+- Holding shift while zooming/rotating/panning speeds up that operation, holding alt slows it down
+- Added point cloud .obj file support*
+- Changed the default speed of RMB drag zooming to make it faster
+- Fixed visible entities not fitting to the screen properly in some cases
+- Fixed zooming with mouse scroll not registering unless the cursor was moving
+- Fixed sweep-toggle-able checkboxes not toggling the initial checkbox if the sweep started within it
+
+(*) Note: you won't see anything unless you cycle point size to a non-zero value (press h for help to find the keybinding)
 
 # Version: v0.0.1, 21 March 2021
 

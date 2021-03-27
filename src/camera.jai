@@ -140,6 +140,9 @@ update_camera :: (delta_time : float) {
         prev_pan_point := get_pan_position(io().MousePos - io().MouseDelta, world_from_projection, <<camera);
         increment := -(curr_pan_point - prev_pan_point) / 2; // @Cleanup WHY this divide by 2, there is probably a bug elsewhere... ?
 
+        if      app.modifier_flags.shift_pressed increment *= 3.;
+        else if app.modifier_flags.alt_pressed   increment *= .3;
+
         camera.eye_position += increment;
         camera.look_position += increment;
     } else if ImGui.IsMouseDragging(0, 0.) && mouse_move_valid { // Orbit about the look position using left button
@@ -152,6 +155,9 @@ update_camera :: (delta_time : float) {
         arcball_axis4_ndc := make_vector4(cross_product(curr_arcball_vector, prev_arcball_vector), 0);
         arcball_axis_world := (world_from_projection_at_mouse_down * arcball_axis4_ndc).xyz;
         arcball_angle := angle(curr_arcball_vector, prev_arcball_vector);
+
+        if      app.modifier_flags.shift_pressed arcball_angle *= 3.;
+        else if app.modifier_flags.alt_pressed   arcball_angle *= .3;
 
         // @Cleanup fishy negative sign and rotation speed multiplier should be chosen so screen top/bottom or left/right rotates the scene by tau or tau/2 respectively.
         q : Quaternion = ---;
@@ -231,7 +237,7 @@ fit_on_screen :: ()
         }
     }
 
-    fit_on_screen(scene_bbox);
+    fit_on_screen(bounding_sphere(scene_bbox));
 }
 
 // Adjust the camera position and viewing volume to fit the entity while preserving the camera look direction
@@ -246,49 +252,38 @@ fit_on_screen :: (entity : *Entity)
     view_from_model := view_from_world * mesh.world_from_model;
     scene_bbox := geom.bounding_box(<<mesh, view_from_model);
 
-    fit_on_screen(scene_bbox);
+    fit_on_screen(bounding_sphere(scene_bbox));
 }
 
-// Adjust the camera position and viewing volume to fit view space bbox while preserving the camera look direction
-fit_on_screen :: (view_space_bbox : geom.AxisBox3)
+transform_point :: (point : Vector3, transform : Matrix4) -> Vector3
 {
-    if geom.is_empty(view_space_bbox) {
+    return (transform * make_vector4(point, 1.)).xyz;
+}
+
+// Adjust the camera position and viewing volume to fit view space sphere while preserving the camera look direction
+fit_on_screen :: (view_space_sphere : Sphere)
+{
+    if view_space_sphere.radius == 0. {
         init_camera(); // Reset to initial view
         return;
     }
 
-    // Offset by a bit so the geometry doesn't end right on window boundaries
-    geom.offset(*view_space_bbox, 0.05 * geom.diagonal(view_space_bbox));
-
-    current_view_bbox := current_orthographic_view_volume();
     look_direction := app.camera.look_position - app.camera.eye_position;
 
     view_from_world := make_look_at_matrix(app.camera);
     world_from_view := inverse(view_from_world);
 
-    scale : float;
-    {
-        current_extents := geom.diagonal(current_view_bbox);
-        desired_extents := geom.diagonal(view_space_bbox);
-        for d : 0..2 {
-            scale_d := desired_extents.component[d] / current_extents.component[d];
-            if scale_d > scale {
-                scale = scale_d;
-            }
-        }
-    }
+    app.camera.look_position = transform_point(view_space_sphere.center, world_from_view);
+    app.camera.eye_position = app.camera.look_position - normalize(look_direction) * view_space_sphere.radius;
 
-    // Look at the center of the bbox and position the clipping planes
-    app.camera.look_position = (world_from_view * make_vector4(geom.center_point(view_space_bbox), 1.)).xyz;
-    app.camera.eye_position = app.camera.look_position - scale * look_direction;
-    app.camera.near   *= scale;
-    app.camera.far    *= scale;
-    app.camera.bottom *= scale;
-    app.camera.top    *= scale;
-    app.camera.left   *= scale;
-    app.camera.right  *= scale;
+    app.camera.near   = 0.01;
+    app.camera.far    = view_space_sphere.radius * 2;
+    app.camera.top    = view_space_sphere.radius;
+    app.camera.right  = current_window_aspect_ratio_width_over_height() * view_space_sphere.radius;
+    app.camera.bottom = -app.camera.top;
+    app.camera.left   = -app.camera.right;
 
-    camera_clamp_orthographic_view_planes();
+    camera_clamp_orthographic_view_planes(); // @Cleanup Hmmmm
 }
 
 camera_clamp_orthographic_view_planes :: ()

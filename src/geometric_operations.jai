@@ -40,7 +40,22 @@ Segment3 :: struct {
     p : [2]Point3 = ---;
 }
 
-make_hyperplane3 :: (plane_normal : Vector3, point_on_plane: Vector3) -> Hyperplane3
+Sphere :: struct {
+    center : Point3;
+    radius : float;
+}
+
+make_sphere :: (center : Point3, radius : float) -> Sphere
+{
+    result : Sphere = ---;
+
+    result.center = center;
+    result.radius = radius;
+
+    return result;
+}
+
+make_hyperplane3 :: (plane_normal : Vector3, point_on_plane: Point3) -> Hyperplane3
 {
     result : Hyperplane3 = ---;
 
@@ -104,6 +119,28 @@ find_intersect_line3_plane3 :: (line : Line3, plane : Hyperplane3) -> (intersect
     }
 }
 
+bounding_sphere :: (aabb : AxisBox3) -> Sphere
+{
+    result : Sphere = ---;
+
+    result.center = center_point(aabb);
+    result.radius = length(diagonal(aabb) / 2);
+
+    return result;
+}
+
+naive_bounding_sphere :: (points : []Point3) -> Sphere
+{
+    aabb := geom.make_axis_box3(..points);
+
+    result : Sphere = ---;
+
+    result.center = center_point(aabb);
+    result.radius = length(diagonal(aabb) / 2);
+
+    return result;
+}
+
 #scope_file
 
 test :: () {
@@ -126,5 +163,6 @@ dot :: dot_product;
 cross :: cross_product;
 
 #import "Math"; // @Cleanup Plane3 struct means we need to use the name Hyperplane3
+geom :: #import "geometry";
 
 // This file is based on https://github.com/davideberly/GeometricTools (Distributed under the Boost Software License, Version 1.0.)
