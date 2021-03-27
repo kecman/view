@@ -122,23 +122,94 @@ find_intersect_line3_plane3 :: (line : Line3, plane : Hyperplane3) -> (intersect
 bounding_sphere :: (aabb : AxisBox3) -> Sphere
 {
     result : Sphere = ---;
-
     result.center = center_point(aabb);
     result.radius = length(diagonal(aabb) / 2);
-
     return result;
 }
 
-naive_bounding_sphere :: (points : []Point3) -> Sphere
+bounding_sphere_naive :: (points : []Point3) -> Sphere
 {
     aabb := geom.make_axis_box3(..points);
-
-    result : Sphere = ---;
-
-    result.center = center_point(aabb);
-    result.radius = length(diagonal(aabb) / 2);
-
+    result := bounding_sphere(aabb);
     return result;
+}
+
+bounding_sphere_ritter :: (points : []Point3) -> Sphere
+{
+    // Given a Sphere s and a Point p return a sphere adjusted (if needed) to just encompass p
+    bounding_sphere_of_sphere_and_point :: (s : Sphere, p : Point3) -> Sphere
+    {
+        // Compute squared distance between point and sphere center
+        d := p - s.center;
+        dist2 := dot(d, d);
+
+        // Only update s if point p is outside it
+        if dist2 > s.radius * s.radius {
+            dist := sqrt(dist2);
+            newRadius := (s.radius + dist) * 0.5;
+            k := (newRadius - s.radius) / dist;
+
+            result := s;
+            result.radius = newRadius;
+            result.center += d * k;
+            return result;
+        }
+
+        return s;
+    }
+
+    // Compute indices to the two most separated points of the (up to) six points
+    // defining the AABB encompassing the point set. Return these as min and max.
+    most_separated_points_on_AABB :: (points : []Point3) -> (min : int, max : int)
+    {
+        // First find most extreme points along principal axes
+        minx, maxx := 0, 0;
+        miny, maxy := 0, 0;
+        minz, maxz := 0, 0;
+        for i : 1..points.count-1 {
+            if points[i].x < points[minx].x then minx = i;
+            if points[i].x > points[maxx].x then maxx = i;
+            if points[i].y < points[miny].y then miny = i;
+            if points[i].y > points[maxy].y then maxy = i;
+            if points[i].z < points[minz].z then minz = i;
+            if points[i].z > points[maxz].z then maxz = i;
+        }
+
+        // Compute the squared distances for the three pairs of points
+        dist2x := dot(points[maxx] - points[minx], points[maxx] - points[minx]);
+        dist2y := dot(points[maxy] - points[miny], points[maxy] - points[miny]);
+        dist2z := dot(points[maxz] - points[minz], points[maxz] - points[minz]);
+
+        // Pick the pair (min,max) of points most distant
+        min, max := minx, maxx;
+        if (dist2y > dist2x && dist2y > dist2z) then min, max = miny, maxy;
+        if (dist2z > dist2x && dist2z > dist2y) then min, max = minz, maxz;
+
+        return min, max;
+    }
+
+    sphere_from_distant_points :: (points : []Point3) -> Sphere
+    {
+        // Find the most separated point pair defining the encompassing AABB
+        min, max := most_separated_points_on_AABB(points);
+
+        // Set up sphere to just encompass these two points
+        sphere : Sphere = ---;
+        sphere.center = (points[min] + points[max]) * .5;
+        sphere.radius = dot(points[max] - sphere.center, points[max] - sphere.center);
+        sphere.radius = sqrt(sphere.radius);
+        return sphere;
+    }
+
+    // Get sphere encompassing two approximately most distant points
+    sphere := sphere_from_distant_points(points);
+
+    // Grow sphere to include all points
+    for i : 0..points.count-1 {
+        sphere = bounding_sphere_of_sphere_and_point(sphere, points[i]);
+    }
+
+    return sphere;
 }
 
 #scope_file
@@ -165,4 +236,6 @@ cross :: cross_product;
 #import "Math"; // @Cleanup Plane3 struct means we need to use the name Hyperplane3
 geom :: #import "geometry";
 
-// This file is based on https://github.com/davideberly/GeometricTools (Distributed under the Boost Software License, Version 1.0.)
+// Parts of this file are based on:
+// https://github.com/davideberly/GeometricTools (Distributed under the Boost Software License, Version 1.0.)
+// Real-Time Collision Detection by Christer Ericson, published by Morgan Kaufmann Publishers, (c) 2005 Elsevier Inc

@@ -58,6 +58,11 @@ operator!= :: (a: Vector3, b: Vector3) -> bool {
     return a.x != b.x || a.y != b.y || a.z != b.z;
 }
 
+transform_point :: (point : Vector3, transform : Matrix4) -> Vector3
+{
+    return (transform * make_vector4(point, 1.)).xyz;
+}
+
 /*
 Bivector3 :: struct {
     x, y, z : float;
