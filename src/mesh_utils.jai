@@ -240,8 +240,6 @@ make_axes_triad :: (axis_length : float) -> Axes_Triad
     print("Done writing debug_*.obj meshes\n");
 }
 
-#scope_file
-
 make_axis_arrow :: (axis_length : float) -> par_shapes_mesh {
     using params := make_triad_parameters(axis_length);
 
@@ -264,6 +262,8 @@ make_axis_arrow :: (axis_length : float) -> par_shapes_mesh {
 
     return result;
 }
+
+#scope_file
 
 Triad_Parameters :: struct {
     axis_radius : float;

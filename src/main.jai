@@ -401,7 +401,7 @@ VertexLabelStyle :: struct {
     line_width : int = 1; // 1, 1, 2, 3
 }
 
-#scope_file
+// #scope_file
 
 load_entity_from_file :: (filename : string) {
     skip := false;
