@@ -98,7 +98,7 @@ init_camera :: () {
 
     camera.fov_vertical_radians = 2 * atan2(camera.top, camera.eye_position.z);
 
-    camera.near = 0.001;
+    camera.near = -100;
     camera.far = 400;
 }
 
@@ -156,8 +156,10 @@ update_camera :: (delta_time : float) {
         arcball_axis_world := (world_from_projection_at_mouse_down * arcball_axis4_ndc).xyz;
         arcball_angle := angle(curr_arcball_vector, prev_arcball_vector);
 
-        if      app.modifier_flags.shift_pressed arcball_angle *= 3.;
-        else if app.modifier_flags.alt_pressed   arcball_angle *= .3;
+        // @Incomplete make rotation speed an adjustable parameter
+        if      app.modifier_flags.shift_pressed arcball_angle *= 90.;
+        else if app.modifier_flags.alt_pressed   arcball_angle *= 3.;
+        else                                     arcball_angle *= 30.;
 
         // @Cleanup fishy negative sign and rotation speed multiplier should be chosen so screen top/bottom or left/right rotates the scene by tau or tau/2 respectively.
         q : Quaternion = ---;
@@ -203,9 +205,10 @@ update_camera :: (delta_time : float) {
             increment = 30 * io().MouseWheel;
         }
 
-        if      app.modifier_flags.shift_pressed increment *= -.5 ;
-        else if app.modifier_flags.alt_pressed   increment *= -.03;
-        else                                     increment *= -.1 ;
+        // @Incomplete make rotation speed an adjustable parameter
+        if      app.modifier_flags.shift_pressed increment *= -5.;
+        else if app.modifier_flags.alt_pressed   increment *= -.3;
+        else                                     increment *= -1.;
 
         camera.top    += increment;
         camera.bottom -= increment;
@@ -219,10 +222,33 @@ update_camera :: (delta_time : float) {
 }
 
 // Adjust the camera position and viewing volume to fit the visible geometry while preserving the camera look direction
-fit_on_screen :: () { fit_on_screen_accurate(); }
+fit_on_screen :: () {
+    view_space_sphere := visible_entities_bounding_sphere_accurate();
+    fit_on_screen(view_space_sphere);
+}
 
 // Adjust the camera position and viewing volume to fit the entity while preserving the camera look direction
-fit_on_screen :: (entity : *Entity) { fit_on_screen_accurate(); }
+fit_on_screen :: (entity : *Entity)
+{
+    // Plane orthographic planes to fit the scene
+    scene_sphere := visible_entities_bounding_sphere_accurate();
+    fit_on_screen(scene_sphere);
+
+    // Position the camera to look at the entity only
+    using camera := *app.camera;
+    entity_sphere := entity_bounding_sphere_accurate(entity);
+    look_direction := current_look_direction();
+    view_from_world := make_look_at_matrix(<<camera);
+    world_from_view := inverse(view_from_world);
+
+    look_position = transform_point(entity_sphere.center, world_from_view);
+    eye_position = look_position - normalize(look_direction) * entity_sphere.radius;
+
+    top    = entity_sphere.radius;
+    right  = current_window_aspect_ratio_width_over_height() * entity_sphere.radius;
+    bottom = -top;
+    left   = -right;
+}
 
 // Adjust the camera position and viewing volume to fit view space sphere while preserving the camera look direction
 fit_on_screen :: (view_space_sphere : Sphere)
@@ -232,35 +258,37 @@ fit_on_screen :: (view_space_sphere : Sphere)
         return;
     }
 
-    look_direction := app.camera.look_position - app.camera.eye_position;
+    using camera := *app.camera;
 
-    view_from_world := make_look_at_matrix(app.camera);
+    look_direction := look_position - eye_position;
+
+    view_from_world := make_look_at_matrix(<<camera);
     world_from_view := inverse(view_from_world);
 
-    app.camera.look_position = transform_point(view_space_sphere.center, world_from_view);
-    app.camera.eye_position = app.camera.look_position - normalize(look_direction) * view_space_sphere.radius;
+    look_position = transform_point(view_space_sphere.center, world_from_view);
+    eye_position = look_position - normalize(look_direction) * view_space_sphere.radius;
 
-    app.camera.near   = 0.01;
-    app.camera.far    = view_space_sphere.radius * 2;
-    app.camera.top    = view_space_sphere.radius;
-    app.camera.right  = current_window_aspect_ratio_width_over_height() * view_space_sphere.radius;
-    app.camera.bottom = -app.camera.top;
-    app.camera.left   = -app.camera.right;
+    far    = view_space_sphere.radius * 2;
+    top    = view_space_sphere.radius;
+    right  = current_window_aspect_ratio_width_over_height() * view_space_sphere.radius;
+    near   = -far;
+    bottom = -top;
+    left   = -right;
 
-    camera_clamp_orthographic_view_planes(); // @Cleanup Hmmmm
+    camera_clamp_orthographic_view_planes();
 }
 
 camera_clamp_orthographic_view_planes :: ()
 {
-    camera := *app.camera;
+    using camera := *app.camera;
 
     // This number is picked so details at 5um (literals are in mm) fill up the whole screen
     // @Cleanup Make this an adjustable parameter. Or remove it entirely
 
-    camera.top    = max(camera.top,     0.005);
-    camera.bottom = min(camera.bottom, -0.005);
-    camera.right  = max(camera.right,   0.005 * current_window_aspect_ratio_width_over_height());
-    camera.left   = min(camera.left,   -0.005 * current_window_aspect_ratio_width_over_height());;
+    top    = max(top,     0.005);
+    bottom = min(bottom, -0.005);
+    right  = max(right,   0.005 * current_window_aspect_ratio_width_over_height());
+    left   = min(left,   -0.005 * current_window_aspect_ratio_width_over_height());;
 }
 
 // @Cleanup use Math.make_look_at_matrix here
@@ -311,7 +339,8 @@ io_mouse_middle_down :: () -> bool { return io().MouseDown[2]; }
 
 #scope_file
 
-fit_on_screen_fast :: ()
+// Returns a bounding sphere, in view space, of the visible items in the scene
+visible_entities_bounding_sphere_fast :: () -> Sphere
 {
     view_from_world := make_look_at_matrix(app.camera);
 
@@ -322,33 +351,17 @@ fit_on_screen_fast :: ()
         mesh := get_mesh(it);
         if mesh {
             view_from_model := view_from_world * mesh.world_from_model;
-
             mesh_bbox_vs := geom.bounding_box(<<mesh, view_from_model);
-
             expand(*scene_bbox, mesh_bbox_vs);
         }
     }
-    view_space_sphere := bounding_sphere(scene_bbox);
+    result := bounding_sphere(scene_bbox);
 
-    fit_on_screen(view_space_sphere);
+    return result;
 }
 
-fit_on_screen_fast :: (entity : *Entity)
-{
-    if !entity.visible return;
-
-    mesh := get_mesh(entity);
-    if !mesh return;
-
-    view_from_world := make_look_at_matrix(app.camera);
-    view_from_model := view_from_world * mesh.world_from_model;
-    scene_bbox := geom.bounding_box(<<mesh, view_from_model);
-    view_space_sphere := bounding_sphere(scene_bbox);
-
-    fit_on_screen(view_space_sphere);
-}
-
-fit_on_screen_accurate :: ()
+// Returns a bounding sphere, in view space, of the visible items in the scene
+visible_entities_bounding_sphere_accurate :: () -> Sphere
 {
     view_from_world := make_look_at_matrix(app.camera);
 
@@ -358,35 +371,64 @@ fit_on_screen_accurate :: ()
         if !it.visible continue;
         mesh := get_mesh(it);
         if mesh {
+            view_from_model := view_from_world * mesh.world_from_model;
             for * mesh.positions {
-                point_vs := transform_point(<<it, view_from_world);
+                point_vs := transform_point(<<it, view_from_model);
                 array_add(*points_vs, point_vs);
             }
         }
     }
-    view_space_sphere := bounding_sphere_ritter(points_vs);
+    result := bounding_sphere_ritter(points_vs);
 
-    fit_on_screen(view_space_sphere);
+    return result;
 }
 
-fit_on_screen_accurate :: (entity : *Entity)
+// Returns a bounding sphere, in view space, of the given entity
+entity_bounding_sphere_fast :: (entity : *Entity) -> Sphere
 {
-    if !entity.visible return;
+    result : Sphere;
+    if !entity.visible {
+        return result;
+    }
 
     mesh := get_mesh(entity);
-    if !mesh return;
+    if !mesh {
+        return result;
+    }
 
     view_from_world := make_look_at_matrix(app.camera);
+    view_from_model := view_from_world * mesh.world_from_model;
+    scene_bbox := geom.bounding_box(<<mesh, view_from_model);
+    result = bounding_sphere(scene_bbox);
+
+    return result;
+}
+
+// Returns a bounding sphere, in view space, of the given entity
+entity_bounding_sphere_accurate :: (entity : *Entity) -> Sphere
+{
+    result : Sphere;
+    if !entity.visible {
+        return result;
+    }
+
+    mesh := get_mesh(entity);
+    if !mesh {
+        return result;
+    }
+
+    view_from_world := make_look_at_matrix(app.camera);
+    view_from_model := view_from_world * mesh.world_from_model;
 
     // Compute the bounding sphere the points in the scene
     points_vs : [..]Point3;
     for * mesh.positions {
-        point_vs := transform_point(<<it, view_from_world);
+        point_vs := transform_point(<<it, view_from_model);
         array_add(*points_vs, point_vs);
     }
-    view_space_sphere := bounding_sphere_ritter(points_vs);
+    result = bounding_sphere_ritter(points_vs);
 
-    fit_on_screen(view_space_sphere);
+    return result;
 }
 
 to_radians :: (degrees : float) -> float {
@@ -398,7 +440,7 @@ arcball_vector :: (mouse_position_px : Vector2) -> Vector3
 {
     arcball_center_px := make_vector2(app.current_window_width / 2., app.current_window_height / 2.);
     // arcball_radius_px := min(app.current_window_height, app.current_window_width) / 2.; // allows room on left/right for rotation look direction
-    arcball_radius_px := length(make_vector2(xx app.current_window_height, xx app.current_window_width) / 2); // only room to rotate on sphere
+    arcball_radius_px := 5 * length(make_vector2(xx app.current_window_height, xx app.current_window_width) / 2); // only room to rotate on sphere
 
     using result := make_vector3((mouse_position_px - arcball_center_px) / arcball_radius_px, 0);
     y *= -1; // Since y_px increases from the top of the screen to the bottom

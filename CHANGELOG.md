@@ -3,6 +3,7 @@
 - Holding shift while zooming/rotating/panning speeds up that operation, holding alt slows it down
 - Added point cloud .obj file support*
 - Changed the default speed of RMB drag zooming to make it faster
+- Changed camera near plane positioning to reduce strange clipping when focusing items
 - Fixed visible entities not fitting to the screen properly in some cases
 - Fixed zooming with mouse scroll not registering unless the cursor was moving
 - Fixed sweep-toggle-able checkboxes not toggling the initial checkbox if the sweep started within it
