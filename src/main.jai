@@ -419,14 +419,16 @@ load_entity_from_file :: (filename : string) {
     }
 
     // @Incomplete: support polygon types using wkt format and improve reporting here
+    log("Loading file '%'... ", filename);
     mesh := load_obj(filename);
     if !mesh.positions.count {
-        log("Skipped file: '%'\n", filename);
+        log("skipped (empty vertex position data)\n");
         return;
     }
 
     if #complete mesh.geometry_format == {
         case .LINES;
+
             bbox := geom.bounding_box(mesh);
             if diagonal(bbox).z == 0 {
                 shape, ok := to_Polyline_Soup2(mesh);
@@ -437,7 +439,7 @@ load_entity_from_file :: (filename : string) {
                 entity.shape = shape;
                 array_add(*app.entities, entity);
 
-                log("Loaded 2d polyline soup file: '%'\n", filename);
+                log("inferred 2D polyline soup");
             } else {
                 shape, ok := to_Polyline_Soup3(mesh);
                 assert(ok);
@@ -447,26 +449,28 @@ load_entity_from_file :: (filename : string) {
                 entity.shape = shape;
                 array_add(*app.entities, entity);
 
-                log("Loaded 3d polyline soup file: '%'\n", filename);
+                log("inferred 3D polyline soup");
             }
 
         case .TRIANGLES;
+
             entity := New(Mesh_Entity);
             entity.mesh = mesh;
             array_add(*app.entities, entity);
 
-            log("Loaded triangle mesh file: '%'\n", filename);
+            log("inferred triangle mesh");
 
         case .POINTS;
+
             entity := New(Mesh_Entity);
             entity.mesh = mesh;
             array_add(*app.entities, entity);
 
-            log("Loaded point cloud file: '%'\n", filename);
+            log("inferred point cloud");
 
         case .UNKNOWN; #through;
         case;
-            log("Skipped file: '%' (unsupported geometry type %)\n", filename, mesh.geometry_format);
+            log("skipped (unsupported geometry type %)\n", mesh.geometry_format);
             deinit(*mesh);
     }
 }

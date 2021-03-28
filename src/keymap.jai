@@ -61,6 +61,7 @@ init_keymap :: ()
 
     add_key(*app.keymap, close_application, "close_application", xx Special_Key_Code.ESCAPE);
     add_key(*app.keymap, fit_on_screen, "fit_on_screen", xx #char "r");
+    add_key(*app.keymap, reset_camera, "reset_camera", xx #char "r", .{shift_pressed=true});
 
     add_key(*app.keymap, cycle_line_width, "cycle_line_width", xx #char "l");
     add_key(*app.keymap, cycle_point_size, "cycle_point_size", xx #char "p");
@@ -109,6 +110,7 @@ cycle_point_position_labels    :: () { using app.vertex_label_style; show_positi
 clear_labels                   :: () { using app.vertex_label_style; show_index = false; show_position = false; }
 cycle_point_size               :: () { using app.vertex_label_style; if point_size == 0 point_size = 2; else if point_size == 2 point_size = 4; else point_size = 0; }
 cycle_line_width               :: () { using app.vertex_label_style; if line_width == 1 line_width = 2; else if line_width == 2 line_width = 3; else line_width = 1; }
+reset_camera                   :: () { init_camera(); }
 // debug_junk                     :: () { c:= app.camera; printv(#code c); }
 
 #scope_file

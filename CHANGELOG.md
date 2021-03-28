@@ -1,14 +1,17 @@
-# Unreleased
+# Version: v0.0.2, 28 March 2021
 
 - Holding shift while zooming/rotating/panning speeds up that operation, holding alt slows it down
 - Added point cloud .obj file support*
+- Added notes on mouse bindings to the help menu (press h for help)
+- Added a binding to reset the camera if something screws up (press h for help)
 - Changed the default speed of RMB drag zooming to make it faster
 - Changed camera near plane positioning to reduce strange clipping when focusing items
+- Fixed `garage` not starting up unless started from its containing folder, adding the containing folder to your `$PATH` now works as expected
 - Fixed visible entities not fitting to the screen properly in some cases
 - Fixed zooming with mouse scroll not registering unless the cursor was moving
 - Fixed sweep-toggle-able checkboxes not toggling the initial checkbox if the sweep started within it
 
-(*) Note: you won't see anything unless you cycle point size to a non-zero value (press h for help to find the keybinding)
+(*) Note: you won't see anything unless you cycle point size to a non-zero value (press h for help)
 
 # Version: v0.0.1, 21 March 2021
 
