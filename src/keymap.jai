@@ -74,6 +74,7 @@ init_keymap :: ()
     add_key(*app.keymap, rotate_look_direction_45_ccw, "rotate_look_direction_45_ccw", xx #char "[", .{shift_pressed=true});
     add_key(*app.keymap, rotate_look_direction_5_cw,   "rotate_look_direction_5_cw",   xx #char "]", .{alt_pressed=true});
     add_key(*app.keymap, rotate_look_direction_5_ccw,  "rotate_look_direction_5_ccw",  xx #char "[", .{alt_pressed=true});
+    // add_key(*app.keymap, debug_junk, "debug_junk", xx #char " ");
 
     add_key :: (keymap : *Keymap, proc : () -> (), name : string, key_code : u32, modifier_flags : Modifier_Flags = .{}) {
         info := array_add(*keymap.procs);
@@ -108,6 +109,7 @@ cycle_point_position_labels    :: () { using app.vertex_label_style; show_positi
 clear_labels                   :: () { using app.vertex_label_style; show_index = false; show_position = false; }
 cycle_point_size               :: () { using app.vertex_label_style; if point_size == 0 point_size = 2; else if point_size == 2 point_size = 4; else point_size = 0; }
 cycle_line_width               :: () { using app.vertex_label_style; if line_width == 1 line_width = 2; else if line_width == 2 line_width = 3; else line_width = 1; }
+// debug_junk                     :: () { c:= app.camera; printv(#code c); }
 
 #scope_file
 

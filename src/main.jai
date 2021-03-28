@@ -246,7 +246,8 @@ main :: () {
             show_help_ui();
             console_draw();
 
-            inspect("camera", *app.camera);
+            // inspect("camera", *app.camera);
+            // inspect("app", *app);
         }
 
         if ImGui.GetMouseCursor() == {
