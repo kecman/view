@@ -248,6 +248,15 @@ show_help_ui :: ()
     ImGui.Begin("##show_help_ui", flags = ImGui.WindowFlags.NoTitleBar | .AlwaysAutoResize | .NoMove /*| .NoNav*/);
     defer ImGui.End();
 
+    ImGui.Text("Drag with RMB or scroll to zoom the camera");
+    ImGui.Text("Drag with LMB to rotate the camera");
+    ImGui.Text("Drag with MMB to pan the camera");
+    ImGui.Text("Hold Shift/Alt to speed up/slow down the above");
+    ImGui.Text("Click a filename with LMB to focus an item");
+    ImGui.Text("Click a filename with RMB to access a per-item context menu");
+    ImGui.Text(" ");
+
+    ImGui.Separator();
     ImGui.Columns(2);
     ImGui.SetColumnWidth(-1, 80);
     ImGui.Text("Binding");

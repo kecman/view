@@ -1,6 +1,7 @@
 #import "GL";
 #import "Hash_Table";
 #import "freetype255";
+#import "System";
 
 FONT_SIZE :: 58;
 ASCII_COUNT :: 128;
@@ -22,8 +23,14 @@ init_font :: () {
         exit(1); // Hard-exit for now.
     }
 
-    face : FT_Face; // KarminaBold.otf
-    if (FT_New_Face(ft, temp_c_string("data/Inconsolata.otf"), 0, *face)) {
+    exe_found, exe_path, exe_name := split_by_character_from_right(get_path_of_running_executable(), #char "/");
+    if !exe_found {
+        print("Error: Unable to find my own executable?!\n");
+        exit(1); // Hard-exit for now.
+    }
+
+    face : FT_Face;
+    if (FT_New_Face(ft, temp_c_string(concatenate(exe_path, "/data/Inconsolata.otf")), 0, *face)) {
         print("Could not load data/Inconsolata.otf\n");
         exit(1); // Hard-exit for now.
     }

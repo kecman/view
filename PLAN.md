@@ -7,6 +7,7 @@
 - [UI/UX,Bug] Make sweep toggle also turn off the checkbox that is clicked to start the sweep
 - [UI/UX,Bug] Include axes in fit_on_screen, and fix positioning of near and far planes
 - [UI/UX] Support loading wkt file format to load Polygons in a reasonable way
+- [UI/UX] Make items filenames selectable so they can be all selected and then refreshed
 
 ## Backlog
 - [Build] Distribution stuff, make a single executable if possible or executable + boost dll, bake fonts into the executable at least.
@@ -23,6 +24,7 @@
 - [Meta-programming,Testing] Use @test to tag/run tests
 - [Meta-programming,Commands] Autogenerate code for bingings
 - [Meta-programming,Commands] Autogenerate ui code for bingings
+- [XXL,UI/UX] Undo/redo system for camera and other operations
 - [XXL] Build and add bindings for gmp
 - [XXL] Hotload the C++ bindings, and console commands, so you can keep same UI state while you iterate on your code
 - [XXL] Hotload jai code so that you can keep state while you change your algorithm
@@ -31,6 +33,7 @@
 - [Rendering] Alternate segment colours (two draw calls?)
 - [Rendering] Render normals using geometry shader
 - [UI/UX] Sweep drag for removing items from the scene?
+- [UI/UX] Click to copy point coordinate in {1.8e} format so that it can be used as a float literal in code
 - [UI/UX] Render vertex labels on top of other geometry always
 - [UI/UX] Option to render the cumulative vertex number for polyline soups and polygon inner/outer rings or polygon soups
 - [UI/UX] Options on what options to include in the vertex cycling

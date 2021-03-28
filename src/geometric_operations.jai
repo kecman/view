@@ -201,15 +201,21 @@ bounding_sphere_ritter :: (points : []Point3) -> Sphere
         return sphere;
     }
 
+    result : Sphere;
+
+    if !points.count {
+        return result;
+    }
+
     // Get sphere encompassing two approximately most distant points
-    sphere := sphere_from_distant_points(points);
+    result = sphere_from_distant_points(points);
 
     // Grow sphere to include all points
     for i : 0..points.count-1 {
-        sphere = bounding_sphere_of_sphere_and_point(sphere, points[i]);
+        result = bounding_sphere_of_sphere_and_point(result, points[i]);
     }
 
-    return sphere;
+    return result;
 }
 
 #scope_file

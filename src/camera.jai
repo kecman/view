@@ -207,7 +207,7 @@ update_camera :: (delta_time : float) {
 
         // @Incomplete make rotation speed an adjustable parameter
         if      app.modifier_flags.shift_pressed increment *= -5.;
-        else if app.modifier_flags.alt_pressed   increment *= -.3;
+        else if app.modifier_flags.alt_pressed   increment *= -.01;
         else                                     increment *= -1.;
 
         camera.top    += increment;
