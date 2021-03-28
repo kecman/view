@@ -388,6 +388,7 @@ geom :: #import "geometry";
 #load "mesh_utils.jai";
 #load "ui.jai";
 #load "keymap.jai";
+#load "inspector.jai";
 //#load "commands.jai"; // @CompilerBug loading here triggers incorrect (?) compilation error
 
 VertexLabelStyle :: struct {
