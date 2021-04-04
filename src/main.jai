@@ -7,6 +7,7 @@ app : struct {
 
     current_window_width := INITIAL_WINDOW_WIDTH;
     current_window_height := INITIAL_WINDOW_HEIGHT;
+    fullscreen := false;
 
     // clear_color := make_vector4(0.45, 0.55, 0.60, 1.00);
     // clear_color := make_vector4(87./256, 194./256, 248./256, 1.00); // light blue
@@ -202,6 +203,13 @@ main :: () {
                     }
                 case SDL_KEYDOWN; {
                     if io().WantCaptureKeyboard break;
+
+                    // @Cleanup move to keymap file
+                    if  event.key.keysym.sym == SDLK_F11 {
+                        app.fullscreen = !app.fullscreen;
+                        flags : u32 = ifx app.fullscreen then cast(u32) 0 else xx SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP;
+                        ok := SDL_SetWindowFullscreen(app.window, flags); // @Robustness handle error
+                    }
 
                     for app.keymap_keydown.mappings {
                         if to_sdl_keycode(it.key_code) == event.key.keysym.sym {

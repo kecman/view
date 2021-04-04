@@ -9,7 +9,7 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
     defer ImGui.End();
     defer if entities.count ImGui.Separator();
 
-    ImGui.Text("Global Settings:");
+    ImGui.Text("Scene Settings:");
     ImGui.Separator();
     ImGui.ColorEdit4("Background color", *clear_color.component, ImGui.ColorEditFlags.NoInputs);
     ImGui.Checkbox("Show world axes", *world_axes.visible);

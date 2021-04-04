@@ -53,7 +53,6 @@
 - [Meta-programming] Generate a list of used ImGui functions, to simplify transitioning to a newer version
 - Sort by time loaded
 - [UI/UX] Write * to indicate an identical first and last point
-- Toggle fullscreen/maximise
 - Show grid lines and label
 - Distribute shaders with source for hot loading/editing them. Pass them lots of unused data then
 - Just log warnings and ignore the context allocator if it's not malloc, or create a new polygon allocated with malloc if passing to c

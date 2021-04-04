@@ -1,10 +1,11 @@
 # Unreleased
 
-- Added option to specify text label settings: floating point format, text scale and colour
-- Changed the default to point size 2 rather than 0 so that visualising point cloud obj is more convenient
-- Fixed point labelling for 3D polylines loaded from obj files
+- Added text label options (floating point format, text scale and colour) accessible via global settings menu (press h for help)
+- Pressing F11 toggles between fullscreen and windowed modes
+- Changed the default to point size to 2 from 0 so visualising point clouds is more convenient
+- Fixed point numbering for 3D polylines inferred from .obj files
 - Fixed text positioning for 3D polylines
-- Fixed rotation not working properly when zoomed in
+- Fixed camera rotation not working properly when zoomed in
 
 # Version: v0.0.2, 28 March 2021
 
