@@ -1,6 +1,8 @@
 ## Soon
 - [Cleanup] Add examples to the obj folder
 - [Refactor] Move data from Mesh type into Entity type
+- [Rendering] Transparency
+- [Rendering] Surface with edges
 - [UI/UX] Sliders to select visible range of indices
 - [UI/UX] Add mouse buttons to keymap help window
 - [UI/UX] Render the axes origin in different color when it's a model origin
@@ -48,7 +50,6 @@
 - [UI/UX] Camera position history/bookmarks with notes/annotations
 - Compiled at time in Window, after version?
 - [Cleanup] memory management for things returned by boost polygon module, should copy them on jai side and add a function to the bindings which free the mesh :Cleanup_Construction_Destruction:
-- Transparency with order as it is in the entity list
 - [Cleanup] Make the polygon/polyline types use slices, not dynamic arrays, put allocators in the top level
 - [Meta-programming] Autogenerate the console registering code to add commands to the console
 - [Meta-programming] Generate a list of used ImGui functions, to simplify transitioning to a newer version
