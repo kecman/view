@@ -8,7 +8,6 @@
 - [Rendering] Transparency
 - [Rendering] Surface with edges
 - [UI/UX] Put model stats in a bar along the bottom
-- [UI/UX] Editable text render limit with warning about slowness
 - [UI/UX] Mode line showing hovered mesh stats (point/element counts and aabbs)
 
 ## Backlog

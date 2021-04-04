@@ -23,6 +23,13 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
     vertex_label_style.format_float.trailing_width = clamp(trailing_width, 0, 8);
     ShowTooltip("Number of digits following the decimal point");
     combo_box("Float format", *vertex_label_style.format_float.mode, type_info(FormatFloat.Mode));
+    the_label_limit : s32 = xx label_limit;
+    ImGui.InputInt("Label limit", *the_label_limit);
+    label_limit = the_label_limit;
+    if label_limit > 2000 {
+        color := ImVec4.{1., .4, .4, 1.};
+        ImGui.TextColored(*color, "%s", "Warning: label limit > 2000 may be slow");
+    }
     ImGui.DragFloat("Label scale", *vertex_label_style.label_scale, .005, .2, 1., display_format="%.3f");
     ImGui.ColorEdit4("Label color", *vertex_label_style.label_color.component, ImGui.ColorEditFlags.NoInputs);
 

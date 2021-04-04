@@ -35,6 +35,7 @@ app : struct {
     entities : [..]*Entity;
 
     vertex_label_style : VertexLabelStyle;
+    label_limit := 2000;
 
     keymap : Keymap;
     keymap_keydown : Keymap;
@@ -283,7 +284,7 @@ main :: () {
         // @Cleanup: use delta_time argument?
         update_camera(1);
 
-        label_limit : int = 2000;
+        label_limit : int = app.label_limit;
         Reserve_Labels :: (count : int) #expand { `label_limit -= count; }
 
         for entity : app.entities {
