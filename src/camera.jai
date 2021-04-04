@@ -170,9 +170,9 @@ update_camera :: (delta_time : float) {
 
         look_to_eye := rotate(camera_at_mouse_down.eye_position - camera_at_mouse_down.look_position, q);
 
-        #if false {
-            debug_vector :: (vector_world : Vector3, color : Vector4) {
-                debug_mesh_ps := make_axis_arrow(20);
+#if false {
+            debug_vector :: (length : float, vector_world : Vector3, color : Vector4) {
+                debug_mesh_ps := make_axis_arrow(length);
                 defer deinit(debug_mesh_ps);
 
                 par_shapes_rotate(debug_mesh_ps, angle(Vector3.{0,0,1}, unit_vector(vector_world)), unit_vector(cross_product(Vector3.{0,0,1}, unit_vector(vector_world))));
@@ -186,14 +186,16 @@ update_camera :: (delta_time : float) {
                 render_mesh(debug_mesh, .{point_size=0, line_width=1});
             }
 
-            debug_vector((world_from_projection * make_vector4(prev_arcball_vector, 0)).xyz, .{1., .5, .5, 1.});
-            debug_vector((world_from_projection * make_vector4(curr_arcball_vector, 0)).xyz, .{.5, 1., .5, 1.});
+            l := (camera.top - camera.bottom) * .15;
 
-            debug_vector(look_to_eye, .{1., 1., 1., 1.});
-            debug_vector(rotate(camera_at_mouse_down.up_direction, q), .{1., 1., 1., 1.});
-            debug_vector(camera_at_mouse_down.eye_position - camera_at_mouse_down.look_position, .{1., 1., 0., 1.});
-            debug_vector(camera_at_mouse_down.up_direction, .{1., 1., 0., 1.});
-        }
+            debug_vector(l, (world_from_projection * make_vector4(prev_arcball_vector, 0)).xyz, .{1., .5, .5, 1.});
+            debug_vector(l, (world_from_projection * make_vector4(curr_arcball_vector, 0)).xyz, .{.5, 1., .5, 1.});
+
+            debug_vector(l, look_to_eye, .{1., 1., 1., 1.});
+            debug_vector(l, rotate(camera_at_mouse_down.up_direction, q), .{1., 1., 1., 1.});
+            debug_vector(l, camera_at_mouse_down.eye_position - camera_at_mouse_down.look_position, .{1., 1., 0., 1.});
+            debug_vector(l, camera_at_mouse_down.up_direction, .{1., 1., 0., 1.});
+}
 
         camera.eye_position = camera_at_mouse_down.look_position + look_to_eye;
         camera.up_direction = rotate(camera_at_mouse_down.up_direction, q);
