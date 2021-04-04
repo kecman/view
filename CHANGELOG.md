@@ -1,3 +1,7 @@
+# Unreleased
+
+- Fixed rotation not working properly when zoomed in
+
 # Version: v0.0.2, 28 March 2021
 
 - Holding shift while zooming/rotating/panning speeds up that operation, holding alt slows it down

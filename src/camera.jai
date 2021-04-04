@@ -151,9 +151,12 @@ update_camera :: (delta_time : float) {
 
         prev_arcball_vector := arcball_vector(mouse_down_pos);
         curr_arcball_vector := arcball_vector(io().MousePos);
+        arcball_axis_ndc := cross_product(curr_arcball_vector, prev_arcball_vector);
 
-        arcball_axis4_ndc := make_vector4(cross_product(curr_arcball_vector, prev_arcball_vector), 0);
-        arcball_axis_world := (world_from_projection_at_mouse_down * arcball_axis4_ndc).xyz;
+        view_from_world := make_look_at_matrix(camera_at_mouse_down);
+        world_from_view := inverse(view_from_world);
+        arcball_axis_world := (world_from_view * make_vector4(arcball_axis_ndc, 0)).xyz;
+
         arcball_angle := angle(curr_arcball_vector, prev_arcball_vector);
 
         // @Incomplete make rotation speed an adjustable parameter
@@ -186,7 +189,6 @@ update_camera :: (delta_time : float) {
             debug_vector((world_from_projection * make_vector4(prev_arcball_vector, 0)).xyz, .{1., .5, .5, 1.});
             debug_vector((world_from_projection * make_vector4(curr_arcball_vector, 0)).xyz, .{.5, 1., .5, 1.});
 
-            debug_vector(arcball_axis_world, .{0., 0., 0., 1.});
             debug_vector(look_to_eye, .{1., 1., 1., 1.});
             debug_vector(rotate(camera_at_mouse_down.up_direction, q), .{1., 1., 1., 1.});
             debug_vector(camera_at_mouse_down.eye_position - camera_at_mouse_down.look_position, .{1., 1., 0., 1.});
