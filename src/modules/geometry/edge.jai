@@ -1,6 +1,6 @@
 Edge :: struct (Point : Type) {
-    from_point : *Point = ---;
-    to_point   : *Point = ---;
+    from_point : *Point;
+    to_point   : *Point;
 }
 
 Edge2 :: Edge(Vector2);
