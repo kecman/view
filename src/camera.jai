@@ -438,6 +438,8 @@ arcball_vector :: (mouse_position_px : Vector2) -> Vector3
     arcball_radius_px := 5 * length(make_vector2(xx app.current_window_height, xx app.current_window_width) / 2); // only room to rotate on sphere
 
     using result := make_vector3((mouse_position_px - arcball_center_px) / arcball_radius_px, 0);
+
+    x /= current_window_aspect_ratio_width_over_height();
     y *= -1; // Since y_px increases from the top of the screen to the bottom
     d2 := x*x + y*y;
     if d2 <= 1. {
