@@ -10,18 +10,23 @@
 - [UI/UX] Put model stats in a bar along the bottom
 - [UI/UX] Mode line showing hovered mesh stats (point/element counts and aabbs)
 
-## Backlog
+## v0.0.4
 
 - [UI/UX,Camera] First person camera with strafing and jump/crouch
-- [Rendering] Render normals using geometry shader
 - [UI/UX] Mesh element number/segment number rendering
+- [UI/UX] Sliders to select visible range of indices
+- [Commands] save_obj <filename> <optional-element-index-list>
+- [UI/UX] Display file load time
+- [UI/UX] F5 to refresh file
+
+## Backlog
+
+- [Rendering] Render normals using geometry shader
 - [UI/UX] Add a defaults.settings file containing options like default visualisation, scroll velocity, ui response dt's etc
 - [UI/UX] Add a defaults.keymap file containing bindings, also add files for blender, paraview and cloudnc settings
 - [UI/UX] Hotload the keymap and settings files
 - [UI/UX] Option to render the cumulative vertex number for polyline soups and polygon inner/outer rings or polygon soups
-- [Commands] save_obj <filename> <optional-element-index-list>
 - [UI/UX] Scale zoom speed with scene bounding box when shift is held?
-- [UI/UX] Sliders to select visible range of indices
 - [UI/UX] Implement a view cube using the Simp module
 - [Performance] Speed up text rendering, it's so slow right now!
 - [UI/UX] Scale the axes according to the bbox of the scene?
@@ -35,27 +40,22 @@
 - [UI/UX] Implement arcball constraints cf. http://graphicsinterface.org/wp-content/uploads/gi1992-18.pdf
 - [XXL,UI/UX,Camera] Undo/redo system for camera and other operations
 - [UI/UX,Camera] Camera position history/bookmarks with notes/annotations
-- Implement geometric equals functions for testing, can be used to compare Jai/C++ implementations
-- [Rendering] Alternate segment colours (two draw calls?)
+- [Rendering] Render vertex labels on top of other geometry always
+- [UI/UX] Write * to indicate an identical first and last point
 - [UI/UX] Sweep drag for removing items from the scene?
 - [UI/UX] Click to copy point coordinate in {1.8e} format so that it can be used as a float literal in code
-- [UI/UX] Render vertex labels on top of other geometry always
 - [UI/UX] Support loading wkt file format to load Polygons in a reasonable way
-- [UI/UX] Dynamically generate some UI windows a la imgui_inspector.jai
-- [UI/UX] Hold shift to change size of arcball, and project across x/y direction so you can do full 90degree rotations of the part, draw regions in the far plane and cicle on the near plane
 - [UI/UX] Implement sliding to show/hide the terminal
 - [UI/UX] Scroll to the bottom of the terminal
-- Compiled at time in Window, after version?
+- [Build,DevX] Compiled at time in Window, after version?
 - [Cleanup] memory management for things returned by boost polygon module, should copy them on jai side and add a function to the bindings which free the mesh :Cleanup_Construction_Destruction:
 - [Cleanup] Make the polygon/polyline types use slices, not dynamic arrays, put allocators in the top level
 - [Meta-programming] Autogenerate the console registering code to add commands to the console
 - [Meta-programming] Generate a list of used ImGui functions, to simplify transitioning to a newer version
-- Sort by time loaded
-- [UI/UX] Write * to indicate an identical first and last point
-- Show grid lines and label
-- Distribute shaders with source for hot loading/editing them. Pass them lots of unused data then
-- Just log warnings and ignore the context allocator if it's not malloc, or create a new polygon allocated with malloc if passing to c
+- [Rendering] Alternate segment colours (two draw calls?)
+- [Rendering] Show grid lines
 - [UI/UX] Sounds for a more satifying UI?
+- [Commands] Implement geometric equals functions for testing, can be used to compare Jai/C++ implementations
 - [Commands] load_obj <filename> to load files (loading files by drag and drop should effectively run this command)
 - [Commands] Implement commands to change the render settings on stuff
 - [Commands] save_wkt <filename>, load_wkt <filename> to load files (loading files by drag and drop should effectively run this command)
@@ -77,4 +77,6 @@
 - [XXL] Build and add bindings for gmp
 - [XXL] Hotload the C++ bindings, and console commands, so you can keep same UI state while you iterate on your code
 - [XXL] Hotload jai code so that you can keep state while you change your algorithm
+- [Robustness] Just log warnings and ignore the context allocator if it's not malloc, or create a new polygon allocated with malloc if passing to c
+- [Rendering] Distribute shaders with source for hot loading/editing them. Pass them lots of unused data then
 
