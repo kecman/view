@@ -1,5 +1,6 @@
 # Unreleased
 
+- Fixed text positioning for 3D polylines
 - Fixed rotation not working properly when zoomed in
 
 # Version: v0.0.2, 28 March 2021

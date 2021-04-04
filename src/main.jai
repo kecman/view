@@ -295,7 +295,7 @@ main :: () {
 
                 case .POLYLINE_SOUP3;
 
-                    soup := cast(*Polyline_Soup2_Entity) entity;
+                    soup := cast(*Polyline_Soup3_Entity) entity;
                     render_mesh(soup.mesh, app.vertex_label_style, entity.flash_wave_dt);
                     for polyline : soup.shape.polylines {
                         Reserve_Labels(polyline.points.count);
