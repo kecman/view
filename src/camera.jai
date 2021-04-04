@@ -337,7 +337,7 @@ io_mouse_left_down :: () -> bool { return io().MouseDown[0]; }
 io_mouse_right_down :: () -> bool { return io().MouseDown[1]; }
 io_mouse_middle_down :: () -> bool { return io().MouseDown[2]; }
 
-#scope_file
+// #scope_file
 
 // Returns a bounding sphere, in view space, of the visible items in the scene
 visible_entities_bounding_sphere_fast :: () -> Sphere
@@ -345,13 +345,13 @@ visible_entities_bounding_sphere_fast :: () -> Sphere
     view_from_world := make_look_at_matrix(app.camera);
 
     // Compute the bounding sphere of a bounding box of the scene in current view coords
-    scene_bbox : geom.AxisBox3;
+    scene_bbox : AxisBox3;
     for app.entities {
         if !it.visible continue;
         mesh := get_mesh(it);
         if mesh {
             view_from_model := view_from_world * mesh.world_from_model;
-            mesh_bbox_vs := geom.bounding_box(<<mesh, view_from_model);
+            mesh_bbox_vs := bounding_box(<<mesh, view_from_model);
             expand(*scene_bbox, mesh_bbox_vs);
         }
     }
@@ -398,7 +398,7 @@ entity_bounding_sphere_fast :: (entity : *Entity) -> Sphere
 
     view_from_world := make_look_at_matrix(app.camera);
     view_from_model := view_from_world * mesh.world_from_model;
-    scene_bbox := geom.bounding_box(<<mesh, view_from_model);
+    scene_bbox := bounding_box(<<mesh, view_from_model);
     result = bounding_sphere(scene_bbox);
 
     return result;
@@ -429,11 +429,6 @@ entity_bounding_sphere_accurate :: (entity : *Entity) -> Sphere
     result = bounding_sphere_ritter(points_vs);
 
     return result;
-}
-
-to_radians :: (degrees : float) -> float {
-    scale :: PI / 180;
-    return degrees * scale;
 }
 
 arcball_vector :: (mouse_position_px : Vector2) -> Vector3
@@ -471,6 +466,6 @@ to_ndc :: (position_px : Vector2) -> Vector2
 camera_at_mouse_down : Camera;
 mouse_down_pos : Vector2; // @Cleanup: replace this state with ImGui: use GetMouseDragDelta
 
-geom :: #import "geometry";
+#import "geometry";
 #load "numeric.jai";
 #load "geometric_operations.jai";
