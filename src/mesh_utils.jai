@@ -62,27 +62,41 @@ to_Polyline_Soup :: (mesh : Mesh, Point : $Type) -> Polyline_Soup(Point), bool #
         }
     }
 
-    edge_index := 0;
+    edge_count := mesh.indices.count / 2;
 
+    edge_index := 0;
     edge := get_edge(mesh, edge_index);
-    polyline_start_index := edge.from_index;
+
+    // Start a new polyline
     polyline := array_add(*result.polylines);
     array_add(*polyline.points, get_point(<<edge.from_point));
 
     while true {
-        edge := get_edge(mesh, edge_index);
-        array_add(*polyline.points, get_point(<<edge.to_point));
+        prev_edge := edge;
 
+        // Get next edge
         edge_index += 1;
-        if 2 * edge_index + 1 >= mesh.indices.count break;
+        if edge_index >= edge_count {
+            break;
+        }
 
-        if edge.to_index == polyline_start_index {
-            edge := get_edge(mesh, edge_index);
-            polyline_start_index = edge.from_index;
+        edge = get_edge(mesh, edge_index);
+
+        if edge.from_index == prev_edge.to_index {
+            // Add to current polyline
+            array_add(*polyline.points, get_point(<<edge.from_point));
+        } else if edge_index != edge_count {
+            // End current polyline
+            array_add(*polyline.points, get_point(<<prev_edge.to_point));
+
+            // Start a new polyline
             polyline = array_add(*result.polylines);
             array_add(*polyline.points, get_point(<<edge.from_point));
         }
     }
+
+    // Terminate current polyline
+    array_add(*polyline.points, get_point(<<edge.to_point));
 
     return result, true;
 }

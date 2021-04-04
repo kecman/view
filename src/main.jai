@@ -398,6 +398,13 @@ VertexLabelStyle :: struct {
     show_position := false;
     show_index := false;
 
+    format_float : FormatFloat;
+    format_float.trailing_width = 8;
+    format_float.zero_removal = .NO;
+
+    label_scale := .3;
+    label_color : Vector4 = .{1., 1., 1., 1.};
+
     point_size : int = 0; // 0, 2, 4, 6
     line_width : int = 1; // 1, 1, 2, 3
 }
@@ -595,32 +602,37 @@ render_vertex_labels :: (points : []$T, style : VertexLabelStyle, label_index_of
     world_from_model := matrix4_identity();
     projection_from_model := make_projection_from_world(app.camera) * world_from_model;
 
-    // @TODO call render_text_quad once with a list of points
-    for points {
-        text : string;
+    new_context := context;
+    push_context new_context {
+        format_float := *context.print_style.default_format_float;
+        <<format_float = style.format_float;
+
+        // @TODO call render_text_quad once with a list of points
+        for points {
+            text : string;
 #if dim == 2 {
-        if  style.show_index &&  style.show_position text = tprint("% (% %)", label_index_offset + it_index, it.x, it.y);
-        if !style.show_index &&  style.show_position text = tprint("(% %)", it.x, it.y);
+            if  style.show_index && style.show_position text = tprint("% (%, %)", label_index_offset + it_index, it.x, it.y);
+            if !style.show_index && style.show_position text = tprint("(%, %)", it.x, it.y);
 } else {
-        if style.show_index && style.show_position text = tprint("% (% % %)", label_index_offset + it_index, it.x, it.y, it.z);
-        if !style.show_index && style.show_position text = tprint("(% % %)", it.x, it.y, it.z);
+            if  style.show_index && style.show_position text = tprint("% (%, %, %)", label_index_offset + it_index, it.x, it.y, it.z);
+            if !style.show_index && style.show_position text = tprint("(%, %, %)", it.x, it.y, it.z);
 }
-        if  style.show_index && !style.show_position text = tprint("%", label_index_offset + it_index);
-        if !style.show_index && !style.show_position break;
+            if  style.show_index && !style.show_position text = tprint("%", label_index_offset + it_index);
+            if !style.show_index && !style.show_position break;
 
-        text_w := get_text_width_in_pixels(text, 1.0);
-        scale := 0.3;
+            text_w := get_text_width_in_pixels(text, 1.0);
 
-        // [-1, 1]x[-1,1] -> [0, current_window_width]x[0, current_window_height]
+            // [-1, 1]x[-1,1] -> [0, current_window_width]x[0, current_window_height]
 #if dim == 2 {
-        text_position_px := projection_from_model * make_vector4(it.x, it.y, 0, 1.);
+            text_position_px := projection_from_model * make_vector4(it.x, it.y, 0, 1.);
 } else {
-        text_position_px := projection_from_model * make_vector4(it.x, it.y, it.z, 1.);
+            text_position_px := projection_from_model * make_vector4(it.x, it.y, it.z, 1.);
 }
-        text_position_px.x = cast(float)app.current_window_width * (text_position_px.x + 1) / 2;
-        text_position_px.y = cast(float)app.current_window_height * (text_position_px.y + 1) / 2;
+            text_position_px.x = cast(float)app.current_window_width * (text_position_px.x + 1) / 2;
+            text_position_px.y = cast(float)app.current_window_height * (text_position_px.y + 1) / 2;
 
-        render_text_quad(app.text_shader, text, text_position_px.xy, scale, make_vector4(1., 1., 1., 1));
+            render_text_quad(app.text_shader, text, text_position_px.xy, style.label_scale, style.label_color);
+        }
     }
 }
 

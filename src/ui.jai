@@ -7,14 +7,24 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
     ImGui.SetNextWindowPos(pos=*make_vector2(10, 10), pivot=*V2_ZERO);
     ImGui.Begin("Main Panel", flags = ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar);
     defer ImGui.End();
-    ImGui.Text("Global Settings:");
-    ImGui.Separator();
     defer if entities.count ImGui.Separator();
 
+    ImGui.Text("Global Settings:");
+    ImGui.Separator();
     ImGui.ColorEdit4("Background color", *clear_color.component, ImGui.ColorEditFlags.NoInputs);
     ImGui.Checkbox("Show world axes", *world_axes.visible);
+
+    ImGui.Separator();
+    ImGui.Text("Label Settings:");
     ImGui.Checkbox("Show point index labels", *vertex_label_style.show_index);
     ImGui.Checkbox("Show point position labels", *vertex_label_style.show_position);
+    trailing_width : s32 = xx vertex_label_style.format_float.trailing_width;
+    ImGui.InputInt("Float decimals", *trailing_width);
+    vertex_label_style.format_float.trailing_width = clamp(trailing_width, 0, 8);
+    ShowTooltip("Number of digits following the decimal point");
+    combo_box("Float format", *vertex_label_style.format_float.mode, type_info(FormatFloat.Mode));
+    ImGui.DragFloat("Label scale", *vertex_label_style.label_scale, .005, .2, 1., display_format="%.3f");
+    ImGui.ColorEdit4("Label color", *vertex_label_style.label_color.component, ImGui.ColorEditFlags.NoInputs);
 
     if current_window_width  != INITIAL_WINDOW_WIDTH  &&
        current_window_height != INITIAL_WINDOW_HEIGHT &&

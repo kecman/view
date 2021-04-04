@@ -1,5 +1,7 @@
 # Unreleased
 
+- Added option to specify text label settings: floating point format, text scale and colour
+- Fixed point labelling for 3D polylines loaded from obj files
 - Fixed text positioning for 3D polylines
 - Fixed rotation not working properly when zoomed in
 
