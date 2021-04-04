@@ -405,11 +405,11 @@ VertexLabelStyle :: struct {
     label_scale := .3;
     label_color : Vector4 = .{1., 1., 1., 1.};
 
-    point_size : int = 0; // 0, 2, 4, 6
+    point_size : int = 2; // 0, 2, 4, 6
     line_width : int = 1; // 1, 1, 2, 3
 }
 
-// #scope_file
+#scope_file
 
 load_entity_from_file :: (filename : string) {
     skip := false;

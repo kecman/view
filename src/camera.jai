@@ -339,7 +339,7 @@ io_mouse_left_down :: () -> bool { return io().MouseDown[0]; }
 io_mouse_right_down :: () -> bool { return io().MouseDown[1]; }
 io_mouse_middle_down :: () -> bool { return io().MouseDown[2]; }
 
-// #scope_file
+#scope_file
 
 // Returns a bounding sphere, in view space, of the visible items in the scene
 visible_entities_bounding_sphere_fast :: () -> Sphere
