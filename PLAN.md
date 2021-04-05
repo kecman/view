@@ -1,28 +1,29 @@
 ## v0.0.3
 
-- [Robustness] add tests for obj loading
 - [UI/UX] Shift-LMB to rotate about the selected axis
-- [UI/UX] Get rid of the annoying cycle to non zero point size thing
-- [UI/UX] Cache mesh bounding box so that fit to screen is faster when working with large meshes
-- [Refactor] Move data from Mesh type into Entity type
-- [Rendering] Transparency
-- [Rendering] Surface with edges
 - [UI/UX] Put model stats in a bar along the bottom
-- [UI/UX] Mode line showing hovered mesh stats (point/element counts and aabbs)
+- [UI/UX] Mode line showing hovered mesh stats
 
 ## v0.0.4
 
 - [UI/UX,Camera] First person camera with strafing and jump/crouch
-- [UI/UX] Mesh element number/segment number rendering
-- [UI/UX] Sliders to select visible range of indices
+- [Refactor] Move data from Mesh type into Entity type. This unblocks:
+    - [UI/UX] Cache mesh bounding box so that fit to screen is faster when working with large meshes
+    - [UI/UX] Show the bounding box in the mesh stats view
+    - [Rendering] Transparency
+    - [Rendering] Surface with edges
 - [Commands] save_obj <filename> <optional-element-index-list>
 - [UI/UX] Display file load time
 - [UI/UX] F5 to refresh file
+- [Robustness] add tests for obj loading
 
 ## Backlog
 
 - [Rendering] Render normals using geometry shader
+- [UI/UX] Mesh element number/segment number rendering
+- [UI/UX] Sliders to select visible range of indices
 - [UI/UX] Add a defaults.settings file containing options like default visualisation, scroll velocity, ui response dt's etc
+- [UI/UX] Set point-size per-mesh so that point clouds are visible without a non-zero global point size
 - [UI/UX] Add a defaults.keymap file containing bindings, also add files for blender, paraview and cloudnc settings
 - [UI/UX] Hotload the keymap and settings files
 - [UI/UX] Option to render the cumulative vertex number for polyline soups and polygon inner/outer rings or polygon soups
