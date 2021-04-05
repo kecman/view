@@ -35,7 +35,9 @@ load_obj :: (filename : string) -> Mesh {
 
     start_file(*handler, "load_obj", result.fully_pathed_filename, false);
     if handler.failed {
-        return result;
+        deinit(*result);
+        empty : Mesh;
+        return empty;
     }
 
     while true {
@@ -45,6 +47,7 @@ load_obj :: (filename : string) -> Mesh {
         key_name, rhs := break_by_spaces(line);
         if !rhs {
             error(handler, "Expected a space after the key specifier.\n");
+            handler.failed = true;
             continue;
         }
 
@@ -54,6 +57,7 @@ load_obj :: (filename : string) -> Mesh {
                 vertex, dim := parse_upto_3d(*handler, rhs);
                 if dim == -1 || dim == 1 {
                     error(handler, tprint("Expected 2d or 3d vertex coordinates, got dim=%.\n", dim)); // @Incomplete test this
+                    handler.failed = true;
                     continue;
                 }
                 array_add(*result.positions, vertex);
@@ -61,6 +65,7 @@ load_obj :: (filename : string) -> Mesh {
                 normal, dim := parse_upto_3d(*handler, rhs);
                 if dim != 3 {
                     error(handler, tprint("Expected 3d normal, got dim=%.\n", dim));
+                    handler.failed = true;
                     continue;
                 }
                 array_add(*result.normals, normal);
@@ -69,6 +74,11 @@ load_obj :: (filename : string) -> Mesh {
                 point, dim := parse_upto_3d(*handler, rhs);
                 if dim != 1 {
                     error(handler, "Expected a point specifying a single vertex.\n");
+                    handler.failed = true;
+                    continue;
+                } else if point.x == 0 {
+                    error(handler, "The obj file format uses 1-based indices.\n");
+                    handler.failed = true;
                     continue;
                 }
 
@@ -76,6 +86,7 @@ load_obj :: (filename : string) -> Mesh {
                     result.geometry_format = .POINTS;
                 } else if result.geometry_format != .POINTS {
                     error(handler, "Expected consistent geometry format, got %, wanted %.\n", Geometry_Format.POINTS, result.geometry_format);
+                    handler.failed = true;
                     continue;
                 }
 
@@ -85,6 +96,11 @@ load_obj :: (filename : string) -> Mesh {
                 segment, dim := parse_upto_3d(*handler, rhs);
                 if dim != 2 {
                     error(handler, "Expected a segment connecting two vertices.\n");
+                    handler.failed = true;
+                    continue;
+                } else if segment.x == 0 || segment.y == 0 {
+                    error(handler, "The obj file format uses 1-based indices.\n");
+                    handler.failed = true;
                     continue;
                 }
 
@@ -92,6 +108,7 @@ load_obj :: (filename : string) -> Mesh {
                     result.geometry_format = .LINES;
                 } else if result.geometry_format != .LINES {
                     error(handler, "Expected consistent geometry format, got %, wanted %.\n", Geometry_Format.LINES, result.geometry_format);
+                    handler.failed = true;
                     continue;
                 }
 
@@ -101,10 +118,17 @@ load_obj :: (filename : string) -> Mesh {
             case "f"; // @Incomplete
                 triangle := parse_triangle(*handler, rhs);
 
+                if triangle.indices[0] == 0 || triangle.indices[1] == 0 || triangle.indices[2] == 0 {
+                    error(handler, "The obj file format uses 1-based indices.\n");
+                    handler.failed = true;
+                    continue;
+                }
+
                 if result.geometry_format == .UNKNOWN {
                     result.geometry_format = .TRIANGLES;
                 } else if result.geometry_format != .TRIANGLES {
                     error(handler, "Expected consistent geometry format, got %, wanted %.\n", Geometry_Format.TRIANGLES, result.geometry_format);
+                    handler.failed = true;
                     continue;
                 }
 
@@ -123,6 +147,12 @@ load_obj :: (filename : string) -> Mesh {
 
     // for result.points print("points: %\n", it);
     // for result.indices print("indices: %\n", it);
+
+    if handler.failed {
+        deinit(*result);
+        empty : Mesh;
+        return empty;
+    }
 
     return result;
 }

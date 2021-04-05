@@ -3,6 +3,7 @@
 - Fixed point numbering for 3D polylines inferred from .obj files
 - Fixed text positioning for 3D polylines
 - Fixed camera rotation not working properly when zoomed in
+- Improved error reporting when loading invalid .obj files
 - Added text label options (floating point format, text scale and colour) accessible via global settings menu (press h for help)
 - Added an option to increase the label rendering limit, a warning message is printed if this exceeds 2000 (text rendering is still super slow)
 - Pressing F11 toggles between fullscreen and windowed modes
