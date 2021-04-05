@@ -20,7 +20,7 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
     ImGui.Checkbox("Show point position labels", *vertex_label_style.show_position);
     trailing_width : s32 = xx vertex_label_style.format_float.trailing_width;
     ImGui.InputInt("Float decimals", *trailing_width);
-    vertex_label_style.format_float.trailing_width = clamp(trailing_width, 0, 8);
+    vertex_label_style.format_float.trailing_width = clamp(trailing_width, 0, 12);
     ShowTooltip("Number of digits following the decimal point");
     combo_box("Float format", *vertex_label_style.format_float.mode, type_info(FormatFloat.Mode));
     the_label_limit : s32 = xx label_limit;
