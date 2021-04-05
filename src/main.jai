@@ -411,6 +411,22 @@ geom :: #import "geometry";
 #load "inspector.jai";
 //#load "commands.jai"; // @CompilerBug loading here triggers incorrect (?) compilation error
 
+should_load_entity_from_file :: (filename : string) -> bool
+{
+    skip := false;
+    for app.entities {
+        mesh := get_mesh(it);
+        if mesh && mesh.fully_pathed_filename == filename {
+            skip = true;
+            break;
+        }
+    }
+    if skip {
+        log("Skipped file: '%' (already loaded)\n", filename);
+    }
+    return !skip;
+}
+
 to_sdl_keycode :: (key_code : u32) -> SDL_Keycode {
     if key_code >= 32 return xx key_code;
 

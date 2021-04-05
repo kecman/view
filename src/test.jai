@@ -29,6 +29,8 @@ main :: () {
     soup2, success := to_Polyline_Soup2(obj);
     check(success, true);
     if !success print("Skipped file: '%' (only 2D polylines with constant z are supported)\n", filename);
+
+    test_load_entity_from_file();
 }
 
 // // this file should be compiled and run when we pass --test to build.jai function should be run
@@ -43,6 +45,7 @@ main :: () {
 #import "geometry" (USE_GRAPHICS = false);
 #load "io_obj.jai";
 #load "mesh_utils.jai";
+#load "entities.jai";
 
 #import "Basic";
 #import "Compiler";

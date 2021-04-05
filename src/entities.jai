@@ -21,7 +21,7 @@ Polyline_Soup2_Entity :: struct {
     using base : Entity;
     type = .POLYLINE_SOUP2;
 
-    shape : geom.Polyline_Soup2;
+    shape : Polyline_Soup2;
     mesh : Mesh; // for rendering
 }
 
@@ -29,7 +29,7 @@ Polyline_Soup3_Entity :: struct {
     using base : Entity;
     type = .POLYLINE_SOUP3;
 
-    shape : geom.Polyline_Soup3;
+    shape : Polyline_Soup3;
     mesh : Mesh; // for rendering
 }
 
@@ -38,7 +38,7 @@ Polygon_Soup_Entity :: struct {
     using base : Entity;
     type = .POLYGON_SOUP;
 
-    shape : geom.Polygon_Soup;
+    shape : Polygon_Soup;
     mesh : Mesh; // for rendering
 }
 
@@ -98,22 +98,6 @@ get_mesh :: (base : *Entity) -> *Mesh {
     }
 }
 
-should_load_entity_from_file :: (filename : string) -> bool
-{
-    skip := false;
-    for app.entities {
-        mesh := get_mesh(it);
-        if mesh && mesh.fully_pathed_filename == filename {
-            skip = true;
-            break;
-        }
-    }
-    if skip {
-        log("Skipped file: '%' (already loaded)\n", filename);
-    }
-    return !skip;
-}
-
 load_entity_from_file :: (filename : string) -> *Entity
 {
     // @Incomplete: support polygon types using wkt format and improve reporting here
@@ -128,7 +112,7 @@ load_entity_from_file :: (filename : string) -> *Entity
     if #complete mesh.geometry_format == {
         case .LINES;
 
-            bbox := geom.bounding_box(mesh);
+            bbox := bounding_box(mesh);
             if diagonal(bbox).z == 0 {
                 shape, ok := to_Polyline_Soup2(mesh);
                 assert(ok);
@@ -174,4 +158,30 @@ load_entity_from_file :: (filename : string) -> *Entity
             deinit(*mesh);
             return null;
     }
+}
+
+test_load_entity_from_file :: () {
+    print("Running 'test_load_entity_from_file'...");
+
+    success : bool;
+    objfile : File;
+
+    test_filename := "__garage_testing.obj";
+    objfile, success =  file_open(test_filename, for_writing=true, keep_existing_content=false);
+    assert(success);
+
+    TEST1 :: #string DONE
+v 10 10 10
+v 20 10 10
+l 1 2
+DONE;
+    success = file_write(*objfile, TEST1);
+    assert(success);
+
+    entity : *Entity;
+    entity = load_entity_from_file(test_filename);
+    assert(entity != null);
+    assert(entity.type == .POLYLINE_SOUP2);
+
+    print("PASSED\n");
 }
