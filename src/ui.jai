@@ -165,6 +165,23 @@ show_scene_ui :: ()
     // ImGui.Text("%", cursor_text);
 }
 
+ITEM_INFO_WINDOW :: "Item Info";
+
+show_item_info :: () {
+    window_pos := make_vector2(ImGui.GetIO().DisplaySize.x - 10., ImGui.GetIO().DisplaySize.y - 40.);
+    window_pivot := make_vector2(1, 0);
+
+    using ImGui.WindowFlags;
+
+    ImGui.SetNextWindowPos(*window_pos, .Always, *window_pivot);
+    // SetNextWindowSize(ImVec2(400,400), ImGuiCond_FirstUseEver);
+    // ImGui.SetNextWindowSize(*ImVec2.{150., 0.});
+    ImGui.SetNextWindowContentSize(*ImVec2.{110., 0.});
+    // ImGui.SetNextWindowBgAlpha(.3);
+    ImGui.Begin(ITEM_INFO_WINDOW, flags = NoTitleBar | AlwaysAutoResize | NoMove /*| NoNav*/);
+    defer ImGui.End();
+}
+
 show_camera_controls :: () {
     window_pos := make_vector2(ImGui.GetIO().DisplaySize.x - 10., 10.);
     window_pivot := make_vector2(1, 0);

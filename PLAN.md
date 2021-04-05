@@ -1,13 +1,9 @@
-## v0.0.3
-
-- [UI/UX] Put model stats in a bar along the bottom
-- [UI/UX] Mode line showing hovered mesh stats
-
 ## v0.0.4
 
 - [UI/UX,Camera] First person camera with strafing and jump/crouch
 - [Refactor] Move data from Mesh type into Entity type. This unblocks:
     - [UI/UX] Cache mesh bounding box so that fit to screen is faster when working with large meshes
+    - [UI/UX] Mode line (bar along bottom) showing hovered mesh stats
     - [UI/UX] Show the bounding box in the mesh stats view
     - [Rendering] Transparency
     - [Rendering] Surface with edges
@@ -18,6 +14,7 @@
 
 ## Backlog
 
+- [Bug] Fix sweep dragging check boxes being affected through overlayed ui e.g., colour picker
 - [Rendering] Render normals using geometry shader
 - [UI/UX] Mesh element number/segment number rendering
 - [UI/UX] Sliders to select visible range of indices

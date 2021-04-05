@@ -260,6 +260,7 @@ main :: () {
 
         if app.show_ui {
             show_global_settings_ui(*triad);
+            // show_item_info(); // before show_scene_ui
             show_scene_ui();
             show_camera_controls();
             show_help_ui();
