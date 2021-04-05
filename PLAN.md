@@ -1,6 +1,5 @@
 ## v0.0.3
 
-- [UI/UX] Shift-LMB to rotate about the selected axis
 - [UI/UX] Put model stats in a bar along the bottom
 - [UI/UX] Mode line showing hovered mesh stats
 

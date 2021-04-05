@@ -265,10 +265,9 @@ show_help_ui :: ()
     ImGui.Begin("##show_help_ui", flags = ImGui.WindowFlags.NoTitleBar | .AlwaysAutoResize | .NoMove /*| .NoNav*/);
     defer ImGui.End();
 
-    ImGui.Text("Drag with RMB or scroll to zoom the camera");
-    ImGui.Text("Drag with LMB to rotate the camera");
-    ImGui.Text("Drag with MMB to pan the camera");
-    ImGui.Text("Hold Shift/Alt to speed up/slow down the above");
+    ImGui.Text("Use LMB to rotate the camera (Alt to slow, Shift to change axis)");
+    ImGui.Text("Use RMB or scroll to zoom the camera (Shift/Alt to adjust speed)");
+    ImGui.Text("Use MMB to pan the camera (Shift/Alt to adjust speed)");
     ImGui.Text("Click a filename with LMB to focus an item");
     ImGui.Text("Click a filename with RMB to access a per-item context menu");
     ImGui.Text(" ");

@@ -160,9 +160,15 @@ update_camera :: (delta_time : float) {
         arcball_angle := angle(curr_arcball_vector, prev_arcball_vector);
 
         // @Incomplete make rotation speed an adjustable parameter
-        if      app.modifier_flags.shift_pressed arcball_angle *= 90.;
-        else if app.modifier_flags.alt_pressed   arcball_angle *= 3.;
-        else                                     arcball_angle *= 30.;
+        if app.modifier_flags.shift_pressed {
+            // Rotate around the currently chosen camera rotation axis
+            arcball_axis_world = camera_rotation_axis();
+            arcball_angle = (io().MousePos.y - mouse_down_pos.y) * .02;
+        } else if app.modifier_flags.alt_pressed {
+            arcball_angle *= 3.;
+        } else {
+            arcball_angle *= 30.;
+        }
 
         // @Cleanup fishy negative sign and rotation speed multiplier should be chosen so screen top/bottom or left/right rotates the scene by tau or tau/2 respectively.
         q : Quaternion = ---;

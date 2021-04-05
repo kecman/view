@@ -7,6 +7,7 @@
 - Added text label options (floating point format, text scale and colour) accessible via global settings menu (press h for help)
 - Added an option to increase the label rendering limit, a warning message is printed if this exceeds 2000 (text rendering is still super slow)
 - Changed the default to point size to 2 from 0 so visualising point clouds is more convenient
+- Changed shift+LMB to rotate about the currently selected camera rotation axis
 - Pressing F11 toggles between fullscreen and windowed modes
 
 # Version: v0.0.2, 28 March 2021
