@@ -164,7 +164,12 @@ main :: () {
         args := get_command_line_arguments();
         defer array_free(args);
         for 1..args.count-1 {
-            load_entity_from_file(args[it]);
+            if should_load_entity_from_file(args[it]) {
+                entity := load_entity_from_file(args[it]);
+                if entity {
+                    array_add(*app.entities, entity);
+                }
+            }
         }
     }
 
@@ -240,7 +245,12 @@ main :: () {
                 case SDL_DROPFILE; {
                     // @Leak @Cleanup event.drop.file should be free'd using SDL_free
                     dropped := to_string(event.drop.file);
-                    load_entity_from_file(dropped);
+                    if should_load_entity_from_file(dropped) {
+                        entity := load_entity_from_file(dropped);
+                        if entity {
+                            array_add(*app.entities, entity);
+                        }
+                    }
                 }
             }
         }
@@ -351,8 +361,6 @@ main :: () {
         if false { // @Cleanup: remove this
             glEnable(GL_BLEND);
             defer glDisable(GL_BLEND);
-            glDisable(GL_CULL_FACE); // LTB---will f-you up with triangles. if only 2d stuff just leave blending on
-            defer glEnable(GL_CULL_FACE);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
             text := "Hello";
@@ -418,7 +426,8 @@ VertexLabelStyle :: struct {
     line_width : int = 1; // 1, 1, 2, 3
 }
 
-load_entity_from_file :: (filename : string) {
+should_load_entity_from_file :: (filename : string) -> bool
+{
     skip := false;
     for app.entities {
         mesh := get_mesh(it);
@@ -429,15 +438,19 @@ load_entity_from_file :: (filename : string) {
     }
     if skip {
         log("Skipped file: '%' (already loaded)\n", filename);
-        return;
     }
+    return !skip;
+}
 
+load_entity_from_file :: (filename : string) -> *Entity
+{
     // @Incomplete: support polygon types using wkt format and improve reporting here
     log("Loading file '%'... ", filename);
     mesh := load_obj(filename);
     if !mesh.positions.count {
-        log("skipped (empty vertex position data)\n");
-        return;
+        log("Skipped (empty vertex position data)\n");
+        deinit(*mesh);
+        return null;
     }
 
     if #complete mesh.geometry_format == {
@@ -451,9 +464,9 @@ load_entity_from_file :: (filename : string) {
                 entity := New(Polyline_Soup2_Entity);
                 entity.mesh = mesh;
                 entity.shape = shape;
-                array_add(*app.entities, entity);
 
-                log("inferred 2D polyline soup");
+                log("Inferred 2D polyline soup");
+                return entity;
             } else {
                 shape, ok := to_Polyline_Soup3(mesh);
                 assert(ok);
@@ -461,31 +474,33 @@ load_entity_from_file :: (filename : string) {
                 entity := New(Polyline_Soup3_Entity);
                 entity.mesh = mesh;
                 entity.shape = shape;
-                array_add(*app.entities, entity);
 
-                log("inferred 3D polyline soup");
+                log("Inferred 3D polyline soup");
+                return entity;
             }
 
         case .TRIANGLES;
 
             entity := New(Mesh_Entity);
             entity.mesh = mesh;
-            array_add(*app.entities, entity);
 
-            log("inferred triangle mesh");
+            log("Inferred triangle mesh");
+            return entity;
 
         case .POINTS;
 
             entity := New(Mesh_Entity);
             entity.mesh = mesh;
-            array_add(*app.entities, entity);
 
-            log("inferred point cloud");
+            log("Inferred point cloud");
+            return entity;
 
         case .UNKNOWN; #through;
         case;
-            log("skipped (unsupported geometry type %)\n", mesh.geometry_format);
+
+            log("Skipped (unsupported geometry type %)\n", mesh.geometry_format);
             deinit(*mesh);
+            return null;
     }
 }
 
