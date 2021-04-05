@@ -1,4 +1,4 @@
-# Unreleased
+# Version: v0.0.3, 5 April 2021
 
 - Fixed camera rotation not working properly when zoomed in
 - Fixed point numbering for 3D polylines inferred from .obj files
