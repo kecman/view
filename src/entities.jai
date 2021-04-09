@@ -80,21 +80,11 @@ deinit :: (base : *Entity)
 
 get_mesh :: (base : *Entity) -> *Mesh {
     if #complete base.type == {
-        case .POLYLINE_SOUP2; {
-            entity := cast(*Polyline_Soup2_Entity)base;
-            return *entity.mesh;
-        }
-        case .POLYLINE_SOUP3; {
-            entity := cast(*Polyline_Soup3_Entity)base;
-            return *entity.mesh;
-        }
-        case .POLYGON_SOUP; {
-            entity := cast(*Polygon_Soup_Entity)base;
-            return *entity.mesh;
-        }
+        case .POLYLINE_SOUP2; #through;
+        case .POLYLINE_SOUP3; #through;
+        case .POLYGON_SOUP;   #through;
         case .MESH; {
-            entity := cast(*Mesh_Entity)base;
-            return *entity.mesh;
+            return *base.mesh;
         }
         case .UNKNOWN; {
             return null;

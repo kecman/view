@@ -5,12 +5,6 @@ Geometry_Format :: enum {
     TRIANGLES;
 }
 
-Display_Mode :: enum {
-    NORMALS :: 0;
-    SOLID_COLOR :: 1;
-    BLINN_PHONG :: 2;
-}
-
 // Maybe this should be polymorphic on the vertex type?
 Mesh :: struct {
     geometry_format := Geometry_Format.UNKNOWN;

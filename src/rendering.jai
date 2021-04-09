@@ -13,9 +13,16 @@ VertexLabelStyle :: struct {
     line_width : int = 1; // 1, 1, 2, 3
 }
 
+Display_Mode :: enum {
+    NORMALS :: 0;
+    SOLID_COLOR :: 1;
+    BLINN_PHONG :: 2;
+}
+
 // @Cleanup rename to Render_Info
 Display_Info :: struct {
     is_dirty := true;
+
     vbo : GLuint;
     ibo : GLuint;
 
@@ -31,16 +38,16 @@ Display_Info :: struct {
 
 buffer_mesh :: (mesh : *Mesh, info : *Display_Info) {
 
-    if mesh.geometry_format == .TRIANGLES && !mesh.normals.count {
-        // log("Computing and assigning triangle normals to vertices\n");
-        success, failure_reason := compute_vertex_normals_from_triangles(mesh);
-        if !success {
-            log("Computing and assigning triangle normals to vertices, reason: \"%\"",
-                failure_reason);
-        }
-    }
-
     if info.is_dirty {
+        if mesh.geometry_format == .TRIANGLES && !mesh.normals.count {
+            // log("Computing and assigning triangle normals to vertices\n");
+            success, failure_reason := compute_vertex_normals_from_triangles(mesh);
+            if !success {
+                log("Computing and assigning triangle normals to vertices, reason: \"%\"",
+                    failure_reason);
+            }
+        }
+
         NP := size_of(Vector3) * mesh.positions.count;
         NN := size_of(Vector3) * mesh.normals.count;
         NI := size_of(u32) * mesh.indices.count;
