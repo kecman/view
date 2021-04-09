@@ -28,8 +28,6 @@ app : struct {
     show_help_ui := false;
     show_console_ui := false;
 
-    camera_rotation_axis : Camera_Rotation_Axis;
-
     camera : Camera;
     console : Console;
     entities : [..]*Entity;

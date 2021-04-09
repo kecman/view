@@ -10,6 +10,7 @@ Camera :: struct {
     }
 
     projection_type := ProjectionType.ORTHOGRAPHIC;
+    rotation_axis := Camera_Rotation_Axis.ROLL; // @Incomplete: this should be a configurable default
 
     // Data for orthographic projection
     left:   float;
@@ -35,7 +36,7 @@ Camera_Rotation_Axis :: enum {
 
 camera_rotation_axis :: () -> Vector3 {
     axis : Vector3 = ---;
-    if #complete app.camera_rotation_axis == {
+    if #complete app.camera.rotation_axis == {
         case .ROLL;    axis = current_look_direction();
         case .PITCH;   axis = cross(current_look_direction(), app.camera.up_direction);
         case .YAW;     axis = app.camera.up_direction;

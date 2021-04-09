@@ -256,7 +256,7 @@ show_camera_controls :: () {
     ImGui.Columns(1, border=false);
 
     ImGui.PushItemWidth(100);
-    combo_box("", *app.camera_rotation_axis, type_info(type_of(app.camera_rotation_axis)));
+    combo_box("", *app.camera.rotation_axis, type_info(type_of(app.camera.rotation_axis)));
     ShowTooltip("Camera Rotation Axis");
 
     if app.camera.look_position != Vector3.{0, 0, 0} {
