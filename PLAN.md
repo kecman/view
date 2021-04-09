@@ -11,11 +11,14 @@
 - [UI/UX] Display file load time
 - [UI/UX] F5 to refresh file
 - [Robustness] add tests for obj loading
+- [UI/UX] Maintain the bounding sphere of the whole scene and don't allow zooming out past that
+- [UI/UX] When we press "Reset Orbit" we should re-place the camera planes
 
 ## Backlog
 
 - [Bug] Fix sweep dragging check boxes being affected through overlayed ui e.g., colour picker
 - [Rendering] Render normals using geometry shader
+- [UI/UX] Make zoom slow down when you're closer to the object
 - [UI/UX] Mesh element number/segment number rendering
 - [UI/UX] Sliders to select visible range of indices
 - [UI/UX] Add a defaults.settings file containing options like default visualisation, scroll velocity, ui response dt's etc
