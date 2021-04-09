@@ -75,7 +75,7 @@ show_scene_ui :: ()
             }
 
             // Toggle visibility checkbox
-            checkbox_press_or_sweep_to_toggle(*it.visible, *it.visible_sweep_hovered, imgui_label("##Visible", it));
+            checkbox_press_or_sweep_to_toggle(*it.display_info.visible, *it.display_info.visible_sweep_hovered, imgui_label("##Visible", it));
             ShowTooltip("Visible");
 
             // Remove button
@@ -87,12 +87,12 @@ show_scene_ui :: ()
 
             // Color picker
             ImGui.SameLine();
-            ImGui.ColorEdit4(imgui_label("##color", it), *mesh.color.component, ImGui.ColorEditFlags.NoInputs);
+            ImGui.ColorEdit4(imgui_label("##color", it), *it.display_info.color.component, ImGui.ColorEditFlags.NoInputs);
 
             // Write filename
             ImGui.SameLine();
-            if mesh.fully_pathed_filename.count {
-                ImGui.Text(path_filename(mesh.fully_pathed_filename)); // @CompilerBug?
+            if it.fully_pathed_filename.count {
+                ImGui.Text(path_filename(it.fully_pathed_filename)); // @CompilerBug?
             } else {
                 ImGui.Text("---");
             }
@@ -100,32 +100,32 @@ show_scene_ui :: ()
             if ImGui.IsItemClicked() {
                 fit_on_screen(it);
             }
-            was_flash_hovered := it.flash_hovered;
+            was_flash_hovered := it.display_info.flash_hovered;
             if ImGui.IsItemHovered() {
-                it.flash_hovered = true;
-                it.flash_wave_dt += io().DeltaTime;
+                it.display_info.flash_hovered = true;
+                it.display_info.flash_wave_dt += io().DeltaTime;
             } else if was_flash_hovered {
-                it.flash_hovered = false;
-                it.flash_wave_dt = 0;
+                it.display_info.flash_hovered = false;
+                it.display_info.flash_wave_dt = 0;
             }
 
             if ImGui.BeginPopupContextItem(imgui_label("##context_menu", it)) {
                 defer ImGui.EndPopup();
 
-                if mesh.fully_pathed_filename.count {
-                    ImGui.Text(path_filename(mesh.fully_pathed_filename)); // @CompilerBug?
+                if it.fully_pathed_filename.count {
+                    ImGui.Text(path_filename(it.fully_pathed_filename)); // @CompilerBug?
                 }
 
                 // Toggle visibility checkbox
-                ImGui.Checkbox(imgui_label("Visible", it), *it.visible);
+                ImGui.Checkbox(imgui_label("Visible", it), *it.display_info.visible);
 
                 // Toggle wireframe checkbox
                 if it.type == .MESH || it.type == .POLYGON_SOUP {
-                    ImGui.Checkbox(imgui_label("Wireframe   ", it), *mesh.wireframe);
+                    ImGui.Checkbox(imgui_label("Wireframe   ", it), *it.display_info.wireframe);
                 }
 
                 ImGui.PushItemWidth(-1);
-                combo_box("", *mesh.display_mode, type_info(type_of(mesh.display_mode)));
+                combo_box("", *it.display_info.display_mode, type_info(type_of(it.display_info.display_mode)));
 
                 if it.type == {
                     case .POLYLINE_SOUP2;

@@ -8,13 +8,12 @@ Entity :: struct {
     }
     type : Entity_Type = .UNKNOWN;
 
-    visible : bool = true;
-    visible_sweep_hovered : bool = false;
-    flash_hovered : bool = false;
-    flash_wave_dt : float = 0.;
+    display_info : Display_Info;
 
-    // @TODO add bounding box
+    // @TODO move mesh into here
+    // @TODO add mesh bounding box here
 
+    fully_pathed_filename : string;
 }
 
 Polyline_Soup2_Entity :: struct {
@@ -72,6 +71,8 @@ deinit :: (base : *Entity) {
         }
         case .UNKNOWN;
     }
+
+    free(base.fully_pathed_filename.data);
 }
 
 get_mesh :: (base : *Entity) -> *Mesh {
@@ -103,10 +104,23 @@ load_entity_from_file :: (filename : string) -> *Entity
     // @Incomplete: support polygon types using wkt format and improve reporting here
     log("Loading file '%'... ", filename);
     mesh := load_obj(filename);
+
     if !mesh.positions.count {
         log("Skipped (empty vertex position data)\n");
         deinit(*mesh);
         return null;
+    }
+
+    Common_Init :: () #expand {
+        `entity.mesh = mesh;
+        `entity.fully_pathed_filename = copy_string(filename);
+
+        hash := get_hash(`entity.fully_pathed_filename);
+        `entity.display_info.color.x = cast(float)(hash % 257) / 256;
+        `entity.display_info.color.y = cast(float)(get_hash(hash) % 257) / 256;
+        `entity.display_info.color.z = cast(float)(get_hash(get_hash(hash)) % 257) / 256;
+
+        log("Inferred entity type '%'", `entity.type);
     }
 
     if #complete mesh.geometry_format == {
@@ -118,37 +132,29 @@ load_entity_from_file :: (filename : string) -> *Entity
                 assert(ok);
 
                 entity := New(Polyline_Soup2_Entity);
-                entity.mesh = mesh;
                 entity.shape = shape;
-
-                log("Inferred 2D polyline soup");
+                Common_Init();
                 return entity;
             } else {
                 shape, ok := to_Polyline_Soup3(mesh);
                 assert(ok);
 
                 entity := New(Polyline_Soup3_Entity);
-                entity.mesh = mesh;
                 entity.shape = shape;
-
-                log("Inferred 3D polyline soup");
+                Common_Init();
                 return entity;
             }
 
         case .TRIANGLES;
 
             entity := New(Mesh_Entity);
-            entity.mesh = mesh;
-
-            log("Inferred triangle mesh");
+            Common_Init();
             return entity;
 
         case .POINTS;
 
             entity := New(Mesh_Entity);
-            entity.mesh = mesh;
-
-            log("Inferred point cloud");
+            Common_Init();
             return entity;
 
         case .UNKNOWN; #through;

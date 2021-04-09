@@ -20,20 +20,11 @@ load_obj :: (filename : string) -> Mesh {
         return result;
     }
 
-    result.fully_pathed_filename = copy_string(filename);
-
-    result.wireframe = false;
-
-    hash := get_hash(result.fully_pathed_filename);
-    result.color.x = cast(float)(hash % 257) / 256;
-    result.color.y = cast(float)(get_hash(hash) % 257) / 256;
-    result.color.z = cast(float)(get_hash(get_hash(hash)) % 257) / 256;
-
     handler: Text_File_Handler;
     handler.do_version_number = false;
     defer deinit(*handler);
 
-    start_file(*handler, "load_obj", result.fully_pathed_filename, false);
+    start_file(*handler, "load_obj", filename, false);
     if handler.failed {
         deinit(*result);
         empty : Mesh;

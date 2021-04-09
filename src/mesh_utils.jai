@@ -180,7 +180,8 @@ Axes_Triad :: struct {
     y_axis : Mesh;
     z_axis : Mesh;
     origin : Mesh;
-    visible : bool = true;
+
+    visible := true;
 }
 
 make_axes_triad :: (axis_length : float) -> Axes_Triad
@@ -199,16 +200,6 @@ make_axes_triad :: (axis_length : float) -> Axes_Triad
     buffer_mesh(*y_axis);
     buffer_mesh(*z_axis);
     buffer_mesh(*origin);
-
-    x_axis.color = Vector4.{1, 0, 0, 1};
-    y_axis.color = Vector4.{0, 1, 0, 1};
-    z_axis.color = Vector4.{0, 0, 1, 1};
-    origin.color = Vector4.{1, 1, 1, 1};
-
-    x_axis.display_mode = .SOLID_COLOR;
-    y_axis.display_mode = .SOLID_COLOR;
-    z_axis.display_mode = .SOLID_COLOR;
-    origin.display_mode = .SOLID_COLOR;
 
     return result;
 }

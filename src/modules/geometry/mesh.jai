@@ -22,12 +22,6 @@ Mesh :: struct {
 
     is_dirty := true;
 
-    // @Cleanup move these into Mesh_Entity
-    fully_pathed_filename : string;
-    wireframe : bool = false;
-    color : Vector4;
-    display_mode : Display_Mode = .BLINN_PHONG;
-
     // @Cleanup Store vertices/normals as a flat array to better support 2D polylines? Maybe 'subclass' mesh with using
 
     // allocator :      Allocator;
@@ -127,7 +121,6 @@ deinit :: (using mesh : *Mesh) {
     array_reset(*indices);
 
     geometry_format = .UNKNOWN;
-    free(fully_pathed_filename.data);
 }
 
 print_Mesh :: (using mesh : Mesh) {

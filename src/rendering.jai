@@ -13,7 +13,18 @@ VertexLabelStyle :: struct {
     line_width : int = 1; // 1, 1, 2, 3
 }
 
-render_mesh :: (mesh : Mesh, style : VertexLabelStyle, flash_dt : float = 0) {
+Display_Info :: struct {
+    visible : bool = true;
+    visible_sweep_hovered : bool = false;
+    flash_hovered : bool = false;
+    flash_wave_dt : float = 0.;
+
+    wireframe : bool = false;
+    color : Vector4;
+    display_mode : Display_Mode = .BLINN_PHONG;
+}
+
+render_mesh :: (mesh : Mesh, info : Display_Info, style : VertexLabelStyle, flash_dt : float = 0) {
     using app;
 
     assert(!mesh.is_dirty);
@@ -42,18 +53,18 @@ render_mesh :: (mesh : Mesh, style : VertexLabelStyle, flash_dt : float = 0) {
 
     {
         mode_loc := glGetUniformLocation(mesh_shader, "display_mode");
-        glUniform1i(mode_loc, xx mesh.display_mode);
+        glUniform1i(mode_loc, xx info.display_mode);
     }
 
     {
         loc := glGetUniformLocation(mesh_shader, "wave");
-        wave := ifx flash_dt == 0 then -1 else cos(5 * flash_dt);
+        wave := ifx info.flash_wave_dt == 0 then -1 else cos(5 * info.flash_wave_dt);
         glUniform1f(loc, wave);
     }
 
     {
         color_loc := glGetUniformLocation(mesh_shader, "color");
-        glUniform4f(color_loc, mesh.color.x, mesh.color.y, mesh.color.z, mesh.color.w);
+        glUniform4f(color_loc, info.color.x, info.color.y, info.color.z, info.color.w);
     }
 
     {
@@ -96,7 +107,7 @@ render_mesh :: (mesh : Mesh, style : VertexLabelStyle, flash_dt : float = 0) {
     glGetIntegerv(GL_POLYGON_MODE, xx last_polygon_mode.data);
     defer glPolygonMode(GL_FRONT_AND_BACK, last_polygon_mode[0]);
 
-    if mesh.wireframe {
+    if info.wireframe {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     } else {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -230,9 +241,13 @@ debug_vector :: (length : float, vector_world : Vector3, color : Vector4) {
     debug_mesh := to_Mesh(debug_mesh_ps);
     defer deinit(*debug_mesh);
     buffer_mesh(*debug_mesh);
-    debug_mesh.wireframe = true;
-    debug_mesh.color = color;
-    render_mesh(debug_mesh, .{point_size=0, line_width=1});
+
+    // @Cleanup: struct literals do not currently support non-constant values
+    display_info : Display_Info;
+    display_info.wireframe = true;
+    display_info.color = color;
+
+    render_mesh(debug_mesh, display_info, .{point_size=0, line_width=1});
 }
 
 get_shader_program :: (shader_vertex : string, shader_fragment : string) -> GLuint {

@@ -341,7 +341,8 @@ visible_entities_bounding_sphere_fast :: () -> Sphere
     // Compute the bounding sphere of a bounding box of the scene in current view coords
     scene_bbox : AxisBox3;
     for app.entities {
-        if !it.visible continue;
+        if !it.display_info.visible continue;
+
         mesh := get_mesh(it);
         if mesh {
             view_from_model := view_from_world * mesh.world_from_model;
@@ -362,7 +363,8 @@ visible_entities_bounding_sphere_accurate :: () -> Sphere
     // Compute the bounding sphere the points in the scene
     points_vs : [..]Point3;
     for app.entities {
-        if !it.visible continue;
+        if !it.display_info.visible continue;
+
         mesh := get_mesh(it);
         if mesh {
             view_from_model := view_from_world * mesh.world_from_model;
@@ -381,7 +383,7 @@ visible_entities_bounding_sphere_accurate :: () -> Sphere
 entity_bounding_sphere_fast :: (entity : *Entity) -> Sphere
 {
     result : Sphere;
-    if !entity.visible {
+    if !entity.display_info.visible {
         return result;
     }
 
@@ -402,7 +404,7 @@ entity_bounding_sphere_fast :: (entity : *Entity) -> Sphere
 entity_bounding_sphere_accurate :: (entity : *Entity) -> Sphere
 {
     result : Sphere;
-    if !entity.visible {
+    if !entity.display_info.visible {
         return result;
     }
 

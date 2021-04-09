@@ -301,13 +301,13 @@ main :: () {
         Reserve_Labels :: (count : int) #expand { `label_limit -= count; }
 
         for entity : app.entities {
-            if !entity.visible continue;
+            if !entity.display_info.visible continue;
 
             if entity.type == {
                 case .POLYLINE_SOUP2;
 
                     soup := cast(*Polyline_Soup2_Entity) entity;
-                    render_mesh(soup.mesh, app.vertex_label_style, entity.flash_wave_dt);
+                    render_mesh(soup.mesh, entity.display_info, app.vertex_label_style);
                     for polyline : soup.shape.polylines {
                         Reserve_Labels(polyline.points.count);
                         if label_limit >= 0 {
@@ -318,7 +318,7 @@ main :: () {
                 case .POLYLINE_SOUP3;
 
                     soup := cast(*Polyline_Soup3_Entity) entity;
-                    render_mesh(soup.mesh, app.vertex_label_style, entity.flash_wave_dt);
+                    render_mesh(soup.mesh, entity.display_info, app.vertex_label_style);
                     for polyline : soup.shape.polylines {
                         Reserve_Labels(polyline.points.count);
                         if label_limit >= 0 {
@@ -329,7 +329,7 @@ main :: () {
                 case .POLYGON_SOUP;
 
                     soup := cast(*Polygon_Soup_Entity) entity;
-                    render_mesh(soup.mesh, app.vertex_label_style, entity.flash_wave_dt);
+                    render_mesh(soup.mesh, entity.display_info, app.vertex_label_style);
                     for polygon : soup.shape.polygons {
                         Reserve_Labels(point_count(polygon));
                         if label_limit >= 0 {
@@ -343,7 +343,7 @@ main :: () {
                 case .MESH;
 
                     mesh := cast(*Mesh_Entity) entity;
-                    render_mesh(mesh.mesh, app.vertex_label_style, entity.flash_wave_dt);
+                    render_mesh(mesh.mesh, entity.display_info, app.vertex_label_style);
                     // @Cleanup so the transform is also available for text rendering
                     Reserve_Labels(mesh.mesh.positions.count);
                     if label_limit >= 0 {
@@ -353,10 +353,10 @@ main :: () {
         }
 
         if triad.visible {
-            render_mesh(triad.origin, .{point_size=0, line_width=1});
-            render_mesh(triad.x_axis, .{point_size=0, line_width=1});
-            render_mesh(triad.y_axis, .{point_size=0, line_width=1});
-            render_mesh(triad.z_axis, .{point_size=0, line_width=1});
+            render_mesh(triad.origin, .{color=.{1, 1, 1, 1}, display_mode=.SOLID_COLOR}, .{point_size=0, line_width=1});
+            render_mesh(triad.x_axis, .{color=.{1, 0, 0, 1}, display_mode=.SOLID_COLOR}, .{point_size=0, line_width=1});
+            render_mesh(triad.y_axis, .{color=.{0, 1, 0, 1}, display_mode=.SOLID_COLOR}, .{point_size=0, line_width=1});
+            render_mesh(triad.z_axis, .{color=.{0, 0, 1, 1}, display_mode=.SOLID_COLOR}, .{point_size=0, line_width=1});
         }
 
         ImGui.Render();
@@ -418,8 +418,7 @@ should_load_entity_from_file :: (filename : string) -> bool
 {
     skip := false;
     for app.entities {
-        mesh := get_mesh(it);
-        if mesh && mesh.fully_pathed_filename == filename {
+        if it.fully_pathed_filename == filename {
             skip = true;
             break;
         }
