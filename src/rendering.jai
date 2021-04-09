@@ -34,6 +34,8 @@ Display_Info :: struct {
     wireframe := false;
     color : Vector4;
     display_mode := Display_Mode.BLINN_PHONG;
+
+    bounding_sphere : Sphere; // In world space
 }
 
 buffer_mesh :: (mesh : *Mesh, info : *Display_Info) {
@@ -47,6 +49,8 @@ buffer_mesh :: (mesh : *Mesh, info : *Display_Info) {
                     failure_reason);
             }
         }
+
+        info.bounding_sphere = bounding_sphere_ritter(mesh.positions);
 
         NP := size_of(Vector3) * mesh.positions.count;
         NN := size_of(Vector3) * mesh.normals.count;

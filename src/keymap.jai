@@ -60,7 +60,7 @@ init_keymap :: ()
     add_key(*app.keymap_keydown, toggle_show_console_ui, "toggle_show_console_ui",  xx #char "`", .{control_pressed=true});
 
     add_key(*app.keymap, close_application, "close_application", xx Special_Key_Code.ESCAPE);
-    add_key(*app.keymap, fit_on_screen, "fit_on_screen", xx #char "r");
+    add_key(*app.keymap, call_fit_on_screen, "fit_on_screen", xx #char "r");
     add_key(*app.keymap, reset_camera, "reset_camera", xx #char "r", .{shift_pressed=true});
 
     add_key(*app.keymap, cycle_line_width, "cycle_line_width", xx #char "l");
@@ -94,6 +94,7 @@ init_keymap :: ()
 // Bindable procedures
 //
 
+call_fit_on_screen             :: () { fit_on_screen(); } // @CompilerBug? why do we need this wrapper
 close_application              :: () { app.closing_application = true; }
 toggle_show_ui                 :: () { app.show_ui = !app.show_ui; }
 toggle_show_global_settings_ui :: () { app.show_global_settings_ui = !app.show_global_settings_ui; }
