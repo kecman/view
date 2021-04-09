@@ -55,6 +55,23 @@ make_sphere :: (center : Point3, radius : float) -> Sphere
     return result;
 }
 
+expand :: (using this : *Sphere, other : Sphere)
+{
+    center_distance := distance(this.center, other.center);
+
+    if this.radius > center_distance + other.radius {
+        // Do nothing, this sphere contains other sphere
+    } else if other.radius > center_distance + this.radius {
+        // Update this sphere, it's contained in the other sphere
+        <<this = other;
+    } else {
+        this.radius = center_distance / 2 + max(this.radius, other.radius);
+        this.center = (this.center + other.center) / 2;
+    }
+
+    return;
+}
+
 make_hyperplane3 :: (plane_normal : Vector3, point_on_plane: Point3) -> Hyperplane3
 {
     result : Hyperplane3 = ---;

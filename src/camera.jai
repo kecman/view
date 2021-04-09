@@ -216,7 +216,7 @@ update_camera :: (delta_time : float) {
 }
 
 // Adjust the camera position and viewing volume to fit the visible geometry while preserving the camera look direction
-fit_on_screen :: (accurate : bool = true) {
+fit_on_screen :: (accurate : bool = false) {
     if accurate {
         sphere := visible_entities_bounding_sphere_accurate();
         fit_on_screen(sphere);
@@ -227,7 +227,7 @@ fit_on_screen :: (accurate : bool = true) {
 }
 
 // Adjust the camera position and viewing volume to fit the entity while preserving the camera look direction
-fit_on_screen :: (entity : *Entity, accurate : bool = true)
+fit_on_screen :: (entity : *Entity, accurate : bool = false)
 {
     if !entity.display_info.visible {
         return;

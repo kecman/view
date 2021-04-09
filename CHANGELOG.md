@@ -1,7 +1,7 @@
 # Version: v0.0.4, Unreleased
 
 - When files are dropped into `garage` the camera is recomputed to fit all entities into the scene. Eventually this behaviour will be user-configurable.
-
+- Fixed an issue where fitting the visible entities to the screen was slow for large entities
 
 # Version: v0.0.3, 5 April 2021
 
