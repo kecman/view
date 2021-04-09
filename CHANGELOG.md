@@ -1,3 +1,8 @@
+# Version: v0.0.4, Unreleased
+
+- When files are dropped into `garage` the camera is recomputed to fit all entities into the scene. Eventually this behaviour will be user-configurable.
+
+
 # Version: v0.0.3, 5 April 2021
 
 - Fixed camera rotation not working properly when zoomed in

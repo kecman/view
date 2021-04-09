@@ -171,6 +171,7 @@ main :: () {
                 }
             }
         }
+        fit_on_screen();
     }
 
     // Main loop
@@ -251,6 +252,9 @@ main :: () {
                             array_add(*app.entities, entity);
                         }
                     }
+
+                    // @Incomplete: This behaviour of fitting to screen when new files are added should be configurable
+                    fit_on_screen();
                 }
             }
         }
