@@ -463,7 +463,3 @@ to_ndc :: (position_px : Vector2) -> Vector2
 
 camera_at_mouse_down : Camera;
 mouse_down_pos : Vector2; // @Cleanup: replace this state with ImGui: use GetMouseDragDelta
-
-#import "geometry";
-#load "numeric.jai";
-#load "geometric_operations.jai";

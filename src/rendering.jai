@@ -13,21 +13,58 @@ VertexLabelStyle :: struct {
     line_width : int = 1; // 1, 1, 2, 3
 }
 
+// @Cleanup rename to Render_Info
 Display_Info :: struct {
-    visible : bool = true;
-    visible_sweep_hovered : bool = false;
-    flash_hovered : bool = false;
+    is_dirty := true;
+    vbo : GLuint;
+    ibo : GLuint;
+
+    visible := true;
+    visible_sweep_hovered := false;
+    flash_hovered := false;
     flash_wave_dt : float = 0.;
 
-    wireframe : bool = false;
+    wireframe := false;
     color : Vector4;
-    display_mode : Display_Mode = .BLINN_PHONG;
+    display_mode := Display_Mode.BLINN_PHONG;
+}
+
+buffer_mesh :: (mesh : *Mesh, info : *Display_Info) {
+
+    if mesh.geometry_format == .TRIANGLES && !mesh.normals.count {
+        // log("Computing and assigning triangle normals to vertices\n");
+        success, failure_reason := compute_vertex_normals_from_triangles(mesh);
+        if !success {
+            log("Computing and assigning triangle normals to vertices, reason: \"%\"",
+                failure_reason);
+        }
+    }
+
+    if info.is_dirty {
+        NP := size_of(Vector3) * mesh.positions.count;
+        NN := size_of(Vector3) * mesh.normals.count;
+        NI := size_of(u32) * mesh.indices.count;
+
+        if !info.vbo glGenBuffers(1, *info.vbo);
+
+        glBindBuffer(GL_ARRAY_BUFFER, info.vbo);
+        glBufferData(GL_ARRAY_BUFFER, NP + NN, null, GL_STATIC_DRAW);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, NP, mesh.positions.data);
+        glBufferSubData(GL_ARRAY_BUFFER, NP, NN, mesh.normals.data);
+
+        if !info.ibo glGenBuffers(1, *info.ibo);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, info.ibo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, NI, mesh.indices.data, GL_STATIC_DRAW);
+
+        info.is_dirty = false;
+    }
 }
 
 render_mesh :: (mesh : Mesh, info : Display_Info, style : VertexLabelStyle, flash_dt : float = 0) {
     using app;
 
-    assert(!mesh.is_dirty);
+    assert(!info.is_dirty);
 
     glUseProgram(mesh_shader);
 
@@ -78,8 +115,8 @@ render_mesh :: (mesh : Mesh, info : Display_Info, style : VertexLabelStyle, flas
     }
 
     glBindVertexArray(mesh_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ibo);
+    glBindBuffer(GL_ARRAY_BUFFER, info.vbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, info.ibo);
 
     ATTRIB_POSITION  :: 0;
     ATTRIB_NORMAL    :: 1;
@@ -128,7 +165,7 @@ render_mesh :: (mesh : Mesh, info : Display_Info, style : VertexLabelStyle, flas
 
 render_vertex_labels :: (points : []$T, style : VertexLabelStyle, label_index_offset : int = 0) {
     #assert(T == Vector2 || T == Vector3);
-    dim :: #run geom.dimension_of(T);
+    dim :: #run dimension_of(T);
 
     if !style.show_index && !style.show_position {
         return;
@@ -240,12 +277,13 @@ debug_vector :: (length : float, vector_world : Vector3, color : Vector4) {
 
     debug_mesh := to_Mesh(debug_mesh_ps);
     defer deinit(*debug_mesh);
-    buffer_mesh(*debug_mesh);
 
     // @Cleanup: struct literals do not currently support non-constant values
     display_info : Display_Info;
     display_info.wireframe = true;
     display_info.color = color;
+
+    buffer_mesh(*debug_mesh, *display_info);
 
     render_mesh(debug_mesh, display_info, .{point_size=0, line_width=1});
 }

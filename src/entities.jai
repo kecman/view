@@ -8,7 +8,9 @@ Entity :: struct {
     }
     type : Entity_Type = .UNKNOWN;
 
+    // Consider making a Display_Mesh type
     display_info : Display_Info;
+    mesh : Mesh;
 
     // @TODO move mesh into here
     // @TODO add mesh bounding box here
@@ -21,7 +23,6 @@ Polyline_Soup2_Entity :: struct {
     type = .POLYLINE_SOUP2;
 
     shape : Polyline_Soup2;
-    mesh : Mesh; // for rendering
 }
 
 Polyline_Soup3_Entity :: struct {
@@ -29,26 +30,22 @@ Polyline_Soup3_Entity :: struct {
     type = .POLYLINE_SOUP3;
 
     shape : Polyline_Soup3;
-    mesh : Mesh; // for rendering
 }
-
 
 Polygon_Soup_Entity :: struct {
     using base : Entity;
     type = .POLYGON_SOUP;
 
     shape : Polygon_Soup;
-    mesh : Mesh; // for rendering
 }
 
 Mesh_Entity :: struct {
     using base : Entity;
     type = .MESH;
-
-    mesh : Mesh;
 }
 
-deinit :: (base : *Entity) {
+deinit :: (base : *Entity)
+{
     if #complete base.type == {
         case .POLYLINE_SOUP2; {
             entity := cast(*Polyline_Soup2_Entity)base;
@@ -71,6 +68,12 @@ deinit :: (base : *Entity) {
         }
         case .UNKNOWN;
     }
+
+    if base.display_info.vbo glDeleteBuffers(1, *base.display_info.vbo);
+    if base.display_info.ibo glDeleteBuffers(1, *base.display_info.ibo);
+    base.display_info.vbo = 0;
+    base.display_info.ibo = 0;
+    base.display_info.is_dirty = true;
 
     free(base.fully_pathed_filename.data);
 }
@@ -119,6 +122,8 @@ load_entity_from_file :: (filename : string) -> *Entity
         `entity.display_info.color.x = cast(float)(hash % 257) / 256;
         `entity.display_info.color.y = cast(float)(get_hash(hash) % 257) / 256;
         `entity.display_info.color.z = cast(float)(get_hash(get_hash(hash)) % 257) / 256;
+
+        buffer_mesh(*`entity.mesh, *`entity.display_info);
 
         log("Inferred entity type '%'", `entity.type);
     }

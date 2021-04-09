@@ -1,58 +1,3 @@
-// Shared global state is stored here
-app : struct {
-    window : *SDL_Window = null;
-
-    INITIAL_WINDOW_WIDTH  : s32 : 1280;
-    INITIAL_WINDOW_HEIGHT : s32 : 720;
-
-    current_window_width := INITIAL_WINDOW_WIDTH;
-    current_window_height := INITIAL_WINDOW_HEIGHT;
-    fullscreen := false;
-
-    // clear_color := make_vector4(0.45, 0.55, 0.60, 1.00);
-    // clear_color := make_vector4(87./256, 194./256, 248./256, 1.00); // light blue
-    clear_color : Vector4 = .{170./256, 170./256, 170./256, 1.00}; // light grey
-
-    text_shader : GLuint;
-    text_vao : GLuint;
-    text_vbo : GLuint;
-
-    mesh_shader : GLuint;
-    mesh_vao : GLuint;
-    polyline_shader : GLuint;
-    polyline_vao : GLuint;
-
-    modifier_flags : Modifier_Flags; // @Cleanup io should come from one place, probably imgui
-    show_ui := true;
-    show_global_settings_ui := false;
-    show_help_ui := false;
-    show_console_ui := false;
-
-    camera : Camera;
-    console : Console;
-    entities : [..]*Entity;
-
-    vertex_label_style : VertexLabelStyle;
-    label_limit := 2000;
-
-    keymap : Keymap;
-    keymap_keydown : Keymap;
-
-    closing_application := false; // Set this to true to close the application
-}
-
-Modifier_Flags :: struct {
-    shift_pressed   := false;
-    control_pressed := false;
-    alt_pressed     := false;
-}
-
-V2_ZERO :: Vector2.{0, 0};
-
-current_window_aspect_ratio_width_over_height :: () -> float {
-    return cast(float) app.current_window_width / cast(float) app.current_window_height;
-}
-
 main :: () {
 
     SDL_Init(SDL_INIT_VIDEO);
@@ -171,6 +116,7 @@ main :: () {
         }
         fit_on_screen();
     }
+
 
     // Main loop
     while !app.closing_application {
@@ -352,11 +298,15 @@ main :: () {
             }
         }
 
+        triad.origin.display_info.visible = triad.visible;
+        triad.x_axis.display_info.visible = triad.visible;
+        triad.y_axis.display_info.visible = triad.visible;
+        triad.z_axis.display_info.visible = triad.visible;
         if triad.visible {
-            render_mesh(triad.origin, .{color=.{1, 1, 1, 1}, display_mode=.SOLID_COLOR}, .{point_size=0, line_width=1});
-            render_mesh(triad.x_axis, .{color=.{1, 0, 0, 1}, display_mode=.SOLID_COLOR}, .{point_size=0, line_width=1});
-            render_mesh(triad.y_axis, .{color=.{0, 1, 0, 1}, display_mode=.SOLID_COLOR}, .{point_size=0, line_width=1});
-            render_mesh(triad.z_axis, .{color=.{0, 0, 1, 1}, display_mode=.SOLID_COLOR}, .{point_size=0, line_width=1});
+            render_mesh(triad.origin.mesh, triad.origin.display_info, .{point_size=0, line_width=1});
+            render_mesh(triad.x_axis.mesh, triad.x_axis.display_info, .{point_size=0, line_width=1});
+            render_mesh(triad.y_axis.mesh, triad.y_axis.display_info, .{point_size=0, line_width=1});
+            render_mesh(triad.z_axis.mesh, triad.z_axis.display_info, .{point_size=0, line_width=1});
         }
 
         ImGui.Render();
@@ -390,30 +340,6 @@ main :: () {
     SDL_Quit();
 }
 
-#import "Basic";
-#import "File";
-#import "String";
-#import "Reflection";
-#import "Math";
-#import "SDL";
-#import "ImGui_";
-#load "modules/ImGui_/examples/imgui_sdl_gl.jai";
-
-geom :: #import "geometry";
-#load "io_obj.jai";
-#load "io_wkt.jai";
-#load "rendering.jai";
-#load "font.jai";
-#load "carpet.jai";
-#load "camera.jai";
-#load "console.jai";
-#load "entities.jai";
-#load "mesh_utils.jai";
-#load "ui.jai";
-#load "keymap.jai";
-#load "inspector.jai";
-//#load "commands.jai"; // @CompilerBug loading here triggers incorrect (?) compilation error
-
 should_load_entity_from_file :: (filename : string) -> bool
 {
     skip := false;
@@ -439,6 +365,4 @@ to_sdl_keycode :: (key_code : u32) -> SDL_Keycode {
     return SDLK_UNKNOWN;
 }
 
-#import "Compiler";
-#run compiler_set_type_info_flags(GL_Procedures, .NO_SIZE_COMPLAINT);
-#run compiler_set_type_info_flags(ImGui, .NO_SIZE_COMPLAINT);
+#load "app.jai";

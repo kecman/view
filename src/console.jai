@@ -1,5 +1,3 @@
-#load "commands.jai";
-
 Command_Info :: struct {
     name : string;
     procedure : ([] string) -> ();
@@ -301,6 +299,3 @@ text_edit_callback :: (data : *ImGui.TextEditCallbackData) -> s32 #c_call {
 
     return 0;
 }
-
-#import "Basic";
-#import "String";

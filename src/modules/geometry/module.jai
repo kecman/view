@@ -1,5 +1,3 @@
-#module_parameters(USE_GRAPHICS := true);
-
 #load "axis_box.jai";
 #load "polyline.jai";
 #load "polygon.jai";

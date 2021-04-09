@@ -135,6 +135,7 @@ tmp_clockwise_boundaries :: (args : []string) {
     entity := New(Polyline_Soup2_Entity);
     entity.mesh = mesh;
     entity.shape = boundary;
+    buffer_mesh(*entity.mesh, *entity.display_info);
 
     array_add(*app.entities, entity);
 } else {
@@ -191,6 +192,8 @@ tmp_offset :: (args : []string) {
     entity := New(Polygon_Soup_Entity);
     entity.mesh = mesh;
     entity.shape = offset_polygon;
+    buffer_mesh(*entity.mesh, *entity.display_info);
+
     array_add(*app.entities, entity);
 } else {
     log("Feature unavailable: compile with ENABLE_BOOST_POLYGON\n");

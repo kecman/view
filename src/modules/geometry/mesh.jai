@@ -15,13 +15,6 @@ Display_Mode :: enum {
 Mesh :: struct {
     geometry_format := Geometry_Format.UNKNOWN;
 
-#if USE_GRAPHICS {
-    vbo : GLuint;
-    ibo : GLuint;
-}
-
-    is_dirty := true;
-
     // @Cleanup Store vertices/normals as a flat array to better support 2D polylines? Maybe 'subclass' mesh with using
 
     // allocator :      Allocator;
@@ -68,53 +61,7 @@ compute_vertex_normals_from_triangles :: (using mesh : *Mesh) -> bool, string
     return true, "";
 }
 
-buffer_mesh :: (using mesh : *Mesh) {
-
-    if mesh.geometry_format == .TRIANGLES && !mesh.normals.count {
-        // log("Computing and assigning triangle normals to vertices\n");
-        success, failure_reason := compute_vertex_normals_from_triangles(mesh);
-        if !success {
-            log("Computing and assigning triangle normals to vertices, reason: \"%\"",
-                failure_reason);
-        }
-    }
-
-#if USE_GRAPHICS {
-    if is_dirty {
-        if !vbo glGenBuffers(1, *vbo);
-
-        NP := size_of(Vector3) * positions.count;
-        NN := size_of(Vector3) * normals.count;
-
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, NP + NN, null, GL_STATIC_DRAW);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, NP, positions.data);
-        glBufferSubData(GL_ARRAY_BUFFER, NP, NN, normals.data);
-
-        if !ibo glGenBuffers(1, *ibo);
-
-        NI := size_of(u32) * indices.count;
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, NI, indices.data, GL_STATIC_DRAW);
-
-        // @FIXME: Send normals!
-
-        is_dirty = false;
-    }
-}
-}
-
 deinit :: (using mesh : *Mesh) {
-#if USE_GRAPHICS {
-    if vbo glDeleteBuffers(1, *vbo);
-    if ibo glDeleteBuffers(1, *ibo);
-
-    vbo = 0;
-    ibo = 0;
-}
-    is_dirty = true;
-
     // Note: array_reset frees memory and zeros members
     array_reset(*positions);
     array_reset(*normals);
@@ -144,10 +91,4 @@ bounding_box :: (using mesh : Mesh, transform : Matrix4) -> AxisBox3 #must {
         expand(*box, point_transformed);
     }
     return box;
-}
-
-// Or maybe we should have a Renderable_Mesh? bleh..
-#if USE_GRAPHICS {
-#import "GL"; // for GLuint, glGenBuffers, glDeleteBuffers
-#run compiler_set_type_info_flags(GL_Procedures, .NO_SIZE_COMPLAINT);
 }

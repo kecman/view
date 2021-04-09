@@ -134,8 +134,6 @@ load_obj :: (filename : string) -> Mesh {
         }
     }
 
-    buffer_mesh(*result);
-
     // for result.points print("points: %\n", it);
     // for result.indices print("indices: %\n", it);
 

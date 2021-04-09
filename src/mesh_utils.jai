@@ -27,8 +27,6 @@ to_Mesh :: (shape : Polyline_Soup2) -> Mesh, bool #must {
         index_offset += polyline.points.count;
     }
 
-    buffer_mesh(*mesh);
-
     return mesh, true;
 }
 
@@ -141,8 +139,6 @@ to_Mesh :: (shape : Polygon_Soup) -> Mesh, bool #must {
         }
     }
 
-    buffer_mesh(*result);
-
     return result, true;
 } else {
     return result, false;
@@ -176,11 +172,10 @@ to_Mesh :: (m : par_shapes_mesh) -> Mesh
 }
 
 Axes_Triad :: struct {
-    x_axis : Mesh;
-    y_axis : Mesh;
-    z_axis : Mesh;
-    origin : Mesh;
-
+    x_axis : Mesh_Entity;
+    y_axis : Mesh_Entity;
+    z_axis : Mesh_Entity;
+    origin : Mesh_Entity;
     visible := true;
 }
 
@@ -191,15 +186,20 @@ make_axes_triad :: (axis_length : float) -> Axes_Triad
 
     using result : Axes_Triad;
 
-    x_axis = to_Mesh(par_shapes_triad.x_axis);
-    y_axis = to_Mesh(par_shapes_triad.y_axis);
-    z_axis = to_Mesh(par_shapes_triad.z_axis);
-    origin = to_Mesh(par_shapes_triad.origin);
+    x_axis.mesh = to_Mesh(par_shapes_triad.x_axis);
+    y_axis.mesh = to_Mesh(par_shapes_triad.y_axis);
+    z_axis.mesh = to_Mesh(par_shapes_triad.z_axis);
+    origin.mesh = to_Mesh(par_shapes_triad.origin);
 
-    buffer_mesh(*x_axis);
-    buffer_mesh(*y_axis);
-    buffer_mesh(*z_axis);
-    buffer_mesh(*origin);
+    x_axis.display_info = .{visible=true, color=.{1, 0, 0, 1}, display_mode=.SOLID_COLOR};
+    y_axis.display_info = .{visible=true, color=.{0, 1, 0, 1}, display_mode=.SOLID_COLOR};
+    z_axis.display_info = .{visible=true, color=.{0, 0, 1, 1}, display_mode=.SOLID_COLOR};
+    origin.display_info = .{visible=true, color=.{1, 1, 1, 1}, display_mode=.SOLID_COLOR};
+
+    buffer_mesh(*x_axis.mesh, *x_axis.display_info);
+    buffer_mesh(*y_axis.mesh, *y_axis.display_info);
+    buffer_mesh(*z_axis.mesh, *z_axis.display_info);
+    buffer_mesh(*origin.mesh, *origin.display_info);
 
     return result;
 }
@@ -320,8 +320,3 @@ deinit :: (using triad : *Triad) {
     deinit(triad.z_axis);
     deinit(triad.origin);
 }
-
-#scope_file
-
-#load "shapes.jai";
-#import "geometry";

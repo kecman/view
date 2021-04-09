@@ -1,3 +1,5 @@
+V2_ZERO :: Vector2.{0, 0};
+
 show_global_settings_ui :: (world_axes : *Axes_Triad)
 {
     if !app.show_global_settings_ui return;

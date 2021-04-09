@@ -40,12 +40,4 @@ main :: () {
 //     print("called test_function");
 // } @test
 
-#scope_file
-
-#import "geometry" (USE_GRAPHICS = false);
-#load "io_obj.jai";
-#load "mesh_utils.jai";
-#load "entities.jai";
-
-#import "Basic";
-#import "Compiler";
+#load "app.jai";

@@ -129,7 +129,7 @@ bounding_sphere :: (aabb : AxisBox3) -> Sphere
 
 bounding_sphere_naive :: (points : []Point3) -> Sphere
 {
-    aabb := geom.make_axis_box3(..points);
+    aabb := make_axis_box3(..points);
     result := bounding_sphere(aabb);
     return result;
 }
@@ -235,12 +235,10 @@ test :: () {
 #run test();
 }
 
-
 dot :: dot_product;
 cross :: cross_product;
 
-#import "Math"; // @Cleanup Plane3 struct means we need to use the name Hyperplane3
-geom :: #import "geometry";
+ // @Cleanup Plane3 struct in Math module means we need to use the name Hyperplane3
 
 // Parts of this file are based on:
 // https://github.com/davideberly/GeometricTools (Distributed under the Boost Software License, Version 1.0.)
