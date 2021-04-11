@@ -36,10 +36,10 @@ Display_Info :: struct {
     display_mode := Display_Mode.BLINN_PHONG;
 
     bounding_sphere : Sphere; // In world space
+    bounding_aabb : AxisBox3; // In world space
 }
 
 buffer_mesh :: (mesh : *Mesh, info : *Display_Info) {
-
     if info.is_dirty {
         if mesh.geometry_format == .TRIANGLES && !mesh.normals.count {
             // log("Computing and assigning triangle normals to vertices\n");
@@ -51,6 +51,7 @@ buffer_mesh :: (mesh : *Mesh, info : *Display_Info) {
         }
 
         info.bounding_sphere = bounding_sphere_ritter(mesh.positions);
+        info.bounding_aabb = make_axis_box3(..mesh.positions);
 
         NP := size_of(Vector3) * mesh.positions.count;
         NN := size_of(Vector3) * mesh.normals.count;
