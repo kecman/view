@@ -1,10 +1,9 @@
 show_inspector := false;
 
-inspect :: (name: *u8, t : *$T) {
-    ImGui.Begin(name, *show_inspector);
-    defer ImGui.End();
-
+inspect :: (name: *u8, t : *$T, new_window : bool = false) {
+    if new_window ImGui.Begin(name, *show_inspector);
     inspect(name, t, type_info(T));
+    if new_window ImGui.End();
 }
 
 #scope_file
@@ -23,7 +22,7 @@ inspect :: (name: *u8, data: *void, info:*Type_Info) {
 
             if info.runtime_size == {
                 case 4;
-                    ImGui.DragFloat(name, data, display_format="%.3f");
+                    ImGui.DragFloat(name, data, display_format="%.6f");
                     // ImGui.InputFloat(name, data, 0.01, 1.0);
                 case 8;
                     x : float = xx <<cast(*float64) data;
@@ -49,7 +48,7 @@ inspect :: (name: *u8, data: *void, info:*Type_Info) {
         case .STRUCT;
 
             info_struct := cast(*Type_Info_Struct) info;
-            if ImGui.TreeNode("%: %", to_string(name), info_struct.name) {
+            if ImGui.TreeNode("%", to_string(name)) {
                 for member : info_struct.members {
                     inspect(temp_c_string(member.name), data + member.offset_in_bytes, member.type);
                 }

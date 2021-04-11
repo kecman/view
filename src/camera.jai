@@ -4,13 +4,9 @@ Camera :: struct {
     look_position : Vector3;
     up_direction :  Vector3;
 
-    ProjectionType :: enum u8 {
-        ORTHOGRAPHIC;
-        PERSPECTIVE;
-    }
-
     projection_type := ProjectionType.ORTHOGRAPHIC;
-    rotation_axis := Camera_Rotation_Axis.ROLL; // @Incomplete: this should be a configurable default
+    rotation_axis := Camera_Rotation_Axis.ROLL; // :UserConfig use configurable default
+    scene_bounding_sphere : Sphere;
 
     // Data for orthographic projection
     left:   float;
@@ -23,6 +19,11 @@ Camera :: struct {
 
     near : float;
     far :  float;
+}
+
+ProjectionType :: enum {
+    ORTHOGRAPHIC;
+    PERSPECTIVE;
 }
 
 Camera_Rotation_Axis :: enum {
@@ -103,7 +104,6 @@ init_camera :: () {
     camera.far = 400;
 }
 
-// @Cleanup: only do ONE operation using else if's
 update_camera :: (delta_time : float) {
     camera := *app.camera;
 
@@ -217,13 +217,8 @@ update_camera :: (delta_time : float) {
 
 // Adjust the camera position and viewing volume to fit the visible geometry while preserving the camera look direction
 fit_on_screen :: (accurate : bool = false) {
-    if accurate {
-        sphere := visible_entities_bounding_sphere_accurate();
-        fit_on_screen(sphere);
-    } else {
-        sphere := visible_entities_bounding_sphere_fast();
-        fit_on_screen(sphere);
-    }
+    app.camera.scene_bounding_sphere = visible_entities_bounding_sphere(accurate);
+    fit_on_screen(app.camera.scene_bounding_sphere);
 }
 
 // Adjust the camera position and viewing volume to fit the entity while preserving the camera look direction
@@ -274,15 +269,25 @@ fit_on_screen :: (sphere : Sphere)
 
 camera_clamp_orthographic_view_planes :: ()
 {
-    using camera := *app.camera;
+    using *app.camera;
+    using *app.settings;
 
-    // This number is picked so details at 5um (literals are in mm) fill up the whole screen
-    // @Cleanup Make this an adjustable parameter. Or remove it entirely
+    aspect := current_window_aspect_ratio_width_over_height();
 
-    top    = max(top,     0.005);
-    bottom = min(bottom, -0.005);
-    right  = max(right,   0.005 * current_window_aspect_ratio_width_over_height());
-    left   = min(left,   -0.005 * current_window_aspect_ratio_width_over_height());;
+    camera_zoom_min_screen_filling_length_mm = clamp(camera_zoom_min_screen_filling_length_mm, .00001, scene_bounding_sphere.radius / 2);
+    lo, hi := camera_zoom_min_screen_filling_length_mm, scene_bounding_sphere.radius;
+
+    if camera_zoom_constrained_to_scene_bounding_sphere {
+        top   = clamp(top,   lo,          hi);
+        right = clamp(right, lo * aspect, hi * aspect);
+        bottom = -top;
+        left  = -right;
+    } else {
+        top   = max(top,   lo);
+        right = max(right, lo * aspect);
+        bottom = -top;
+        left  = -right;
+    }
 }
 
 // @Cleanup use Math.make_look_at_matrix here
@@ -332,6 +337,14 @@ io_mouse_right_down :: () -> bool { return io().MouseDown[1]; }
 io_mouse_middle_down :: () -> bool { return io().MouseDown[2]; }
 
 #scope_file
+
+visible_entities_bounding_sphere :: (accurate : bool = false) -> Sphere
+{
+    if accurate {
+        return visible_entities_bounding_sphere_accurate();
+    }
+    return visible_entities_bounding_sphere_fast();
+}
 
 // Returns a bounding sphere of the visible items in the scene in world space
 visible_entities_bounding_sphere_fast :: () -> Sphere

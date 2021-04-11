@@ -197,8 +197,9 @@ main :: () {
                         }
                     }
 
-                    // @Incomplete: This behaviour of fitting to screen when new files are added should be configurable
-                    fit_on_screen();
+                    if app.settings.fit_to_screen_on_file_drop_event {
+                        fit_on_screen();
+                    }
                 }
             }
         }
@@ -214,8 +215,7 @@ main :: () {
             show_help_ui();
             console_draw();
 
-            // inspect("camera", *app.camera);
-            // inspect("app", *app);
+            // inspect("Debug", *app.camera, true);
         }
 
         if ImGui.GetMouseCursor() == {

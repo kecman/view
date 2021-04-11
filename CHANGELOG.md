@@ -1,7 +1,10 @@
 # Version: v0.0.4, Unreleased
 
-- When files are dropped into `garage` the camera is recomputed to fit all entities into the scene. Eventually this behaviour will be user-configurable.
 - Fixed an issue where fitting the visible entities to the screen was slow for large entities
+- When visibility of any item is changed the camera is updated to fit items to the screen
+- When files are dropped into `garage` the camera is updated to fit all items to the screen
+- Added option to change some user preferences in a running session. Future work will persist user preferences across sessions
+- Added a constraint preventing the camera from zooming out further than necessary to view the entire scene
 
 # Version: v0.0.3, 5 April 2021
 

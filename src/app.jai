@@ -37,6 +37,7 @@ app : struct {
 
     keymap : Keymap;
     keymap_keydown : Keymap;
+    settings : User_Settings;
 
     closing_application := false; // Set this to true to close the application
 }
@@ -79,6 +80,7 @@ Modifier_Flags :: struct {
 #load "shapes.jai";
 #load "keymap.jai";
 #load "inspector.jai";
+#load "settings.jai";
 
 #import "Compiler";
 #run compiler_set_type_info_flags(GL_Procedures, .NO_SIZE_COMPLAINT);

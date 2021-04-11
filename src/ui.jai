@@ -64,6 +64,8 @@ show_scene_ui :: ()
         return to_c_string(concatenate(label, tprint("##%", ptr)));
     }
 
+    any_visibility_toggled := false;
+
     entity_to_remove := -1;
     for entities {
         mesh := get_mesh(it);
@@ -77,8 +79,9 @@ show_scene_ui :: ()
             }
 
             // Toggle visibility checkbox
-            checkbox_press_or_sweep_to_toggle(*it.display_info.visible, *it.display_info.visible_sweep_hovered, imgui_label("##Visible", it));
+            visibility_toggled := checkbox_press_or_sweep_to_toggle(*it.display_info.visible, *it.display_info.visible_sweep_hovered, imgui_label("##Visible", it));
             ShowTooltip("Visible");
+            any_visibility_toggled = any_visibility_toggled || visibility_toggled;
 
             // Remove button
             ImGui.SameLine();
@@ -152,6 +155,10 @@ show_scene_ui :: ()
                 }
             }
         }
+    }
+
+    if app.settings.fit_to_screen_on_visibility_toggle && any_visibility_toggled {
+        fit_on_screen();
     }
 
     if entity_to_remove >= 0 && entity_to_remove < entities.count {
@@ -318,7 +325,10 @@ show_help_ui :: ()
     }
 
     ImGui.Columns(1);
-    ImGui.Text("                                          "); // @Hack
+    ImGui.NewLine();
+
+    // :UserConfig add a button to overwrite the user settings file with new defaults here?
+    inspect("User settings", *app.settings);
 
     // @Incomplete add a message about where the keymap is for editing
 }
@@ -346,7 +356,8 @@ combo_box :: (label : string, data: *void, info_enum: *Type_Info_Enum) {
 }
 
 // Toggle visibility if the checkbox was pressed or if we swept over it with the LMB down
-checkbox_press_or_sweep_to_toggle :: (state : *bool, hovered : *bool, label : *u8) {
+checkbox_press_or_sweep_to_toggle :: (state : *bool, hovered : *bool, label : *u8) -> bool
+{
 
     state_copy := <<state;
     checkbox_pressed := ImGui.Checkbox(label, *state_copy);
@@ -361,11 +372,14 @@ checkbox_press_or_sweep_to_toggle :: (state : *bool, hovered : *bool, label : *u
     pressed := checkbox_pressed && !current_frame_hovered;
     swept   := swept_into && left_mouse_button_down;
 
+    changed := false;
     if (clicked || pressed || swept) {
         <<state = !<<state;
+        changed = true;
     }
 
     <<hovered = current_frame_hovered;
+    return changed;
 }
 
 ShowTooltip :: (description : string) #expand {
