@@ -275,7 +275,7 @@ camera_clamp_orthographic_view_planes :: ()
     aspect := current_window_aspect_ratio_width_over_height();
 
     camera_zoom_min_screen_filling_length_mm = clamp(camera_zoom_min_screen_filling_length_mm, .00001, scene_bounding_sphere.radius / 2);
-    lo, hi := camera_zoom_min_screen_filling_length_mm, scene_bounding_sphere.radius;
+    lo, hi := camera_zoom_min_screen_filling_length_mm, 1.5 * scene_bounding_sphere.radius;
 
     if camera_zoom_constrained_to_scene_bounding_sphere {
         top   = clamp(top,   lo,          hi);
