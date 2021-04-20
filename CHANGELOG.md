@@ -1,10 +1,15 @@
 # Version: v0.0.4, Unreleased
 
+- Improved the camera implementation to improve the feel of the zoom controls
+- Changed mouse wheel zooming to zoom into/out from the location where the mouse is pointing
 - Fixed an issue where fitting the visible entities to the screen was slow for large entities
 - When visibility of any item is changed the camera is updated to fit items to the screen
 - When files are dropped into `garage` the camera is updated to fit all items to the screen
-- Added option to change some user preferences in a running session. Future work will persist user preferences across sessions
-- Added a constraint preventing the camera from zooming out further than necessary to view the entire scene
+- Added an option to make drag zooming zoom into/out from the location where the RMB was pressed, off by default
+- Added a constraint to prevent the camera from zooming out further than necessary to view the entire scene
+- Added option to change some user preferences in a running session* (press h for help)
+
+ (*) Future work will persist user preferences across sessions
 
 # Version: v0.0.3, 5 April 2021
 

@@ -100,8 +100,12 @@ update_camera :: (delta_time : float) {
     if io().WantCaptureMouse return;
 
     if ImGui.IsMouseClicked(0) {
-        mouse_down_pos = io().MousePos;
+        lmb_down_pos = io().MousePos;
         camera_at_mouse_down = app.camera;
+    }
+
+    if ImGui.IsMouseClicked(1) {
+        rmb_down_pos = io().MousePos;
     }
 
     // Mouse delta is zero when current or previous mouse positions were invalid
@@ -141,7 +145,7 @@ update_camera :: (delta_time : float) {
 
         world_from_projection_at_mouse_down := inverse(make_projection_from_world(camera_at_mouse_down));
 
-        prev_arcball_vector := arcball_vector(mouse_down_pos);
+        prev_arcball_vector := arcball_vector(lmb_down_pos);
         curr_arcball_vector := arcball_vector(io().MousePos);
         arcball_axis_ndc := cross_product(curr_arcball_vector, prev_arcball_vector);
 
@@ -155,7 +159,7 @@ update_camera :: (delta_time : float) {
         if app.modifier_flags.shift_pressed {
             // Rotate around the currently chosen camera rotation axis
             arcball_axis_world = camera_rotation_axis();
-            arcball_angle = (io().MousePos.y - mouse_down_pos.y) * .02;
+            arcball_angle = (io().MousePos.y - lmb_down_pos.y) * .02;
         } else if app.modifier_flags.alt_pressed {
             arcball_angle *= 3.;
         } else {
@@ -181,29 +185,51 @@ update_camera :: (delta_time : float) {
         camera.eye_position = camera_at_mouse_down.look_position + look_to_eye;
         camera.up_direction = rotate(camera_at_mouse_down.up_direction, q);
 
-    } else { // Zoom with right down or scrolling
+    } else if io_mouse_right_down() && mouse_move_valid { // Zoom with right down
 
-        increment : float;
-        if io_mouse_right_down() && mouse_move_valid {
-            increment = xx io().MouseDelta.y;
-        } else {
-            increment = 30 * io().MouseWheel;
-        }
+        zoom_factor := 1.;
+        if      (io().MouseDelta.y > 0) zoom_factor *= app.settings.camera_zoom_dragging_ratio;
+        else if (io().MouseDelta.y < 0) zoom_factor /= app.settings.camera_zoom_dragging_ratio;
 
-        // @Incomplete make rotation speed an adjustable parameter
-        if      app.modifier_flags.shift_pressed increment *= -5.;
-        else if app.modifier_flags.alt_pressed   increment *= -.01;
-        else                                     increment *= -1.;
+        Handle_Zoom(zoom_factor, rmb_down_pos, app.settings.camera_zoom_dragging_follows_cursor);
 
-        camera.top    += increment;
-        camera.bottom -= increment;
-        camera.right  += current_window_aspect_ratio_width_over_height() * increment;
-        camera.left   -= current_window_aspect_ratio_width_over_height() * increment;
+    } else if io().MouseWheel { // Zoom with scroll wheel
 
-        camera_clamp_orthographic_view_planes();
+        zoom_factor := 1.;
+        if      (io().MouseWheel > 0) zoom_factor *= app.settings.camera_zoom_scrolling_ratio;
+        else if (io().MouseWheel < 0) zoom_factor /= app.settings.camera_zoom_scrolling_ratio;
+
+        Handle_Zoom(zoom_factor, io().MousePos, app.settings.camera_zoom_scrolling_follows_cursor);
     }
 
     // print("update_camera: %\n", <<camera);
+}
+
+Handle_Zoom :: (zoom_factor : float, previous_pos : Vector2, follow_cursor : bool) {
+
+    camera := *app.camera;
+
+    view_from_clip := inverse(make_orthographic_projection_matrix(<<camera));
+
+    previous_clip := to_ndc(previous_pos);
+    zoomed_clip := previous_clip / zoom_factor;
+
+    previous_view := view_from_clip * make_vector4(previous_clip, 0., 1.);
+    zoomed_view := view_from_clip * make_vector4(zoomed_clip, 0., 1.);
+
+    camera.top   *= zoom_factor;
+    camera.right *= zoom_factor;
+    camera.bottom = -camera.top;
+    camera.left   = -camera.right;
+
+    if follow_cursor && camera.top < camera_top_max() {
+        world_from_view := inverse(make_look_at_matrix(<< camera));
+        delta_world := zoom_factor *(world_from_view * (zoomed_view - previous_view)).xyz;
+        camera.eye_position += delta_world;
+        camera.look_position += delta_world;
+    }
+
+    camera_clamp_orthographic_view_planes();
 }
 
 // Adjust the camera position and viewing volume to fit the visible geometry while preserving the camera look direction
@@ -258,26 +284,29 @@ fit_on_screen :: (sphere : Sphere)
     camera_clamp_orthographic_view_planes();
 }
 
+camera_top_max :: () -> float {
+    return app.settings.camera_zoom_max_screen_filling_length_factor * app.camera.scene_bounding_sphere.radius;
+}
+
 camera_clamp_orthographic_view_planes :: ()
 {
-    using *app.camera;
-    using *app.settings;
+    camera := *app.camera;
+
+    lo := app.settings.camera_zoom_min_screen_filling_length_mm;
+    hi := camera_top_max();
 
     aspect := current_window_aspect_ratio_width_over_height();
 
-    camera_zoom_min_screen_filling_length_mm = clamp(camera_zoom_min_screen_filling_length_mm, .00001, scene_bounding_sphere.radius / 2);
-    lo, hi := camera_zoom_min_screen_filling_length_mm, 1.5 * scene_bounding_sphere.radius;
-
-    if camera_zoom_constrained_to_scene_bounding_sphere {
-        top   = clamp(top,   lo,          hi);
-        right = clamp(right, lo * aspect, hi * aspect);
-        bottom = -top;
-        left  = -right;
+    if app.settings.camera_zoom_max_limited_by_scene_bounding_sphere {
+        camera.top    = clamp(camera.top,   lo,          hi);
+        camera.right  = clamp(camera.right, lo * aspect, hi * aspect);
+        camera.bottom = -camera.top;
+        camera.left   = -camera.right;
     } else {
-        top   = max(top,   lo);
-        right = max(right, lo * aspect);
-        bottom = -top;
-        left  = -right;
+        camera.top    = max(camera.top,   lo);
+        camera.right  = max(camera.right, lo * aspect);
+        camera.bottom = -camera.top;
+        camera.left   = -camera.right;
     }
 }
 
@@ -414,4 +443,5 @@ to_ndc :: (position_px : Vector2) -> Vector2
 }
 
 camera_at_mouse_down : Camera;
-mouse_down_pos : Vector2; // @Cleanup: replace this state with ImGui: use GetMouseDragDelta
+lmb_down_pos : Vector2; // @Cleanup: replace this state with ImGui: use GetMouseDragDelta
+rmb_down_pos : Vector2; // @Cleanup: replace this state with ImGui: use GetMouseDragDelta

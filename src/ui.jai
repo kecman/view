@@ -329,6 +329,7 @@ show_help_ui :: ()
 
     // :UserConfig add a button to overwrite the user settings file with new defaults here?
     inspect("User settings", *app.settings);
+    clamp_user_settings();
 
     // @Incomplete add a message about where the keymap is for editing
 }
