@@ -80,8 +80,6 @@ render_mesh :: (mesh : Mesh, info : Display_Info, style : VertexLabelStyle, flas
 
     glUseProgram(mesh_shader);
 
-    assert(camera.projection_type == .ORTHOGRAPHIC);
-
     {
         model_loc := glGetUniformLocation(mesh_shader, "world_from_model");
         glUniformMatrix4fv(model_loc, 1, true, *mesh.world_from_model._11);

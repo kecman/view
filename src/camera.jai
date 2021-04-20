@@ -4,7 +4,6 @@ Camera :: struct {
     look_position : Vector3;
     up_direction :  Vector3;
 
-    projection_type := ProjectionType.ORTHOGRAPHIC;
     rotation_axis := Camera_Rotation_Axis.ROLL; // :UserConfig use configurable default
     scene_bounding_sphere : Sphere;
 
@@ -14,16 +13,8 @@ Camera :: struct {
     bottom: float;
     top:    float;
 
-    // Data for perspective projection
-    fov_vertical_radians : float;
-
     near : float;
     far :  float;
-}
-
-ProjectionType :: enum {
-    ORTHOGRAPHIC;
-    PERSPECTIVE;
 }
 
 Camera_Rotation_Axis :: enum {
@@ -35,7 +26,8 @@ Camera_Rotation_Axis :: enum {
     WORLD_Z;
 }
 
-camera_rotation_axis :: () -> Vector3 {
+camera_rotation_axis :: () -> Vector3
+{
     axis : Vector3 = ---;
     if #complete app.camera.rotation_axis == {
         case .ROLL;    axis = current_look_direction();
@@ -57,9 +49,9 @@ set_look_direction :: (direction : Vector3, up : Vector3)
 }
 
 // Return the vector from the current eye position to the look position
-current_look_direction :: () -> Vector3 {
-    using *app.camera;
-    return look_position - eye_position;
+current_look_direction :: () -> Vector3
+{
+    return app.camera.look_position - app.camera.eye_position;
 }
 
 rotate_look_direction :: (axis : Vector3, degrees : float)
@@ -91,14 +83,12 @@ init_camera :: () {
     camera.look_position = .{0, 0, 0}; // arcball pivot
     camera.up_direction = .{0, 1, 0};
 
-    camera.projection_type = .ORTHOGRAPHIC;
-
     camera.top = 70;
     camera.bottom = -camera.top;
     camera.right = camera.top * current_window_aspect_ratio_width_over_height();
     camera.left = -camera.right;
 
-    camera.fov_vertical_radians = 2 * atan2(camera.top, camera.eye_position.z);
+    // camera.fov_vertical_radians = 2 * atan2(camera.top, camera.eye_position.z);
 
     camera.near = -100;
     camera.far = 400;
@@ -117,7 +107,7 @@ update_camera :: (delta_time : float) {
     // Mouse delta is zero when current or previous mouse positions were invalid
     mouse_move_valid := !(io().MouseDelta.x == 0 && io().MouseDelta.y == 0);
 
-    camera.fov_vertical_radians = 2 * atan2(camera.top, camera.eye_position.z);
+    // camera.fov_vertical_radians = 2 * atan2(camera.top, camera.eye_position.z);
 
     world_from_projection := inverse(make_projection_from_world(<<camera));
 
@@ -146,6 +136,7 @@ update_camera :: (delta_time : float) {
 
         camera.eye_position += increment;
         camera.look_position += increment;
+
     } else if ImGui.IsMouseDragging(0, 0.) && mouse_move_valid { // Orbit about the look position using left button
 
         world_from_projection_at_mouse_down := inverse(make_projection_from_world(camera_at_mouse_down));
@@ -320,15 +311,9 @@ make_orthographic_projection_matrix :: (using camera : Camera) -> Matrix4 #must 
 }
 
 make_projection_from_world :: (using camera : Camera) -> Matrix4 #must {
-    if #complete projection_type == {
-        case .ORTHOGRAPHIC;
-            view_from_world := make_look_at_matrix(camera);
-            projection_from_view := make_orthographic_projection_matrix(camera);
-            return projection_from_view * view_from_world;
-        case .PERSPECTIVE;
-            assert(false);
-            return matrix4_identity();
-    }
+    view_from_world := make_look_at_matrix(camera);
+    projection_from_view := make_orthographic_projection_matrix(camera);
+    return projection_from_view * view_from_world;
 }
 
 io :: () -> *ImGui.IO {return ImGui.GetIO(); }
