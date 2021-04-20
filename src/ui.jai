@@ -239,9 +239,9 @@ show_camera_controls :: () {
     ImGui.NextColumn();
 
     // @Volatile: button text should be kept in sync with keymap!
-    right_label, left_label, amount := "<< ", " >>", 45.;
+    right_label, left_label, amount := "<< ", " >>", 15.;
     if app.modifier_flags.shift_pressed {
-        right_label, left_label, amount = "<<<", ">>>", 15.;
+        right_label, left_label, amount = "<<<", ">>>", 45.;
     } else if app.modifier_flags.alt_pressed {
         right_label, left_label, amount = " < ", " > ", 1.;
     }
