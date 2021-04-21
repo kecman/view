@@ -191,7 +191,7 @@ update_camera :: (delta_time : float) {
         if      (io().MouseDelta.y > 0) zoom_factor *= app.settings.camera_zoom_dragging_ratio;
         else if (io().MouseDelta.y < 0) zoom_factor /= app.settings.camera_zoom_dragging_ratio;
 
-        Handle_Zoom(zoom_factor, rmb_down_pos, app.settings.camera_zoom_dragging_follows_cursor);
+        handle_zoom(zoom_factor, rmb_down_pos, app.settings.camera_zoom_dragging_follows_cursor);
 
     } else if io().MouseWheel { // Zoom with scroll wheel
 
@@ -199,13 +199,13 @@ update_camera :: (delta_time : float) {
         if      (io().MouseWheel > 0) zoom_factor *= app.settings.camera_zoom_scrolling_ratio;
         else if (io().MouseWheel < 0) zoom_factor /= app.settings.camera_zoom_scrolling_ratio;
 
-        Handle_Zoom(zoom_factor, io().MousePos, app.settings.camera_zoom_scrolling_follows_cursor);
+        handle_zoom(zoom_factor, io().MousePos, app.settings.camera_zoom_scrolling_follows_cursor);
     }
 
     // print("update_camera: %\n", <<camera);
 }
 
-Handle_Zoom :: (zoom_factor : float, previous_pos : Vector2, follow_cursor : bool) {
+handle_zoom :: (zoom_factor : float, previous_pos : Vector2, follow_cursor : bool) {
 
     camera := *app.camera;
 
@@ -350,6 +350,22 @@ io_mouse_left_down :: () -> bool { return io().MouseDown[0]; }
 io_mouse_right_down :: () -> bool { return io().MouseDown[1]; }
 io_mouse_middle_down :: () -> bool { return io().MouseDown[2]; }
 
+
+// Return normalised device coordinates corresponding to the pixel position.
+to_ndc :: (position_px : Vector2) -> Vector2
+{
+    using position_ndc : Vector2 = ---;
+    x = 2 * (position_px.x / cast(float)app.current_window_width) - 1;
+    y = 2 * (position_px.y / cast(float)app.current_window_height) - 1;
+    y *= -1; // (-1,-1) => bottom-left of screen, (+1,+1) => top-right of screen
+
+    // print("NDC : %", position_ndc);
+    assert(x >= -1 && x <= 1, "Expected NDC x coordinates to be in range [-1,+1], got %", x);
+    assert(y >= -1 && y <= 1, "Expected NDC y coordinates to be in range [-1,+1], got %", y);
+
+    return position_ndc;
+}
+
 #scope_file
 
 visible_entities_bounding_sphere :: (accurate : bool = false) -> Sphere
@@ -425,21 +441,6 @@ arcball_vector :: (mouse_position_px : Vector2) -> Vector3
         result = normalize(result);
     }
     return result;
-}
-
-// Return normalised device coordinates corresponding to the pixel position.
-to_ndc :: (position_px : Vector2) -> Vector2
-{
-    using position_ndc : Vector2 = ---;
-    x = 2 * (position_px.x / cast(float)app.current_window_width) - 1;
-    y = 2 * (position_px.y / cast(float)app.current_window_height) - 1;
-    y *= -1; // (-1,-1) => bottom-left of screen, (+1,+1) => top-right of screen
-
-    // print("NDC : %", position_ndc);
-    assert(x >= -1 && x <= 1, "Expected NDC x coordinates to be in range [-1,+1], got %", x);
-    assert(y >= -1 && y <= 1, "Expected NDC y coordinates to be in range [-1,+1], got %", y);
-
-    return position_ndc;
 }
 
 camera_at_mouse_down : Camera;

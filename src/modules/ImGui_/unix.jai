@@ -411,7 +411,7 @@ ImGui :: struct {
     IsMouseReleased      :: (button : s32) -> bool #foreign imgui "_ZN5ImGui15IsMouseReleasedEi";                        // did mouse button released (went from Down to !Down)
     IsMouseDragging      :: (button : s32 = 0, lock_threshold : float = -1.) -> bool #foreign imgui "_ZN5ImGui15IsMouseDraggingEif"; // is mouse dragging. if lock_threshold < -1.0f uses io.MouseDraggingThreshold
     // IMGUI_API bool          IsMouseHoveringRect(const ImVec2& r_min, const ImVec2& r_max, bool clip = true);  // is mouse hovering given bounding rect (in screen space). clipped by current clipping settings. disregarding of consideration of focus/window ordering/blocked by a popup.
-    // IMGUI_API bool          IsMousePosValid(const ImVec2* mouse_pos = NULL);                    //
+    IsMousePosValid :: (mouse_pos : *ImVec2 = null) -> bool #foreign imgui "_ZN5ImGui15IsMousePosValidEPK6ImVec2";
     // IMGUI_API ImVec2        GetMousePos();                                                      // shortcut to ImGui::GetIO().MousePos provided by user, to be consistent with other calls
     // IMGUI_API ImVec2        GetMousePosOnOpeningCurrentPopup();                                 // retrieve backup of mouse positioning at the time of opening popup we have BeginPopup() into
     GetMouseDragDelta :: (button : s32 = 0, lock_threshold : float = -1.) -> Vector2 #cpp_return_type_is_non_pod #foreign imgui "_ZN5ImGui17GetMouseDragDeltaEif"; // dragging amount since clicking. if lock_threshold < -1.0f uses io.MouseDraggingThreshold

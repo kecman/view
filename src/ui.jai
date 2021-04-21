@@ -34,6 +34,7 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
     }
     ImGui.DragFloat("Label scale", *vertex_label_style.label_scale, .005, .2, 1., display_format="%.3f");
     ImGui.ColorEdit4("Label color", *vertex_label_style.label_color.component, ImGui.ColorEditFlags.NoInputs);
+    ImGui.Checkbox("Show cursor text", *show_cursor_text);
 
     if current_window_width  != INITIAL_WINDOW_WIDTH  &&
        current_window_height != INITIAL_WINDOW_HEIGHT &&

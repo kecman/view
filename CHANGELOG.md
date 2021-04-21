@@ -7,7 +7,7 @@
 - When files are dropped into `garage` the camera is updated to fit all items to the screen
 - Added an option to make drag zooming zoom into/out from the location where the RMB was pressed, off by default
 - Added a constraint to prevent the camera from zooming out further than necessary to view the entire scene
-- Added option to change some user preferences in a running session* (press h for help)
+- Added option to change user preferences (including some settings mentioned above) in a running session* (press h for help)
 
  (*) Future work will persist user preferences across sessions
 

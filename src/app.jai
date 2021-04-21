@@ -27,6 +27,7 @@ app : struct {
     show_global_settings_ui := false;
     show_help_ui := false;
     show_console_ui := false;
+    show_cursor_text := false;
 
     camera : Camera;
     console : Console;

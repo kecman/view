@@ -298,6 +298,22 @@ debug_vector :: (length : float, vector_world : Vector3, color : Vector4) {
     render_mesh(debug_mesh, display_info, .{point_size=0, line_width=1});
 }
 
+debug_text_at_cursor :: (text : string)
+{
+    glEnable(GL_BLEND);
+    defer glDisable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    text_w := get_text_width_in_pixels(text, 1.0);
+    scale := 0.5;
+    render_text_quad(app.text_shader,
+                     text,
+                     // make_vector2(25.0, WINDOW_HEIGHT - FONT_SIZE * scale),
+                     make_vector2(io().MousePos.x, app.current_window_height - io().MousePos.y),
+                     scale,
+                     make_vector4(1., 1., 1., 1));
+}
+
 get_shader_program :: (shader_vertex : string, shader_fragment : string) -> GLuint {
     make_shader_object :: (shader : string, shader_type : GLenum) -> GLuint {
         shader_object := glCreateShader(shader_type);

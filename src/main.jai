@@ -311,21 +311,15 @@ main :: () {
 
         ImGui.Render();
 
-        if false { // @Cleanup: remove this
-            glEnable(GL_BLEND);
-            defer glDisable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        if app.show_cursor_text && ImGui.IsMousePosValid(*io().MousePos) {
+            // Render this last so it appears over everything else
+            view_from_clip := inverse(make_orthographic_projection_matrix(app.camera));
+            world_from_view := inverse(make_look_at_matrix(app.camera));
+            world := world_from_view * view_from_clip * make_vector4(to_ndc(io().MousePos), 0., 0.);
+            world.xy += app.camera.eye_position.xy;
+            text := tprint("%,%", world.x, world.y);
 
-            text := "Hello";
-            // text := cursor_text;
-            text_w := get_text_width_in_pixels(text, 1.0);
-            scale := 0.5;
-            render_text_quad(app.text_shader,
-                             text,
-                             // make_vector2(25.0, WINDOW_HEIGHT - FONT_SIZE * scale),
-                             make_vector2(io().MousePos.x, app.current_window_height - io().MousePos.y),
-                             scale,
-                             make_vector4(1., 1., 1., 1));
+            debug_text_at_cursor(text);
         }
 
         SDL_GL_SwapWindow(app.window);
