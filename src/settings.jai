@@ -3,6 +3,8 @@ User_Settings :: struct {
     fit_to_screen_on_visibility_toggle := true;
     fit_to_screen_on_file_drop_event   := true;
 
+    camera_controls_keep_up_when_setting_look_along := true;
+
     camera_zoom_scrolling_follows_cursor := true;
     camera_zoom_dragging_follows_cursor  := false;
     camera_zoom_scrolling_ratio          := .8;

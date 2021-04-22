@@ -210,32 +210,34 @@ show_camera_controls :: () {
     Y_AXIS :: Vector3.{0, 1, 0};
     Z_AXIS :: Vector3.{0, 0, 1};
 
+    keep_up := app.settings.camera_controls_keep_up_when_setting_look_along;
+
     // @Incomplete Interpolate the motion
 
     ImGui.Columns(3, border=false);
     if ImGui.Button("+X ", size=*V2_ZERO) {
-        set_look_direction(direction=X_AXIS, up=Z_AXIS);
+        set_look_direction(direction=X_AXIS, up=ifx keep_up then app.camera.up_direction else Z_AXIS);
     }
     ImGui.NextColumn();
     if ImGui.Button("+Y ", size=*V2_ZERO) {
-        set_look_direction(direction=Y_AXIS, up=Z_AXIS);
+        set_look_direction(direction=Y_AXIS, up=ifx keep_up then app.camera.up_direction else Z_AXIS);
     }
     ImGui.NextColumn();
     if ImGui.Button("+Z ", size=*V2_ZERO) {
-        set_look_direction(direction=Z_AXIS, up=Y_AXIS);
+        set_look_direction(direction=Z_AXIS, up=ifx keep_up then app.camera.up_direction else Y_AXIS);
     }
     ImGui.NextColumn();
 
     if ImGui.Button("-X ", size=*V2_ZERO) {
-        set_look_direction(direction=-X_AXIS, up=Z_AXIS);
+        set_look_direction(direction=-X_AXIS, up=ifx keep_up then app.camera.up_direction else Z_AXIS);
     }
     ImGui.NextColumn();
     if ImGui.Button("-Y ", size=*V2_ZERO) {
-        set_look_direction(direction=-Y_AXIS, up=Z_AXIS);
+        set_look_direction(direction=-Y_AXIS, up=ifx keep_up then app.camera.up_direction else Z_AXIS);
     }
     ImGui.NextColumn();
     if ImGui.Button("-Z ", size=*V2_ZERO) {
-        set_look_direction(direction=-Z_AXIS, up=Y_AXIS);
+        set_look_direction(direction=-Z_AXIS, up=ifx keep_up then app.camera.up_direction else Y_AXIS);
     }
     ImGui.NextColumn();
 
