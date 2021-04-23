@@ -8,10 +8,16 @@
 - [UI/UX] Add a keybinding to refresh a file
 - [UI/UX] Add per-item line width/point size options
 - [UI/UX] Make items items selectable so they can be bulk edited/refreshed
+- [UI/UX] Define a plane and write the world coordinates of the intersection point by the mouse cursor
 - [Robustness] Add tests for obj loading
 
 ## Backlog
 
+- [UI/UX,Rendering] Add clipping plane widgets
+- [UI/UX,Camera] Move triad to bottom left of screen
+- [UI/UX,Camera] Implement wild cards for file loading
+- [UI/UX] Frame rate independent game loop?
+- [UI/UX,Bug] Fix obj loading for quad faces
 - [UI/UX] :UserConfig Hotload user configurable parameters
 - [Bug] Fix sweep dragging check boxes being affected through overlayed ui e.g., colour picker
 - [Commands] save_obj <filename> <optional-element-index-list>
@@ -29,11 +35,6 @@
 - [Performance] Speed up text rendering, it's so slow right now!
 - [UI/UX] Scale the axes according to the bbox of the scene?
 - [UI/UX] Arrow keys pan across bounding box?
-- [UI/UX,Camera] Move triad to bottom left of screen
-- [UI/UX,Camera] Implement wild cards for file loading
-- [UI/UX] define a plane and write the world coordinates of the intersection point
-- [UI/UX] Frame rate independent game loop?
-- [UI/UX,Bug] Fix obj loading for quad faces
 - [UI/UX] Write the fully pathed filename even for files loaded on the command line
 - [Presentation] Explain high-level goals
 - [Refactor] Remove geometry module, just load files
