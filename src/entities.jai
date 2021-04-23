@@ -16,6 +16,7 @@ Entity :: struct {
     // @TODO add mesh bounding box here
 
     fully_pathed_filename : string;
+    generation_index : int; // entities with the same fully pathed_filename will increment this
 }
 
 Polyline_Soup2_Entity :: struct {

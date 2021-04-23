@@ -43,11 +43,11 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
         SDL_SetWindowSize(window, app.INITIAL_WINDOW_WIDTH, app.INITIAL_WINDOW_HEIGHT);
     }
 
-    #if false {
-        ImGui.SetNextWindowPos(*make_vector2(650, 20), ImGui.Cond.FirstUseEver, *V2_ZERO);
-        SHOW_DEMO_WINDOW :: true;
-        ImGui.ShowDemoWindow(*SHOW_DEMO_WINDOW);
-    }
+#if false {
+    ImGui.SetNextWindowPos(*make_vector2(650, 20), ImGui.Cond.FirstUseEver, *V2_ZERO);
+    SHOW_DEMO_WINDOW :: true;
+    ImGui.ShowDemoWindow(*SHOW_DEMO_WINDOW);
+}
 }
 
 show_scene_ui :: ()
@@ -98,7 +98,13 @@ show_scene_ui :: ()
             // Write filename
             ImGui.SameLine();
             if it.fully_pathed_filename.count {
-                ImGui.Text(path_filename(it.fully_pathed_filename)); // @CompilerBug?
+                text : string;
+                if it.generation_index == 0 {
+                    text = tprint("%", path_filename(it.fully_pathed_filename));
+                } else {
+                    text = tprint("% <%>", path_filename(it.fully_pathed_filename), it.generation_index);
+                }
+                ImGui.Text(text);
             } else {
                 ImGui.Text("---");
             }
@@ -119,7 +125,13 @@ show_scene_ui :: ()
                 defer ImGui.EndPopup();
 
                 if it.fully_pathed_filename.count {
-                    ImGui.Text(path_filename(it.fully_pathed_filename)); // @CompilerBug?
+                    text : string;
+                    if it.generation_index == 0 {
+                        text = tprint("%", it.fully_pathed_filename);
+                    } else {
+                        text = tprint("% <%>", it.fully_pathed_filename, it.generation_index);
+                    }
+                    ImGui.Text(text);
                 }
 
                 // Toggle visibility checkbox

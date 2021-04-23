@@ -107,11 +107,20 @@ main :: () {
         args := get_command_line_arguments();
         defer array_free(args);
         for 1..args.count-1 {
-            if should_load_entity_from_file(args[it]) {
-                entity := load_entity_from_file(args[it]);
-                if entity {
-                    array_add(*app.entities, entity);
-                }
+            max_generation_index := find_max_generation_index(args[it]);
+            if #complete app.settings.duplicate_file_behaviour == {
+                case .IGNORE;
+                    if max_generation_index != -1 {
+                        log("Skipped file: '%' (already loaded)\n", args[it]);
+                        break;
+                    }
+                    #through;
+                case .APPEND;
+                    entity := load_entity_from_file(args[it]);
+                    if entity {
+                        entity.generation_index = max_generation_index + 1;
+                        array_add(*app.entities, entity);
+                    }
             }
         }
         fit_on_screen();
@@ -190,11 +199,20 @@ main :: () {
                 case SDL_DROPFILE; {
                     // @Leak @Cleanup event.drop.file should be free'd using SDL_free
                     dropped := to_string(event.drop.file);
-                    if should_load_entity_from_file(dropped) {
-                        entity := load_entity_from_file(dropped);
-                        if entity {
-                            array_add(*app.entities, entity);
-                        }
+                    max_generation_index := find_max_generation_index(dropped);
+                    if #complete app.settings.duplicate_file_behaviour == {
+                        case .IGNORE;
+                            if max_generation_index != -1 {
+                                log("Skipped file: '%' (already loaded)\n", dropped);
+                                break;
+                            }
+                            #through;
+                        case .APPEND;
+                            entity := load_entity_from_file(dropped);
+                            if entity {
+                                entity.generation_index = max_generation_index + 1;
+                                array_add(*app.entities, entity);
+                            }
                     }
 
                     if app.settings.fit_to_screen_on_file_drop_event {
@@ -334,19 +352,16 @@ main :: () {
     SDL_Quit();
 }
 
-should_load_entity_from_file :: (filename : string) -> bool
+find_max_generation_index :: (fully_pathed_filename : string) -> int
 {
     skip := false;
+    result := -1;
     for app.entities {
-        if it.fully_pathed_filename == filename {
-            skip = true;
-            break;
+        if it.fully_pathed_filename == fully_pathed_filename {
+            result = max(result, it.generation_index);
         }
     }
-    if skip {
-        log("Skipped file: '%' (already loaded)\n", filename);
-    }
-    return !skip;
+    return result;
 }
 
 to_sdl_keycode :: (key_code : u32) -> SDL_Keycode {
