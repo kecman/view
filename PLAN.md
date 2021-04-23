@@ -19,7 +19,6 @@
 - [Bug] Fix sweep dragging check boxes being affected through overlayed ui e.g., colour picker
 - [Rendering] Render normals using geometry shader
 - [UI/UX] Make zoom slow down when you're closer to the object
-- [UI/UX] Ask for confirmation before closing, make this a user-configurable parameter
 - [UI/UX] Mesh element number/segment number rendering
 - [UI/UX] Sliders to select visible range of indices
 - [UI/UX] Add a defaults.settings file containing options like default visualisation, scroll velocity, ui response dt's etc

@@ -340,6 +340,7 @@ show_help_ui :: ()
     }
 
     ImGui.Columns(1);
+    ImGui.Text("Note: S=Shift, C=Ctrl, M=Alt");
     ImGui.NewLine();
 
     // :UserConfig add a button to overwrite the user settings file with new defaults here?

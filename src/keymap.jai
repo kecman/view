@@ -26,9 +26,9 @@ to_string :: (using mapping : Single_Key_Mapping) -> string
 {
     builder : String_Builder;
     defer free_buffers(*builder);
-    if modifier_flags.control_pressed print_to_builder(*builder, "Ctrl-");
-    if modifier_flags.alt_pressed     print_to_builder(*builder, "Alt-");
-    if modifier_flags.shift_pressed   print_to_builder(*builder, "Shift-");
+    if modifier_flags.control_pressed print_to_builder(*builder, "C-");
+    if modifier_flags.alt_pressed     print_to_builder(*builder, "M-");
+    if modifier_flags.shift_pressed   print_to_builder(*builder, "S-");
     if key_code >= 32 {
         // upper_case := to_upper(cast(u8) key_code);
         upper_case := cast(u8) key_code;
@@ -59,7 +59,7 @@ init_keymap :: ()
     add_key(*app.keymap_keydown, toggle_show_ui, "toggle_show_ui",  xx #char "`");
     add_key(*app.keymap_keydown, toggle_show_console_ui, "toggle_show_console_ui",  xx #char "`", .{control_pressed=true});
 
-    add_key(*app.keymap, close_application, "close_application", xx Special_Key_Code.ESCAPE);
+    add_key(*app.keymap, close_application, "close_application", xx #char "q", .{shift_pressed=true, control_pressed=true});
     add_key(*app.keymap, call_fit_on_screen, "fit_on_screen", xx #char "r");
     add_key(*app.keymap, reset_camera, "reset_camera", xx #char "r", .{shift_pressed=true});
 

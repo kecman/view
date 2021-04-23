@@ -4,11 +4,13 @@
 - Changed mouse wheel zooming to zoom into/out from the location where the mouse is pointing
 - Fixed an issue where fitting the visible entities to the screen was slow for large entities
 - Added an option, when item visibility is toggled, to update the camera to fit all items to the screen, off by default
-- Added an option, when files are dropped into `garage`, to update the camera to fit all items to the screen, on by default
+- Added an option, when files are dropped, to update the camera to fit all items to the screen, on by default
 - Added an option to preserve the camera up direction when snapping to axis aligned look directions, on by default
 - Added an option to make drag zooming zoom into/out from the location where the RMB was pressed, off by default
 - Added a constraint to prevent the camera from zooming out further than necessary to view the entire scene, on by default
 - Added configurable behaviour for loading files with the same path, by default files are appended scene and display with an incremented generation index
+- Changed the item context menu to display the fully pathed filename, only the filename (and generation index) is shown in the items list
+- Changed the key-binding to close the application to Ctrl+Shift+Q, since it was easy to loose work by accidently pressing Esc
 - Most settings/options mentioned above can be changed at runtime in a 'User settings' section (press h for help). Future work will persist user settings across sessions
 
 # Version: v0.0.3, 5 April 2021
