@@ -1,24 +1,22 @@
-## v0.0.4
+## v0.0.5
 
 - [UI/UX,Camera] First person camera with strafing and jump/crouch
-- [Refactor] Move data from Mesh type into Entity type. This unblocks:
-    - [UI/UX] Cache mesh bounding box so that fit to screen is faster when working with large meshes
-    - [UI/UX] Mode line (bar along bottom) showing hovered mesh stats
-    - [UI/UX] Show the bounding box in the mesh stats view
-    - [Rendering] Transparency
-    - [Rendering] Surface with edges
-- [Commands] save_obj <filename> <optional-element-index-list>
+- [Rendering] Add transparency option
+- [Rendering] Add surface with edges option
+- [UI/UX] Mode line (bar along bottom) showing hovered mesh stats
 - [UI/UX] Display file load time
-- [UI/UX] F5 to refresh file
-- [Robustness] add tests for obj loading
-- [UI/UX] Maintain the bounding sphere of the whole scene and don't allow zooming out past that
-- [UI/UX] When we press "Reset Orbit" we should re-place the camera planes
+- [UI/UX] Add a keybinding to refresh a file
+- [UI/UX] Add per-item line width/point size options
+- [UI/UX] Make items items selectable so they can be bulk edited/refreshed
+- [Robustness] Add tests for obj loading
 
 ## Backlog
 
+- [UI/UX] :UserConfig Hotload user configurable parameters
 - [Bug] Fix sweep dragging check boxes being affected through overlayed ui e.g., colour picker
+- [Commands] save_obj <filename> <optional-element-index-list>
 - [Rendering] Render normals using geometry shader
-- [UI/UX] Make zoom slow down when you're closer to the object
+- [UI/UX] When we press "Reset Orbit" we should re-place the camera planes
 - [UI/UX] Mesh element number/segment number rendering
 - [UI/UX] Sliders to select visible range of indices
 - [UI/UX] Add a defaults.settings file containing options like default visualisation, scroll velocity, ui response dt's etc
@@ -31,7 +29,12 @@
 - [Performance] Speed up text rendering, it's so slow right now!
 - [UI/UX] Scale the axes according to the bbox of the scene?
 - [UI/UX] Arrow keys pan across bounding box?
-- [UI/UX] Make items filenames selectable so they can be all selected and then refreshed
+- [UI/UX,Camera] Move triad to bottom left of screen
+- [UI/UX,Camera] Implement wild cards for file loading
+- [UI/UX] define a plane and write the world coordinates of the intersection point
+- [UI/UX] Frame rate independent game loop?
+- [UI/UX,Bug] Fix obj loading for quad faces
+- [UI/UX] Write the fully pathed filename even for files loaded on the command line
 - [Presentation] Explain high-level goals
 - [Refactor] Remove geometry module, just load files
 - [Meta-programming,Testing] Use @test to tag/run tests
