@@ -6,9 +6,9 @@ User_Settings :: struct {
     camera_controls_keep_up_when_setting_look_along := true;
 
     camera_zoom_scrolling_follows_cursor := true;
-    camera_zoom_dragging_follows_cursor  := false;
     camera_zoom_scrolling_ratio          := .8;
-    camera_zoom_dragging_ratio           := .8;
+    // camera_zoom_dragging_follows_cursor  := false;
+    // camera_zoom_dragging_ratio           := .8;
     camera_zoom_min_screen_filling_length_mm := .0001; // .1um
     camera_zoom_max_screen_filling_length_factor := 4.; // multiplies a visible scene bounding sphere radius
     camera_zoom_max_limited_by_scene_bounding_sphere := true;
@@ -25,8 +25,8 @@ Duplicate_File_Behaviour :: enum u8 #specified {
 
 clamp_user_settings :: ()
 {
-    app.settings.camera_zoom_dragging_ratio               = clamp(app.settings.camera_zoom_dragging_ratio,
-                                                                  .3, .99);
+    // app.settings.camera_zoom_dragging_ratio               = clamp(app.settings.camera_zoom_dragging_ratio,
+    //                                                               .3, .99);
     app.settings.camera_zoom_scrolling_ratio              = clamp(app.settings.camera_zoom_scrolling_ratio,
                                                                   .3, .99);
     app.settings.camera_zoom_min_screen_filling_length_mm = clamp(app.settings.camera_zoom_min_screen_filling_length_mm,

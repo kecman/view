@@ -166,6 +166,11 @@ show_scene_ui :: ()
                         mesh := cast(*Mesh_Entity)it;
                         ImGui.Text(to_c_string(tprint("#points, #triangles = %, %", mesh.mesh.positions.count, mesh.mesh.indices.count / 3)));
                 }
+
+                aabb := it.display_info.bounding_aabb;
+                ImGui.Text(to_c_string(tprint("AABB [%, %, %], [%, %, %]",
+                                              aabb.min_point.x, aabb.min_point.y, aabb.min_point.z,
+                                              aabb.max_point.x, aabb.max_point.y, aabb.max_point.z)));
             }
         }
     }
@@ -306,9 +311,9 @@ show_help_ui :: ()
     ImGui.Begin("##show_help_ui", flags = ImGui.WindowFlags.NoTitleBar | .AlwaysAutoResize | .NoMove /*| .NoNav*/);
     defer ImGui.End();
 
-    ImGui.Text("Use LMB to rotate the camera (Alt to slow, Shift to change axis)");
-    ImGui.Text("Use RMB or scroll to zoom the camera (Shift/Alt to adjust speed)");
-    ImGui.Text("Use MMB to pan the camera (Shift/Alt to adjust speed)");
+    ImGui.Text("Use MMB to pan the camera");
+    ImGui.Text("Use RMB to rotate the camera (Alt to slow down, Shift to change axis)");
+    ImGui.Text("Use scroll to zoom the camera (Alt to slow down, Shift to speed up)");
     ImGui.Text("Click a filename with LMB to focus an item");
     ImGui.Text("Click a filename with RMB to access a per-item context menu");
     ImGui.Text(" ");

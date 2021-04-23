@@ -99,13 +99,13 @@ update_camera :: (delta_time : float) {
 
     if io().WantCaptureMouse return;
 
-    if ImGui.IsMouseClicked(0) {
-        lmb_down_pos = io().MousePos;
+    if ImGui.IsMouseClicked(1) {
+        rmb_down_pos = io().MousePos;
         camera_at_mouse_down = app.camera;
     }
 
-    if ImGui.IsMouseClicked(1) {
-        rmb_down_pos = io().MousePos;
+    if ImGui.IsMouseClicked(2) {
+        mmb_down_pos = io().MousePos;
     }
 
     // Mouse delta is zero when current or previous mouse positions were invalid
@@ -135,17 +135,14 @@ update_camera :: (delta_time : float) {
         prev_pan_point := get_pan_position(io().MousePos - io().MouseDelta, world_from_projection, <<camera);
         increment := -(curr_pan_point - prev_pan_point) / 2; // @Cleanup WHY this divide by 2, there is probably a bug elsewhere... ?
 
-        if      app.modifier_flags.shift_pressed increment *= 3.;
-        else if app.modifier_flags.alt_pressed   increment *= .3;
-
         camera.eye_position += increment;
         camera.look_position += increment;
 
-    } else if ImGui.IsMouseDragging(0, 0.) && mouse_move_valid { // Orbit about the look position using left button
+    } else if ImGui.IsMouseDragging(1, 0.) && mouse_move_valid { // Orbit about the look position using right button
 
         world_from_projection_at_mouse_down := inverse(make_projection_from_world(camera_at_mouse_down));
 
-        prev_arcball_vector := arcball_vector(lmb_down_pos);
+        prev_arcball_vector := arcball_vector(rmb_down_pos);
         curr_arcball_vector := arcball_vector(io().MousePos);
         arcball_axis_ndc := cross_product(curr_arcball_vector, prev_arcball_vector);
 
@@ -159,7 +156,7 @@ update_camera :: (delta_time : float) {
         if app.modifier_flags.shift_pressed {
             // Rotate around the currently chosen camera rotation axis
             arcball_axis_world = camera_rotation_axis();
-            arcball_angle = (io().MousePos.y - lmb_down_pos.y) * .02;
+            arcball_angle = (io().MousePos.y - rmb_down_pos.y) * .02;
         } else if app.modifier_flags.alt_pressed {
             arcball_angle *= 3.;
         } else {
@@ -187,18 +184,27 @@ update_camera :: (delta_time : float) {
 
     } else if io_mouse_right_down() && mouse_move_valid { // Zoom with right down
 
-        zoom_factor := 1.;
-        if      (io().MouseDelta.y > 0) zoom_factor *= app.settings.camera_zoom_dragging_ratio;
-        else if (io().MouseDelta.y < 0) zoom_factor /= app.settings.camera_zoom_dragging_ratio;
+    // Disabled for now... it's not very useful and rotating with mouse
+#if false {
+        ratio := app.settings.camera_zoom_dragging_ratio;
+        if      app.modifier_flags.alt_pressed   ratio = .97;
+        else if app.modifier_flags.shift_pressed ratio = .5;
 
+        zoom_factor := 1.;
+        if      (io().MouseDelta.y > 0) zoom_factor *= ratio;
+        else if (io().MouseDelta.y < 0) zoom_factor /= ratio;
         handle_zoom(zoom_factor, rmb_down_pos, app.settings.camera_zoom_dragging_follows_cursor);
+}
 
     } else if io().MouseWheel { // Zoom with scroll wheel
 
-        zoom_factor := 1.;
-        if      (io().MouseWheel > 0) zoom_factor *= app.settings.camera_zoom_scrolling_ratio;
-        else if (io().MouseWheel < 0) zoom_factor /= app.settings.camera_zoom_scrolling_ratio;
+        ratio := app.settings.camera_zoom_scrolling_ratio;
+        if      app.modifier_flags.alt_pressed   ratio = .97;
+        else if app.modifier_flags.shift_pressed ratio = .5;
 
+        zoom_factor := 1.;
+        if      (io().MouseWheel > 0) zoom_factor *= ratio;
+        else if (io().MouseWheel < 0) zoom_factor /= ratio;
         handle_zoom(zoom_factor, io().MousePos, app.settings.camera_zoom_scrolling_follows_cursor);
     }
 
@@ -444,5 +450,6 @@ arcball_vector :: (mouse_position_px : Vector2) -> Vector3
 }
 
 camera_at_mouse_down : Camera;
-lmb_down_pos : Vector2; // @Cleanup: replace this state with ImGui: use GetMouseDragDelta
+// lmb_down_pos : Vector2; // @Cleanup: replace this state with ImGui: use GetMouseDragDelta
 rmb_down_pos : Vector2; // @Cleanup: replace this state with ImGui: use GetMouseDragDelta
+mmb_down_pos : Vector2; // @Cleanup: replace this state with ImGui: use GetMouseDragDelta
