@@ -11,43 +11,58 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
     defer ImGui.End();
     defer if entities.count ImGui.Separator();
 
-    ImGui.Text("Scene Settings:");
-    ImGui.Separator();
-    ImGui.ColorEdit4("Background color", *clear_color.component, ImGui.ColorEditFlags.NoInputs);
-    ImGui.Checkbox("Show world axes", *world_axes.visible);
+    ImGui.ColorEdit4("Background", *clear_color.component, ImGui.ColorEditFlags.NoInputs);
+    ImGui.SameLine();
+    ImGui.Checkbox("World Axes", *world_axes.visible);
 
-    ImGui.Separator();
-    ImGui.Text("Label Settings:");
-    ImGui.Checkbox("Show point index labels", *vertex_label_style.show_index);
-    ImGui.Checkbox("Show point position labels", *vertex_label_style.show_position);
-    trailing_width : s32 = xx vertex_label_style.format_float.trailing_width;
-    ImGui.InputInt("Float decimals", *trailing_width);
-    vertex_label_style.format_float.trailing_width = clamp(trailing_width, 0, 12);
-    ShowTooltip("Number of digits following the decimal point");
-    combo_box("Float format", *vertex_label_style.format_float.mode, type_info(FormatFloat.Mode));
-    the_label_limit : s32 = xx label_limit;
-    ImGui.InputInt("Label limit", *the_label_limit);
-    label_limit = the_label_limit;
-    if label_limit > 2000 {
-        color := ImVec4.{1., .4, .4, 1.};
-        ImGui.TextColored(*color, "%s", "Warning: label limit > 2000 may be slow");
+    // :UserConfig add a button to overwrite the user settings file with new defaults here?
+    inspect("User Settings", *app.settings);
+    clamp_user_settings();
+
+    if ImGui.TreeNode("%", "Label Settings") {
+        defer ImGui.TreePop();
+        ImGui.Unindent(ImGui.GetTreeNodeToLabelSpacing());
+        defer ImGui.Indent(ImGui.GetTreeNodeToLabelSpacing());
+
+        ImGui.Checkbox("Index labels", *vertex_label_style.show_index);
+        ImGui.SameLine();
+        ImGui.Checkbox("Position labels", *vertex_label_style.show_position);
+
+        trailing_width : s32 = xx vertex_label_style.format_float.trailing_width;
+        ImGui.InputInt("Float decimals", *trailing_width);
+        vertex_label_style.format_float.trailing_width = clamp(trailing_width, 0, 12);
+        ShowTooltip("Number of digits following the decimal point");
+        combo_box("Float format", *vertex_label_style.format_float.mode, type_info(FormatFloat.Mode));
+        the_label_limit : s32 = xx label_limit;
+        ImGui.InputInt("Label limit", *the_label_limit);
+        label_limit = the_label_limit;
+        if label_limit > 2000 {
+            color := ImVec4.{1., .4, .4, 1.};
+            ImGui.TextColored(*color, "%s", "Warning: label limit > 2000 may be slow");
+        }
+        ImGui.DragFloat("Label scale", *vertex_label_style.label_scale, .005, .2, 1., display_format="%.3f");
+        ImGui.ColorEdit4("Label color", *vertex_label_style.label_color.component, ImGui.ColorEditFlags.NoInputs);
     }
-    ImGui.DragFloat("Label scale", *vertex_label_style.label_scale, .005, .2, 1., display_format="%.3f");
-    ImGui.ColorEdit4("Label color", *vertex_label_style.label_color.component, ImGui.ColorEditFlags.NoInputs);
-    ImGui.Checkbox("Show cursor text", *show_cursor_text);
 
-    if current_window_width  != INITIAL_WINDOW_WIDTH  &&
-       current_window_height != INITIAL_WINDOW_HEIGHT &&
-       ImGui.Button("Reset Window", size=*V2_ZERO)
-    {
-        SDL_SetWindowSize(window, app.INITIAL_WINDOW_WIDTH, app.INITIAL_WINDOW_HEIGHT);
+    if ImGui.TreeNode("%", "Cursor Settings") {
+        defer ImGui.TreePop();
+        ImGui.Unindent(ImGui.GetTreeNodeToLabelSpacing());
+        defer ImGui.Indent(ImGui.GetTreeNodeToLabelSpacing());
+
+        ImGui.Checkbox("Show cursor text", *show_cursor_text);
     }
 
-#if false {
+    if current_window_width != INITIAL_WINDOW_WIDTH && current_window_height != INITIAL_WINDOW_HEIGHT {
+        if ImGui.Button("Reset Window", size=*V2_ZERO) {
+            SDL_SetWindowSize(window, app.INITIAL_WINDOW_WIDTH, app.INITIAL_WINDOW_HEIGHT);
+        }
+    }
+
+    #if false {
     ImGui.SetNextWindowPos(*make_vector2(650, 20), ImGui.Cond.FirstUseEver, *V2_ZERO);
     SHOW_DEMO_WINDOW :: true;
     ImGui.ShowDemoWindow(*SHOW_DEMO_WINDOW);
-}
+    }
 }
 
 show_scene_ui :: ()
@@ -316,7 +331,7 @@ show_help_ui :: ()
     ImGui.Text("Use scroll to zoom the camera (Alt to slow down, Shift to speed up)");
     ImGui.Text("Click a filename with LMB to focus an item");
     ImGui.Text("Click a filename with RMB to access a per-item context menu");
-    ImGui.Text(" ");
+    ImGui.NewLine();
 
     ImGui.Separator();
     ImGui.Columns(2);
@@ -345,12 +360,8 @@ show_help_ui :: ()
     }
 
     ImGui.Columns(1);
-    ImGui.Text("Note: S=Shift, C=Ctrl, M=Alt");
     ImGui.NewLine();
-
-    // :UserConfig add a button to overwrite the user settings file with new defaults here?
-    inspect("User settings", *app.settings);
-    clamp_user_settings();
+    ImGui.Text("Note: S=Shift, C=Ctrl, M=Alt");
 
     // @Incomplete add a message about where the keymap is for editing
 }

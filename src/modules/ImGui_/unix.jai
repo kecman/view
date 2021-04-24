@@ -125,8 +125,8 @@ ImGui :: struct {
     NewLine :: () #foreign imgui "_ZN5ImGui7NewLineEv";                                                          // undo a SameLine()
     Spacing :: () #foreign imgui "_ZN5ImGui7SpacingEv";                                                          // add vertical spacing
     // IMGUI_API void          Dummy(const ImVec2& size);                                          // add a dummy item of given size
-    // IMGUI_API void          Indent(float indent_w = 0.0f);                                      // move content position toward the right, by style.IndentSpacing or indent_w if != 0
-    // IMGUI_API void          Unindent(float indent_w = 0.0f);                                    // move content position back to the left, by style.IndentSpacing or indent_w if != 0
+    Indent :: (indent_w : float = 0.) #foreign imgui "_ZN5ImGui6IndentEf";                         // move content position toward the right, by style.IndentSpacing or indent_w if != 0
+    Unindent :: (indent_w : float = 0.) #foreign imgui "_ZN5ImGui8UnindentEf";                     // move content position back to the left, by style.IndentSpacing or indent_w if != 0
     BeginGroup :: () #foreign imgui "_ZN5ImGui10BeginGroupEv";                                                       // lock horizontal starting position + capture group bounding box into one "item" (so you can use IsItemHovered() or layout primitives such as SameLine() on whole group, etc.)
     EndGroup :: () #foreign imgui "_ZN5ImGui8EndGroupEv";
     // IMGUI_API ImVec2        GetCursorPos();                                                     // cursor position is relative to window position
@@ -279,7 +279,7 @@ ImGui :: struct {
     // IMGUI_API void          TreePush(const void* ptr_id = NULL);                                    // "
     TreePop :: () #foreign imgui "_ZN5ImGui7TreePopEv";                                                              // ~ Unindent()+PopId()
     // IMGUI_API void          TreeAdvanceToLabelPos();                                                // advance cursor x position by GetTreeNodeToLabelSpacing()
-    // IMGUI_API float         GetTreeNodeToLabelSpacing();                                            // horizontal distance preceding label when using TreeNode*() or Bullet() == (g.FontSize + style.FramePadding.x*2) for a regular unframed TreeNode
+    GetTreeNodeToLabelSpacing :: () -> float #foreign imgui "_ZN5ImGui25GetTreeNodeToLabelSpacingEv";  // horizontal distance preceding label when using TreeNode*() or Bullet() == (g.FontSize + style.FramePadding.x*2) for a regular unframed TreeNode
     // IMGUI_API void          SetNextTreeNodeOpen(bool is_open, ImGuiCond cond = 0);                  // set next TreeNode/CollapsingHeader open state.
     // IMGUI_API bool          CollapsingHeader(const char* label, ImGuiTreeNodeFlags flags = 0);      // if returning 'true' the header is open. doesn't indent nor push on ID stack. user doesn't have to call TreePop().
     // IMGUI_API bool          CollapsingHeader(const char* label, bool* p_open, ImGuiTreeNodeFlags flags = 0); // when 'p_open' isn't NULL, display an additional small close button on upper right of the header

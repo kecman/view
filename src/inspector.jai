@@ -49,10 +49,13 @@ inspect :: (name: *u8, data: *void, info:*Type_Info) {
 
             info_struct := cast(*Type_Info_Struct) info;
             if ImGui.TreeNode("%", to_string(name)) {
+                defer ImGui.TreePop();
+                ImGui.Unindent(ImGui.GetTreeNodeToLabelSpacing());
+                defer ImGui.Indent(ImGui.GetTreeNodeToLabelSpacing());
+
                 for member : info_struct.members {
                     inspect(temp_c_string(member.name), data + member.offset_in_bytes, member.type);
                 }
-                ImGui.TreePop();
             }
 
         case .ARRAY;
@@ -62,11 +65,14 @@ inspect :: (name: *u8, data: *void, info:*Type_Info) {
             array_name := to_string(name);
             element_size := info_array.element_type.runtime_size;
             if ImGui.TreeNode("% (count = %)", array_name, array_count) {
+                defer ImGui.TreePop();
+                ImGui.Unindent(ImGui.GetTreeNodeToLabelSpacing());
+                defer ImGui.Indent(ImGui.GetTreeNodeToLabelSpacing());
+
                 for 0..array_count-1 {
                     item_name := temp_c_string(tprint("%[%]", array_name, it));
                     inspect(item_name, array_data + it * element_size, info_array.element_type);
                 }
-                ImGui.TreePop();
             }
 
         case .ENUM;

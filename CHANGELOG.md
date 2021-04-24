@@ -1,3 +1,7 @@
+# Version: v0.0.5, Unreleased
+
+- Improved the UI: show the global settings by default, move user settings to global settings, improve layouts
+
 # Version: v0.0.4, 23 April 2021
 
 - Improved the camera implementation to improve the feel of the zoom controls
