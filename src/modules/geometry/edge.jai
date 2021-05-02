@@ -1,4 +1,4 @@
-Edge :: struct (Point : Type) {
+Edge :: struct ($Point : Type) {
     from_point : *Point;
     to_point   : *Point;
 }
@@ -6,8 +6,8 @@ Edge :: struct (Point : Type) {
 Edge2 :: Edge(Vector2);
 Edge3 :: Edge(Vector3);
 
-Indexed_Edge :: struct (Point : Type) {
-    using edge : Edge(Point);
+Indexed_Edge :: struct ($_Point : Type) {
+    using edge : Edge(_Point);
 
     from_index : int = ---;
     to_index   : int = ---;

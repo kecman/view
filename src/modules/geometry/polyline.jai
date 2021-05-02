@@ -2,9 +2,9 @@
 // Polyline.
 //
 
-Polyline :: struct (Point : Type)
-#modify ensure_2d_or_3d(Point)
+Polyline :: struct ($Point : Type)
 {
+    #run ensure_2d_or_3d(Point);
     points : [..]Point;
 }
 
@@ -31,9 +31,9 @@ bounding_box :: (using polyline : $T/Polyline) -> AxisBox(T.Point) #must {
 // Polyline Soup.
 //
 
-Polyline_Soup :: struct (Point : Type)
-#modify ensure_2d_or_3d(Point)
+Polyline_Soup :: struct ($Point : Type)
 {
+    #run ensure_2d_or_3d(Point);
     polylines : [..]Polyline(Point);
 }
 
