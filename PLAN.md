@@ -1,6 +1,5 @@
 ## v0.0.5
 
-- [UI/UX,Camera] First person camera with strafing and jump/crouch
 - [Rendering] Add transparency option
 - [Rendering] Add surface with edges option
 - [UI/UX] Mode line (bar along bottom) showing hovered mesh stats
@@ -10,12 +9,15 @@
 - [UI/UX] Make items items selectable so they can be bulk edited/refreshed
 - [UI/UX] Define a plane and write the world coordinates of the intersection point by the mouse cursor
 - [Robustness] Add tests for obj loading
+- [UI/UX,Camera] Implement perspective projection
+  - [UI/UX,Camera] First person camera with strafing and jump/crouch
 
 ## Backlog
 
 - [UI/UX,Rendering] Add clipping plane widgets
 - [UI/UX,Camera] Move triad to bottom left of screen
 - [UI/UX,Camera] Implement wild cards for file loading
+- [UI/UX,Camera] Add orbit placement
 - [UI/UX] Frame rate independent game loop?
 - [UI/UX,Bug] Fix obj loading for quad faces
 - [UI/UX] :UserConfig Hotload user configurable parameters
