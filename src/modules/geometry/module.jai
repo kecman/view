@@ -15,10 +15,9 @@ to_degrees :: (radians : float) -> float {
 }
 
 ensure_2d_or_3d :: (T : Type, loc := #caller_location) {
-    dim := dimension_of(T);
-    if dim < 2 || dim > 3 {
-        compiler_report(loc.fully_pathed_filename, loc.line_number, 0, tprint("Expected Vector2 or Vector3, got %", T));
-    }
+    dim := dimension_of(T, loc);
+    if dim == 2 || dim == 3 return;
+    compiler_report(loc.fully_pathed_filename, loc.line_number, 0, tprint("Expected Vector2 or Vector3, got %", T));
 }
 
 // Returns a signed int so we can write dim-1 in loops and things just work
