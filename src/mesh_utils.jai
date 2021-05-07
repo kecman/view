@@ -280,7 +280,7 @@ Triad_Parameters :: struct {
 make_triad_parameters :: (axis_length : float) -> Triad_Parameters {
     using result : Triad_Parameters;
 
-    axis_radius = axis_length / 100;
+    axis_radius = axis_length / 40;
     cone_length = axis_radius * 10;
     cone_radius = axis_radius * 3;
     origin_radius = axis_radius * 2;

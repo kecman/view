@@ -83,7 +83,6 @@ render_mesh :: (mesh : Mesh, info : Display_Info, style : VertexLabelStyle, flas
     {
         model_loc := glGetUniformLocation(mesh_shader, "world_from_model");
         glUniformMatrix4fv(model_loc, 1, true, *mesh.world_from_model._11);
-        print_errors();
     }
 
     {

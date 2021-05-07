@@ -80,7 +80,8 @@ main :: () {
         glGenVertexArrays(1, *app.mesh_vao);
     }
 
-    triad := make_axes_triad(10);
+    TRIAD_AXIS_LENGTH :: 1;
+    triad := make_axes_triad(TRIAD_AXIS_LENGTH);
 
     init_font();
     init_commands();
@@ -321,6 +322,34 @@ main :: () {
         triad.y_axis.display_info.visible = triad.visible;
         triad.z_axis.display_info.visible = triad.visible;
         if triad.visible {
+            using *app.camera;
+            old_camera := app.camera;
+            defer app.camera = old_camera;
+
+            w, h : float = xx app.current_window_width, xx app.current_window_height;
+            s := 80.;
+            a := current_window_aspect_ratio_width_over_height();
+
+            near, far = -s, s;
+            bottom, top = 0., h;
+            left, right = 0., w;
+            unit_look_direction := normalize(current_look_direction());
+            look_position = make_vector3(0., 0., 0.);
+            eye_position = look_position - unit_look_direction;
+
+            offset_vs := make_vector3(s, s, 0.) + make_vector3(WINDOW_BORDER_UI_OFFSET, 0);
+            world_from_view := inverse(make_look_at_matrix(app.camera));
+            offset_ws := (world_from_view * make_vector4(offset_vs, 0.)).xyz;
+
+            scale := make_scale_matrix4(.8 * make_vector3(s, s, s));
+            shift := make_translation_matrix4(offset_ws);
+            xform := shift * scale;
+
+            triad.origin.mesh.world_from_model = xform;
+            triad.x_axis.mesh.world_from_model = xform;
+            triad.y_axis.mesh.world_from_model = xform;
+            triad.z_axis.mesh.world_from_model = xform;
+
             render_mesh(triad.origin.mesh, triad.origin.display_info, .{point_size=0, line_width=1});
             render_mesh(triad.x_axis.mesh, triad.x_axis.display_info, .{point_size=0, line_width=1});
             render_mesh(triad.y_axis.mesh, triad.y_axis.display_info, .{point_size=0, line_width=1});

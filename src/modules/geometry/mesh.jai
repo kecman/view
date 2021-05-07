@@ -86,3 +86,16 @@ bounding_box :: (using mesh : Mesh, transform : Matrix4) -> AxisBox3 #must {
     }
     return box;
 }
+
+transform :: (using mesh : *Mesh, transform : Matrix4) {
+    for * mesh.positions {
+        <<it = (transform * make_vector4(<<it, 1.)).xyz;
+    }
+
+    if mesh.normals.count {
+        inverse_transpose := transpose(inverse(transform));
+        for * mesh.normals {
+            <<it = (inverse_transpose * make_vector4(<<it, 0.)).xyz;
+        }
+    }
+}

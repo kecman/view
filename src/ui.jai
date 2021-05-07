@@ -1,4 +1,5 @@
 V2_ZERO :: Vector2.{0, 0};
+WINDOW_BORDER_UI_OFFSET :: Vector2.{10, 10};
 
 show_global_settings_ui :: (world_axes : *Axes_Triad)
 {
@@ -6,7 +7,7 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
 
     using app;
 
-    ImGui.SetNextWindowPos(pos=*make_vector2(10, 10), pivot=*V2_ZERO);
+    ImGui.SetNextWindowPos(pos=*WINDOW_BORDER_UI_OFFSET, pivot=*V2_ZERO);
     ImGui.Begin("Main Panel", flags = ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar);
     defer ImGui.End();
     defer if entities.count ImGui.Separator();
@@ -71,7 +72,7 @@ show_scene_ui :: ()
 
     if !entities.count return;
 
-    ImGui.SetNextWindowPos(pos=*make_vector2(10, 10), pivot=*V2_ZERO);
+    ImGui.SetNextWindowPos(pos=*WINDOW_BORDER_UI_OFFSET, pivot=*V2_ZERO);
     ImGui.Begin("Main Panel", flags = ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar);
     defer ImGui.End();
 
@@ -207,25 +208,8 @@ show_scene_ui :: ()
     // ImGui.Text("%", cursor_text);
 }
 
-ITEM_INFO_WINDOW :: "Item Info";
-
-show_item_info :: () {
-    window_pos := make_vector2(ImGui.GetIO().DisplaySize.x - 10., ImGui.GetIO().DisplaySize.y - 40.);
-    window_pivot := make_vector2(1, 0);
-
-    using ImGui.WindowFlags;
-
-    ImGui.SetNextWindowPos(*window_pos, .Always, *window_pivot);
-    // SetNextWindowSize(ImVec2(400,400), ImGuiCond_FirstUseEver);
-    // ImGui.SetNextWindowSize(*ImVec2.{150., 0.});
-    ImGui.SetNextWindowContentSize(*ImVec2.{110., 0.});
-    // ImGui.SetNextWindowBgAlpha(.3);
-    ImGui.Begin(ITEM_INFO_WINDOW, flags = NoTitleBar | AlwaysAutoResize | NoMove /*| NoNav*/);
-    defer ImGui.End();
-}
-
 show_camera_controls :: () {
-    window_pos := make_vector2(ImGui.GetIO().DisplaySize.x - 10., 10.);
+    window_pos := make_vector2(ImGui.GetIO().DisplaySize.x - WINDOW_BORDER_UI_OFFSET.x, WINDOW_BORDER_UI_OFFSET.y);
     window_pivot := make_vector2(1, 0);
 
     using ImGui.WindowFlags;
@@ -319,7 +303,7 @@ show_help_ui :: ()
 {
     if !app.show_help_ui return;
 
-    window_pos := make_vector2(ImGui.GetIO().DisplaySize.x - 10., 10.);
+    window_pos := make_vector2(ImGui.GetIO().DisplaySize.x - WINDOW_BORDER_UI_OFFSET.x, WINDOW_BORDER_UI_OFFSET.y);
     window_pivot := make_vector2(1, 0);
 
     ImGui.SetNextWindowPos(pos=*window_pos, pivot=*window_pivot);
