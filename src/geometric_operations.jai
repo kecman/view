@@ -45,8 +45,7 @@ Sphere :: struct {
     radius : float;
 }
 
-make_sphere :: (center : Point3, radius : float) -> Sphere
-{
+make_sphere :: (center : Point3, radius : float) -> Sphere {
     result : Sphere = ---;
 
     result.center = center;
@@ -55,8 +54,12 @@ make_sphere :: (center : Point3, radius : float) -> Sphere
     return result;
 }
 
-expand :: (using this : *Sphere, other : Sphere)
-{
+// @Incomplete @robustness handle scaling of radius
+transform :: (using sphere : *Sphere, transform : Matrix4) {
+    center = (transform * make_vector4(center, 1.)).xyz;
+}
+
+expand :: (using this : *Sphere, other : Sphere) {
     center_distance := distance(this.center, other.center);
 
     if this.radius > center_distance + other.radius {
@@ -72,8 +75,7 @@ expand :: (using this : *Sphere, other : Sphere)
     return;
 }
 
-make_hyperplane3 :: (plane_normal : Vector3, point_on_plane: Point3) -> Hyperplane3
-{
+make_hyperplane3 :: (plane_normal : Vector3, point_on_plane: Point3) -> Hyperplane3 {
     result : Hyperplane3 = ---;
 
     result.normal = plane_normal;
@@ -82,8 +84,7 @@ make_hyperplane3 :: (plane_normal : Vector3, point_on_plane: Point3) -> Hyperpla
     return result;
 }
 
-make_normalized_hyperplane3_from_points :: (a : Point3, b : Point3, c : Point3) -> Hyperplane3
-{
+make_normalized_hyperplane3_from_points :: (a : Point3, b : Point3, c : Point3) -> Hyperplane3 {
     result : Hyperplane3 = ---;
 
     normal := unit_vector(cross(c - b, a - b));
@@ -93,13 +94,11 @@ make_normalized_hyperplane3_from_points :: (a : Point3, b : Point3, c : Point3) 
     return result;
 }
 
-to_point :: (line : Line3, t : float) -> Point3
-{
+to_point :: (line : Line3, t : float) -> Point3 {
     return line.origin + t * line.direction;
 }
 
-to_point :: (ray : Ray3, t : float) -> Point3
-{
+to_point :: (ray : Ray3, t : float) -> Point3 {
     assert(t >= 0, "Expected t >= 0 but got t = %", t);
     return ray.origin + t * ray.direction;
 }

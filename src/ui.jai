@@ -158,6 +158,12 @@ show_scene_ui :: ()
                     ImGui.Checkbox(imgui_label("Wireframe   ", it), *it.display_info.wireframe);
                 }
 
+                shift := make_vector3(mesh.world_from_model._14, mesh.world_from_model._24, mesh.world_from_model._34);
+                ImGui.Text("shift");
+                ImGui.SameLine();
+                ImGui.DragFloat3("##shift", *shift.component, .05);
+                mesh.world_from_model._14, mesh.world_from_model._24, mesh.world_from_model._34 = shift.x, shift.y, shift.z;
+
                 ImGui.PushItemWidth(-1);
                 combo_box("", *it.display_info.display_mode, type_info(type_of(it.display_info.display_mode)));
 

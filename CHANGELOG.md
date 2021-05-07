@@ -2,6 +2,7 @@
 
 - Improved the UI: show the global settings by default, move user settings to global settings, improve layouts
 - Improved the world axes rendering and moved it to the bottom left of the screen
+- Added UI to shift items via the item context menu
 - Changed default for option to preserve the camera up direction when snapping to axis aligned look directions from on to off
 
 # Version: v0.0.4, 23 April 2021

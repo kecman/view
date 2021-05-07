@@ -261,6 +261,7 @@ fit_on_screen :: (entity : *Entity, accurate : bool = false)
     // Update the camera to look at the entity only
     look_direction := current_look_direction();
     sphere := entity.display_info.bounding_sphere;
+    transform(*sphere, entity.mesh.world_from_model);
     app.camera.look_position = sphere.center;
     app.camera.eye_position = app.camera.look_position - normalize(look_direction) * sphere.radius;
     app.camera.top    = sphere.radius;
@@ -388,20 +389,14 @@ visible_entities_bounding_sphere_fast :: () -> Sphere
     result : Sphere;
     first_entity := true;
 
-    for app.entities {
-        if !it.display_info.visible {
-            continue;
-        }
-
-        if it.display_info.is_dirty {
-            buffer_mesh(*it.mesh, *it.display_info);
-        }
-
+    for :visible_entities_iterator app.entities {
+        sphere := it.display_info.bounding_sphere;
+        transform(*sphere, it.mesh.world_from_model);
         if first_entity {
-            result = it.display_info.bounding_sphere;
+            result = sphere;
             first_entity = false;
         } else {
-            expand(*result, it.display_info.bounding_sphere);
+            expand(*result, sphere);
         }
     }
 
@@ -413,15 +408,13 @@ visible_entities_bounding_sphere_accurate :: () -> Sphere
 {
     // Compute the bounding sphere the points in the scene
     points_vs : [..]Point3;
-    for app.entities {
-        if !it.display_info.visible {
-            continue;
-        }
+    for :visible_entities_iterator app.entities {
 
         mesh := get_mesh(it);
         if mesh {
             for * mesh.positions {
-                array_add(*points_vs, <<it);
+                p := (transform * make_vector4(<<it, 1.)).xyz;
+                array_add(*points_vs, p);
             }
         }
     }

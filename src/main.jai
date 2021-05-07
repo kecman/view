@@ -265,8 +265,7 @@ main :: () {
         label_limit : int = app.label_limit;
         Reserve_Labels :: (count : int) #expand { `label_limit -= count; }
 
-        for entity : app.entities {
-            if !entity.display_info.visible continue;
+        for :visible_entities_iterator entity : app.entities {
 
             if entity.type == {
                 case .POLYLINE_SOUP2;

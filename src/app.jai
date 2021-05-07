@@ -53,6 +53,25 @@ Modifier_Flags :: struct {
     alt_pressed     := false;
 }
 
+visible_entities_iterator :: (entities : *[..]*Entity, body : Code, flags : For_Flags) #expand {
+    #assert(flags == 0); // No options are supported
+
+    for entity, entity_index : <<entities {
+        if !entity.display_info.visible {
+            continue;
+        }
+
+        // Make this explicit?
+        if entity.display_info.is_dirty {
+            buffer_mesh(*entity.mesh, *entity.display_info);
+        }
+
+        `it_index := entity_index;
+        `it := entity;
+        #insert (remove=#assert(false), break=break entity) body;
+    }
+}
+
 #import "Basic";
 #import "File";
 #import "String";
