@@ -22,6 +22,11 @@ Mesh :: struct {
     world_from_model : Matrix4 = .{_11 = 1, _22 = 1, _33 = 1, _44 = 1};
 }
 
+copy_mesh :: (using mesh : Mesh) -> *Mesh {
+    result := Deep_Copy(*mesh);
+    return result;
+}
+
 compute_vertex_normals_from_triangles :: (using mesh : *Mesh) -> bool, string
 {
     if mesh.geometry_format != .TRIANGLES {
