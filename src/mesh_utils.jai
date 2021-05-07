@@ -191,10 +191,10 @@ make_axes_triad :: (axis_length : float) -> Axes_Triad
     z_axis.mesh = to_Mesh(par_shapes_triad.z_axis);
     origin.mesh = to_Mesh(par_shapes_triad.origin);
 
-    x_axis.display_info = .{visible=true, color=.{1, 0, 0, 1}, display_mode=.SOLID_COLOR};
-    y_axis.display_info = .{visible=true, color=.{0, 1, 0, 1}, display_mode=.SOLID_COLOR};
-    z_axis.display_info = .{visible=true, color=.{0, 0, 1, 1}, display_mode=.SOLID_COLOR};
-    origin.display_info = .{visible=true, color=.{1, 1, 1, 1}, display_mode=.SOLID_COLOR};
+    x_axis.display_info = .{visible=true, color=.{1, 0, 0, 1}, display_mode=.BLINN_PHONG};
+    y_axis.display_info = .{visible=true, color=.{0, 1, 0, 1}, display_mode=.BLINN_PHONG};
+    z_axis.display_info = .{visible=true, color=.{0, 0, 1, 1}, display_mode=.BLINN_PHONG};
+    origin.display_info = .{visible=true, color=.{1, 1, 1, 1}, display_mode=.BLINN_PHONG};
 
     buffer_mesh(*x_axis.mesh, *x_axis.display_info);
     buffer_mesh(*y_axis.mesh, *y_axis.display_info);
