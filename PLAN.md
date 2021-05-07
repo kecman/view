@@ -3,7 +3,9 @@
 - [Rendering] Add transparency option
 - [Rendering] Add surface with edges option
 - [UI/UX] Mode line (bar along bottom) showing hovered mesh stats
+- [UI/UX] Load files in a separate thread and report loading progress in the mode line
 - [UI/UX] Display file load time
+- [UI/UX] Fix camera panning
 - [UI/UX] Add a keybinding to refresh a file
 - [UI/UX] Add per-item line width/point size options
 - [UI/UX] Make items items selectable so they can be bulk edited/refreshed
@@ -76,7 +78,6 @@
 - [Bindings] Write a function to print in wkt format? simpler custom format?
 - [Bindings] Add libIGL bindings?
 - [UI/UX] Render the axes origin in different color when it's a model origin
-- [UI/UX,Bug] Include axes in fit_on_screen, and fix positioning of near and far planes
 - [Bug] ImGui bindings for unix don't write declare CreateContext arguments #c_call
 - [Bug] Fix normal transformation in shapes.jai and port the fix to par_shapes
 - [Build] Bake fonts into the executable
