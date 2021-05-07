@@ -350,8 +350,8 @@ main :: () {
             triad.z_axis.mesh.world_from_model = xform;
 
             // Always render axes triad in front of everything else
-            glDisable(GL_DEPTH_TEST);
-            defer glEnable(GL_DEPTH_TEST);
+            // glDisable(GL_DEPTH_TEST);
+            // defer glEnable(GL_DEPTH_TEST);
 
             render_mesh(triad.origin.mesh, triad.origin.display_info, .{point_size=0, line_width=1});
             render_mesh(triad.x_axis.mesh, triad.x_axis.display_info, .{point_size=0, line_width=1});
