@@ -48,26 +48,31 @@ Mesh_Entity :: struct {
 deinit :: (base : *Entity)
 {
     if #complete base.type == {
-        case .POLYLINE_SOUP2; {
+        case .UNKNOWN;
+            // do nothing
+
+        case .POLYLINE_SOUP2;
+
             entity := cast(*Polyline_Soup2_Entity)base;
             deinit(*entity.mesh);
             deinit(*entity.shape);
-        }
-        case .POLYLINE_SOUP3; {
+
+        case .POLYLINE_SOUP3;
+
             entity := cast(*Polyline_Soup3_Entity)base;
             deinit(*entity.mesh);
             deinit(*entity.shape);
-        }
-        case .POLYGON_SOUP; {
+
+        case .POLYGON_SOUP;
+
             entity := cast(*Polygon_Soup_Entity)base;
             deinit(*entity.mesh);
             deinit(*entity.shape);
-        }
-        case .MESH; {
+
+        case .MESH;
+
             entity := cast(*Mesh_Entity)base;
             deinit(*entity.mesh);
-        }
-        case .UNKNOWN;
     }
 
     if base.display_info.vbo glDeleteBuffers(1, *base.display_info.vbo);
@@ -76,21 +81,23 @@ deinit :: (base : *Entity)
     base.display_info.ibo = 0;
     base.display_info.is_dirty = true;
 
-    free(base.fully_pathed_filename.data);
+    free(base.fully_pathed_filename);
 }
 
 get_mesh :: (base : *Entity) -> *Mesh {
     if #complete base.type == {
+        case .UNKNOWN;
+            // do nothing
+
         case .POLYLINE_SOUP2; #through;
         case .POLYLINE_SOUP3; #through;
         case .POLYGON_SOUP;   #through;
-        case .MESH; {
+        case .MESH;
+
             return *base.mesh;
-        }
-        case .UNKNOWN; {
-            return null;
-        }
     }
+
+    return null;
 }
 
 load_entity_from_file :: (filename : string) -> *Entity
@@ -153,8 +160,7 @@ load_entity_from_file :: (filename : string) -> *Entity
             Common_Init();
             return entity;
 
-        case .UNKNOWN; #through;
-        case;
+        case .UNKNOWN;
 
             log("Skipped (unsupported geometry type %)\n", mesh.geometry_format);
             deinit(*mesh);

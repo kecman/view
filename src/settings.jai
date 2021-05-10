@@ -19,7 +19,7 @@ User_Settings :: struct {
 Duplicate_File_Behaviour :: enum u8 #specified {
     APPEND :: 0;
     IGNORE :: 1;
-    // OVERWRITE :: 2;
+    OVERWRITE :: 2;
     // ASK :: 3;
 }
 
