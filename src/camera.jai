@@ -413,7 +413,7 @@ visible_entities_bounding_sphere_accurate :: () -> Sphere
         mesh := get_mesh(it);
         if mesh {
             for * mesh.positions {
-                p := (transform * make_vector4(<<it, 1.)).xyz;
+                p := (mesh.world_from_model * make_vector4(<<it, 1.)).xyz;
                 array_add(*points_vs, p);
             }
         }
