@@ -15,6 +15,7 @@ Entity :: struct {
     // @TODO move mesh into here
     // @TODO add mesh bounding box here
 
+    is_selected : bool;
     fully_pathed_filename : string;
     generation_index : int; // entities with the same fully pathed_filename will increment this
 }
@@ -98,6 +99,16 @@ get_mesh :: (base : *Entity) -> *Mesh {
     }
 
     return null;
+}
+
+entity_fully_pathed_filename_with_generation_index :: (using entity : Entity) -> string {
+    text : string;
+    if generation_index == 0 {
+        text = tprint("%", fully_pathed_filename);
+    } else {
+        text = tprint("% <%>", fully_pathed_filename, generation_index);
+    }
+    return text;
 }
 
 load_entity_from_file :: (filename : string) -> *Entity

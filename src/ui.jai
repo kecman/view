@@ -114,24 +114,31 @@ show_scene_ui :: ()
             // Write filename
             ImGui.SameLine();
             if it.fully_pathed_filename.count {
-                text : string;
-                if it.generation_index == 0 {
-                    text = tprint("%", path_filename(it.fully_pathed_filename));
-                } else {
-                    text = tprint("% <%>", path_filename(it.fully_pathed_filename), it.generation_index);
+                text := entity_fully_pathed_filename_with_generation_index(<<it);
+                if ImGui.Selectable(to_c_string(text), *it.is_selected, size=*V2_ZERO) {
+                    if !io().KeyCtrl it.is_selected = !it.is_selected;
                 }
-                ImGui.Text(text);
             } else {
-                ImGui.Text("---");
+                ImGui.Selectable("---", *it.is_selected, size=*V2_ZERO);
             }
-            ShowTooltip("LMB: Focus item\nRMB: Show item options\n");
+            ShowTooltip("RMB: Show item/selection context menu\nLMB: Focus item\nCtrl+LMB: Select item");
             if ImGui.IsItemClicked() {
-                fit_on_screen(it);
+                if !io().KeyCtrl fit_on_screen(it);
             }
             was_flash_hovered := it.display_info.flash_hovered;
             if ImGui.IsItemHovered() {
                 it.display_info.flash_hovered = true;
                 it.display_info.flash_wave_dt += io().DeltaTime;
+
+                if app.do_item_refresh {
+                    entity := load_entity_from_file(it.fully_pathed_filename);
+                    if entity {
+                        entity.generation_index = it.generation_index;
+                        deinit(it);
+                        app.entities[it_index] = entity;
+                    }
+                    app.do_item_refresh = false;
+                }
             } else if was_flash_hovered {
                 it.display_info.flash_hovered = false;
                 it.display_info.flash_wave_dt = 0;
@@ -140,59 +147,97 @@ show_scene_ui :: ()
             if ImGui.BeginPopupContextItem(imgui_label("##context_menu", it)) {
                 defer ImGui.EndPopup();
 
-                if it.fully_pathed_filename.count {
-                    text : string;
-                    if it.generation_index == 0 {
-                        text = tprint("%", it.fully_pathed_filename);
-                    } else {
-                        text = tprint("% <%>", it.fully_pathed_filename, it.generation_index);
+                selected_count := 0;
+                for entities if get_mesh(it) && it.is_selected then selected_count += 1;
+
+                if selected_count == 0 {
+                    if it.fully_pathed_filename.count {
+
+                        text := entity_fully_pathed_filename_with_generation_index(<<it);
+                        ImGui.Text(text);
+
+                        if ImGui.Button(imgui_label("Reload Item", it), size=*V2_ZERO) {
+                            entity := load_entity_from_file(it.fully_pathed_filename);
+                            if entity {
+                                entity.generation_index = it.generation_index;
+                                deinit(it);
+                                app.entities[it_index] = entity;
+                            }
+                        }
                     }
-                    ImGui.Text(text);
+
+                    // Toggle visibility checkbox
+                    ImGui.Checkbox(imgui_label("Visible", it), *it.display_info.visible);
+
+                    // Toggle wireframe checkbox
+                    if it.type == .MESH || it.type == .POLYGON_SOUP {
+                        ImGui.Checkbox(imgui_label("Wireframe   ", it), *it.display_info.wireframe);
+                    }
+
+                    shift := make_vector3(mesh.world_from_model._14, mesh.world_from_model._24, mesh.world_from_model._34);
+                    ImGui.Text("shift");
+                    ImGui.SameLine();
+                    ImGui.DragFloat3("##shift", *shift.component, .05);
+                    mesh.world_from_model._14, mesh.world_from_model._24, mesh.world_from_model._34 = shift.x, shift.y, shift.z;
+
+                    ImGui.PushItemWidth(-1);
+                    combo_box("", *it.display_info.display_mode, type_info(type_of(it.display_info.display_mode)));
+
+                    if it.type == {
+                        case .POLYLINE_SOUP2;
+
+                            using soup := cast(*Polyline_Soup2_Entity)it;
+                            ImGui.Text(to_c_string(tprint("#points, #polylines = %, %", point_count(shape), shape.polylines.count)));
+
+                        case .POLYLINE_SOUP3;
+
+                            using soup := cast(*Polyline_Soup3_Entity)it;
+                            ImGui.Text(to_c_string(tprint("#points, #polylines = %, %", point_count(shape), shape.polylines.count)));
+
+                        case .POLYGON_SOUP;
+
+                            using soup := cast(*Polygon_Soup_Entity)it;
+                            ImGui.Text(to_c_string(tprint("#points, #polygons = %, %", point_count(shape), shape.polygons.count)));
+
+                        case .MESH;
+
+                            mesh := cast(*Mesh_Entity)it;
+                            ImGui.Text(to_c_string(tprint("#points, #triangles = %, %", mesh.mesh.positions.count, mesh.mesh.indices.count / 3)));
+                    }
+
+                    aabb := it.display_info.bounding_aabb;
+                    ImGui.Text(to_c_string(tprint("AABB [%, %, %], [%, %, %]",
+                                                  aabb.min_point.x, aabb.min_point.y, aabb.min_point.z,
+                                                  aabb.max_point.x, aabb.max_point.y, aabb.max_point.z)));
+                } else {
+                    for app.entities if get_mesh(it) && it.is_selected {
+                        if it.fully_pathed_filename.count {
+                            text := entity_fully_pathed_filename_with_generation_index(<<it);
+                            ImGui.Text(text);
+                        }
+                    }
+
+                    if ImGui.Button("Reload Selected Items", size=*V2_ZERO) {
+                        for app.entities if get_mesh(it) && it.is_selected {
+                            entity := load_entity_from_file(it.fully_pathed_filename);
+                            if entity {
+                                entity.generation_index = it.generation_index;
+                                deinit(it);
+                                app.entities[it_index] = entity;
+                                it.is_selected = false;
+                            }
+                        }
+                        ImGui.CloseCurrentPopup();
+                    }
+
+                    ImGui.SameLine();
+                    if ImGui.Button("Clear Selection", size=*V2_ZERO) {
+                        for app.entities if get_mesh(it) && it.is_selected {
+                            it.is_selected = false;
+                        }
+                        ImGui.CloseCurrentPopup();
+                    }
                 }
-
-                // Toggle visibility checkbox
-                ImGui.Checkbox(imgui_label("Visible", it), *it.display_info.visible);
-
-                // Toggle wireframe checkbox
-                if it.type == .MESH || it.type == .POLYGON_SOUP {
-                    ImGui.Checkbox(imgui_label("Wireframe   ", it), *it.display_info.wireframe);
-                }
-
-                shift := make_vector3(mesh.world_from_model._14, mesh.world_from_model._24, mesh.world_from_model._34);
-                ImGui.Text("shift");
-                ImGui.SameLine();
-                ImGui.DragFloat3("##shift", *shift.component, .05);
-                mesh.world_from_model._14, mesh.world_from_model._24, mesh.world_from_model._34 = shift.x, shift.y, shift.z;
-
-                ImGui.PushItemWidth(-1);
-                combo_box("", *it.display_info.display_mode, type_info(type_of(it.display_info.display_mode)));
-
-                if it.type == {
-                    case .POLYLINE_SOUP2;
-
-                        using soup := cast(*Polyline_Soup2_Entity)it;
-                        ImGui.Text(to_c_string(tprint("#points, #polylines = %, %", point_count(shape), shape.polylines.count)));
-
-                    case .POLYLINE_SOUP3;
-
-                        using soup := cast(*Polyline_Soup3_Entity)it;
-                        ImGui.Text(to_c_string(tprint("#points, #polylines = %, %", point_count(shape), shape.polylines.count)));
-
-                    case .POLYGON_SOUP;
-
-                        using soup := cast(*Polygon_Soup_Entity)it;
-                        ImGui.Text(to_c_string(tprint("#points, #polygons = %, %", point_count(shape), shape.polygons.count)));
-
-                    case .MESH;
-
-                        mesh := cast(*Mesh_Entity)it;
-                        ImGui.Text(to_c_string(tprint("#points, #triangles = %, %", mesh.mesh.positions.count, mesh.mesh.indices.count / 3)));
-                }
-
-                aabb := it.display_info.bounding_aabb;
-                ImGui.Text(to_c_string(tprint("AABB [%, %, %], [%, %, %]",
-                                              aabb.min_point.x, aabb.min_point.y, aabb.min_point.z,
-                                              aabb.max_point.x, aabb.max_point.y, aabb.max_point.z)));
             }
         }
     }

@@ -17,9 +17,13 @@ Single_Key_Mapping :: struct {
 
 Special_Key_Code :: enum u32 #specified {
     ESCAPE :: 1;
-    // ENTER  :: 2;
-    // TAB    :: 3;
-    // F1     :: 4;
+    ENTER  :: 2; // unused
+    TAB    :: 3; // unused
+    F1     :: 4; // unused
+    F2     :: 5; // unused
+    F3     :: 6; // unused
+    F4     :: 7; // unused
+    F5     :: 8;
 }
 
 to_string :: (using mapping : Single_Key_Mapping) -> string
@@ -38,6 +42,13 @@ to_string :: (using mapping : Single_Key_Mapping) -> string
         print_to_builder(*builder, "%", cstr);
     } else if #complete cast(Special_Key_Code)key_code == {
         case .ESCAPE; print_to_builder(*builder, "Esc");
+        case .ENTER;  print_to_builder(*builder, "Enter");
+        case .TAB;    print_to_builder(*builder, "Tab");
+        case .F1;     print_to_builder(*builder, "F1");
+        case .F2;     print_to_builder(*builder, "F2");
+        case .F3;     print_to_builder(*builder, "F3");
+        case .F4;     print_to_builder(*builder, "F4");
+        case .F5;     print_to_builder(*builder, "F5");
     }
 
     return builder_to_string(*builder);
@@ -62,6 +73,7 @@ init_keymap :: ()
     add_key(*app.keymap, close_application, "close_application", xx #char "q", .{shift_pressed=true, control_pressed=true});
     add_key(*app.keymap, call_fit_on_screen, "fit_on_screen", xx #char "r");
     add_key(*app.keymap, reset_camera, "reset_camera", xx #char "r", .{shift_pressed=true});
+    add_key(*app.keymap, schedule_item_refresh, "refresh hovered item", xx Special_Key_Code.F5);
 
     add_key(*app.keymap, cycle_line_width, "cycle_line_width", xx #char "l");
     add_key(*app.keymap, cycle_point_size, "cycle_point_size", xx #char "p");
@@ -112,6 +124,7 @@ clear_labels                   :: () { using app.vertex_label_style; show_index 
 cycle_point_size               :: () { using app.vertex_label_style; if point_size == 0 point_size = 2; else if point_size == 2 point_size = 4; else point_size = 0; }
 cycle_line_width               :: () { using app.vertex_label_style; if line_width == 1 line_width = 2; else if line_width == 2 line_width = 3; else line_width = 1; }
 reset_camera                   :: () { init_camera(); }
+schedule_item_refresh          :: () { app.do_item_refresh = true; }
 // debug_junk                     :: () { c:= app.camera; printv(#code c); }
 
 #scope_file

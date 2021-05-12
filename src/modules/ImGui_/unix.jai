@@ -331,7 +331,7 @@ ImGui :: struct {
     BeginPopupContextVoid :: (str_id : *u8 = null, mouse_button : s32 = 1) -> bool #foreign imgui "_ZN5ImGui21BeginPopupContextVoidEPKci";                                     // helper to open and begin popup when clicked in void (where there are no imgui windows).
     EndPopup :: () #foreign imgui "_ZN5ImGui8EndPopupEv";
     IsPopupOpen :: (str_id : *u8) -> bool #foreign imgui "_ZN5ImGui11IsPopupOpenEj";               // return true if the popup is open
-    // IMGUI_API void          CloseCurrentPopup();                                                // close the popup we have begin-ed into. clicking on a MenuItem or Selectable automatically close the current popup.
+    CloseCurrentPopup :: () #foreign imgui "_ZN5ImGui17CloseCurrentPopupEv";
 
     // Logging/Capture: all text output from interface is captured to tty/file/clipboard. By default, tree nodes are automatically opened during logging.
     // IMGUI_API void          LogToTTY(int max_depth = -1);                                       // start logging to tty

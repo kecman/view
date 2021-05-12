@@ -3,6 +3,8 @@
 - Improved the UI: show the global settings by default, move user settings to global settings, improve layouts
 - Improved the world axes rendering and moved it to the bottom left of the screen
 - Added UI to shift items via the item context menu
+- Added UI to reload items via the item context menu, multiple items can be selected using Ctrl+LMB and batch reloaded
+- Added F5 key-binding to reload currently hovered item in item list
 - Added an overwrite option for handling dropped files with the same name as an existing item
 - Changed default for option to preserve the camera up direction when snapping to axis aligned look directions from on to off
 
