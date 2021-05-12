@@ -1,31 +1,34 @@
-## v0.0.5
+## v0.0.6
 
+- [UI/UX] Hold shift to overwrite and otherwise append?
+- Implement brute force search of closest point to ray cast and show the coordinates of it
+  - Implement a button placing the orbit at the closest point
+- [Rendering] Render normals using geometry shader, use n to toggle normals on/off
 - [Rendering] Add transparency option
 - [Rendering] Add surface with edges option
 - [UI/UX] Mode line (bar along bottom) showing hovered mesh stats
-- [UI/UX] Load files in a separate thread and report loading progress in the mode line
-- [UI/UX] Display file load time
 - [UI/UX] Fix camera panning
-- [UI/UX] Add a keybinding to refresh a file
-- [UI/UX] Add per-item line width/point size options
-- [UI/UX] Make items items selectable so they can be bulk edited/refreshed
-- [UI/UX] Define a plane and write the world coordinates of the intersection point by the mouse cursor
-- [Robustness] Add tests for obj loading
-- [UI/UX,Camera] Implement perspective projection
-  - [UI/UX,Camera] First person camera with strafing and jump/crouch
+- [UI/UX] Implement wild cards for file loading
 
 ## Backlog
 
+- [UI/UX] Load files in a separate thread and report loading progress in the mode line
+- [UI/UX] Display file load time
+- [UI/UX] Implement more options for bulk selection editing
+  - [UI/UX] Add per-item line width/point size options
+- [UI/UX] Define a plane and write the world coordinates of the intersection point by the mouse cursor. Use lmb click drag for measuring
+- [Robustness] Add tests for obj loading
+- [Camera,Bug] Fix erratic rotation when rotating about the selected axes
+- [UI/UX,Camera] Implement perspective projection
+  - [UI/UX,Camera] First person camera with strafing and jump/crouch
+- [Rendering] Render by index, or adjust colour by index, or make a ripple by point index
 - [UI/UX,Rendering] Add clipping plane widgets
-- [UI/UX,Camera] Move triad to bottom left of screen
-- [UI/UX,Camera] Implement wild cards for file loading
 - [UI/UX,Camera] Add orbit placement
 - [UI/UX] Frame rate independent game loop?
 - [UI/UX,Bug] Fix obj loading for quad faces
 - [UI/UX] :UserConfig Hotload user configurable parameters
 - [Bug] Fix sweep dragging check boxes being affected through overlayed ui e.g., colour picker
 - [Commands] save_obj <filename> <optional-element-index-list>
-- [Rendering] Render normals using geometry shader
 - [UI/UX] When we press "Reset Orbit" we should re-place the camera planes
 - [UI/UX] Mesh element number/segment number rendering
 - [UI/UX] Sliders to select visible range of indices
@@ -86,4 +89,8 @@
 - [XXL] Hotload jai code so that you can keep state while you change your algorithm
 - [Robustness] Just log warnings and ignore the context allocator if it's not malloc, or create a new polygon allocated with malloc if passing to c
 - [Rendering] Distribute shaders with source for hot loading/editing them. Pass them lots of unused data then
+- [XXL] Place a window (circle/square) with a local camera in it that can be oriented to look around the scene
+- [UI/UX] Hover over UI element (button/checkbox) and press a key to bind that key to it, display the bound keys in a list somewhere
+- [UI/UX] When hovering over items in the scene make the others/overlapping ones transparent
+- [XXL,UI/UX] Suggested values when transforming an item
 

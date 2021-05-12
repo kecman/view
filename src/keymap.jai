@@ -65,28 +65,28 @@ init_keymap :: ()
 {
     // @Incomplete that we don't have clashing key mappings
 
-    add_key(*app.keymap_keydown, toggle_show_help_ui, "toggle_show_help_ui",  xx #char "h");
-    add_key(*app.keymap_keydown, toggle_show_global_settings_ui, "toggle_show_global_settings_ui",  xx #char "h", .{shift_pressed=true});
-    add_key(*app.keymap_keydown, toggle_show_ui, "toggle_show_ui",  xx #char "`");
-    add_key(*app.keymap_keydown, toggle_show_console_ui, "toggle_show_console_ui",  xx #char "`", .{control_pressed=true});
+    add_key(*app.keymap_keydown, toggle_show_help_ui, "toggle help",  xx #char "h");
+    add_key(*app.keymap_keydown, toggle_show_global_settings_ui, "toggle global settings",  xx #char "h", .{shift_pressed=true});
+    add_key(*app.keymap_keydown, toggle_show_ui, "toggle all UI",  xx #char "`");
+    add_key(*app.keymap_keydown, toggle_show_console_ui, "toggle console UI",  xx #char "`", .{control_pressed=true});
 
-    add_key(*app.keymap, close_application, "close_application", xx #char "q", .{shift_pressed=true, control_pressed=true});
-    add_key(*app.keymap, call_fit_on_screen, "fit_on_screen", xx #char "r");
-    add_key(*app.keymap, reset_camera, "reset_camera", xx #char "r", .{shift_pressed=true});
-    add_key(*app.keymap, schedule_item_refresh, "refresh hovered item", xx Special_Key_Code.F5);
+    add_key(*app.keymap, close_application, "close application", xx #char "q", .{shift_pressed=true, control_pressed=true});
+    add_key(*app.keymap, call_fit_on_screen, "fit on screen", xx #char "r");
+    add_key(*app.keymap, reset_camera, "reset camera", xx #char "r", .{shift_pressed=true});
+    add_key(*app.keymap, reload_selected_items, "reload selected items", xx Special_Key_Code.F5);
 
-    add_key(*app.keymap, cycle_line_width, "cycle_line_width", xx #char "l");
-    add_key(*app.keymap, cycle_point_size, "cycle_point_size", xx #char "p");
-    add_key(*app.keymap, cycle_point_index_labels, "cycle_point_index_labels", xx #char "p", .{shift_pressed=true});
-    add_key(*app.keymap, cycle_point_position_labels, "cycle_point_position_labels", xx #char "p", .{alt_pressed=true});
-    add_key(*app.keymap, clear_labels, "clear_labels", xx #char "x");
+    add_key(*app.keymap, cycle_line_width, "cycle line width", xx #char "l");
+    add_key(*app.keymap, cycle_point_size, "cycle point size", xx #char "p");
+    add_key(*app.keymap, cycle_point_index_labels, "cycle point index labels", xx #char "p", .{shift_pressed=true});
+    add_key(*app.keymap, cycle_point_position_labels, "cycle point position labels", xx #char "p", .{alt_pressed=true});
+    add_key(*app.keymap, clear_labels, "clear labels", xx #char "x");
 
-    add_key(*app.keymap, rotate_look_direction_15_cw,  "rotate_look_direction_15_cw",  xx #char "]");
-    add_key(*app.keymap, rotate_look_direction_15_ccw, "rotate_look_direction_15_ccw", xx #char "[");
-    add_key(*app.keymap, rotate_look_direction_45_cw,  "rotate_look_direction_45_cw",  xx #char "]", .{shift_pressed=true});
-    add_key(*app.keymap, rotate_look_direction_45_ccw, "rotate_look_direction_45_ccw", xx #char "[", .{shift_pressed=true});
-    add_key(*app.keymap, rotate_look_direction_5_cw,   "rotate_look_direction_5_cw",   xx #char "]", .{alt_pressed=true});
-    add_key(*app.keymap, rotate_look_direction_5_ccw,  "rotate_look_direction_5_ccw",  xx #char "[", .{alt_pressed=true});
+    add_key(*app.keymap, rotate_look_direction_15_cw,  "rotate  15 deg about selected rotation axis",  xx #char "]");
+    add_key(*app.keymap, rotate_look_direction_15_ccw, "rotate -15 deg about selected rotation axis", xx #char "[");
+    add_key(*app.keymap, rotate_look_direction_45_cw,  "rotate  45 deg about selected rotation axis",  xx #char "]", .{shift_pressed=true});
+    add_key(*app.keymap, rotate_look_direction_45_ccw, "rotate -45 deg about selected rotation axis", xx #char "[", .{shift_pressed=true});
+    add_key(*app.keymap, rotate_look_direction_5_cw,   "rotate  5  deg about selected rotation axis",   xx #char "]", .{alt_pressed=true});
+    add_key(*app.keymap, rotate_look_direction_5_ccw,  "rotate -5  deg about selected rotation axis",  xx #char "[", .{alt_pressed=true});
     // add_key(*app.keymap, debug_junk, "debug_junk", xx #char " ");
 
     add_key :: (keymap : *Keymap, proc : () -> (), name : string, key_code : u32, modifier_flags : Modifier_Flags = .{}) {
@@ -124,8 +124,19 @@ clear_labels                   :: () { using app.vertex_label_style; show_index 
 cycle_point_size               :: () { using app.vertex_label_style; if point_size == 0 point_size = 2; else if point_size == 2 point_size = 4; else point_size = 0; }
 cycle_line_width               :: () { using app.vertex_label_style; if line_width == 1 line_width = 2; else if line_width == 2 line_width = 3; else line_width = 1; }
 reset_camera                   :: () { init_camera(); }
-schedule_item_refresh          :: () { app.do_item_refresh = true; }
 // debug_junk                     :: () { c:= app.camera; printv(#code c); }
+
+reload_selected_items :: () {
+    for app.entities if get_mesh(it) && it.is_selected {
+        entity := load_entity_from_file(it.fully_pathed_filename);
+        if entity {
+            entity.generation_index = it.generation_index;
+            deinit(it);
+            app.entities[it_index] = entity;
+            it.is_selected = false;
+        }
+    }
+}
 
 #scope_file
 

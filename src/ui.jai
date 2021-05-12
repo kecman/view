@@ -129,16 +129,6 @@ show_scene_ui :: ()
             if ImGui.IsItemHovered() {
                 it.display_info.flash_hovered = true;
                 it.display_info.flash_wave_dt += io().DeltaTime;
-
-                if app.do_item_refresh {
-                    entity := load_entity_from_file(it.fully_pathed_filename);
-                    if entity {
-                        entity.generation_index = it.generation_index;
-                        deinit(it);
-                        app.entities[it_index] = entity;
-                    }
-                    app.do_item_refresh = false;
-                }
             } else if was_flash_hovered {
                 it.display_info.flash_hovered = false;
                 it.display_info.flash_wave_dt = 0;
@@ -147,10 +137,7 @@ show_scene_ui :: ()
             if ImGui.BeginPopupContextItem(imgui_label("##context_menu", it)) {
                 defer ImGui.EndPopup();
 
-                selected_count := 0;
-                for entities if get_mesh(it) && it.is_selected then selected_count += 1;
-
-                if selected_count == 0 {
+                if !it.is_selected {
                     if it.fully_pathed_filename.count {
 
                         text := entity_fully_pathed_filename_with_generation_index(<<it);

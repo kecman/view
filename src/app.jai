@@ -41,7 +41,6 @@ app : struct {
     settings : User_Settings;
 
     closing_application := false; // Set this to true to close the application
-    do_item_refresh := false;
 }
 
 current_window_aspect_ratio_width_over_height :: () -> float {
