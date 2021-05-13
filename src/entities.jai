@@ -8,11 +8,10 @@ Entity :: struct {
     }
     type : Entity_Type = .UNKNOWN;
 
-    // Consider making a Display_Mesh type
+    render_info : Render_Info;
     display_info : Display_Info;
     mesh : Mesh;
 
-    // @TODO move mesh into here
     // @TODO add mesh bounding box here
 
     is_selected : bool;
@@ -77,11 +76,11 @@ deinit :: (base : *Entity)
             deinit(*entity.mesh);
     }
 
-    if base.display_info.vbo glDeleteBuffers(1, *base.display_info.vbo);
-    if base.display_info.ibo glDeleteBuffers(1, *base.display_info.ibo);
-    base.display_info.vbo = 0;
-    base.display_info.ibo = 0;
-    base.display_info.is_dirty = true;
+    if base.render_info.vbo glDeleteBuffers(1, *base.render_info.vbo);
+    if base.render_info.ibo glDeleteBuffers(1, *base.render_info.ibo);
+    base.render_info.vbo = 0;
+    base.render_info.ibo = 0;
+    base.render_info.is_dirty = true;
 
     free(base.fully_pathed_filename);
 }
@@ -133,7 +132,7 @@ load_entity_from_file :: (filename : string) -> *Entity
         `entity.display_info.color.y = cast(float)(get_hash(hash) % 257) / 256;
         `entity.display_info.color.z = cast(float)(get_hash(get_hash(hash)) % 257) / 256;
 
-        buffer_mesh(*`entity.mesh, *`entity.display_info);
+        buffer_mesh(*`entity.mesh, *`entity.render_info);
 
         log("Inferred entity type '%'", `entity.type);
     }

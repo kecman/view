@@ -251,8 +251,8 @@ fit_on_screen :: (entity : *Entity, accurate : bool = false)
         return;
     }
 
-    if entity.display_info.is_dirty {
-        buffer_mesh(*entity.mesh, *entity.display_info);
+    if entity.render_info.is_dirty {
+        buffer_mesh(*entity.mesh, *entity.render_info);
     }
 
     // Place orthographic planes to fit the scene
@@ -260,7 +260,7 @@ fit_on_screen :: (entity : *Entity, accurate : bool = false)
 
     // Update the camera to look at the entity only
     look_direction := current_look_direction();
-    sphere := entity.display_info.bounding_sphere;
+    sphere := entity.render_info.bounding_sphere;
     transform(*sphere, entity.mesh.world_from_model);
     app.camera.look_position = sphere.center;
     app.camera.eye_position = app.camera.look_position - normalize(look_direction) * sphere.radius;
@@ -390,7 +390,7 @@ visible_entities_bounding_sphere_fast :: () -> Sphere
     first_entity := true;
 
     for :visible_entities_iterator app.entities {
-        sphere := it.display_info.bounding_sphere;
+        sphere := it.render_info.bounding_sphere;
         transform(*sphere, it.mesh.world_from_model);
         if first_entity {
             result = sphere;

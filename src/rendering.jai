@@ -19,27 +19,31 @@ Display_Mode :: enum {
     BLINN_PHONG :: 2;
 }
 
-// @Cleanup rename to Render_Info
-Display_Info :: struct {
+// Things that needs updating when the geometry changes
+Render_Info :: struct {
     is_dirty := true;
 
     vbo : GLuint;
     ibo : GLuint;
 
+    bounding_sphere : Sphere; // In world space
+    bounding_aabb : AxisBox3; // In world space
+}
+
+// Things that should be preserved when the geometry changes
+Display_Info :: struct {
     visible := true;
     visible_sweep_hovered := false;
+
     flash_hovered := false;
     flash_wave_dt : float = 0.;
 
     wireframe := false;
     color : Vector4;
     display_mode := Display_Mode.BLINN_PHONG;
-
-    bounding_sphere : Sphere; // In world space
-    bounding_aabb : AxisBox3; // In world space
 }
 
-buffer_mesh :: (mesh : *Mesh, info : *Display_Info) {
+buffer_mesh :: (mesh : *Mesh, info : *Render_Info) {
     if info.is_dirty {
         if mesh.geometry_format == .TRIANGLES && !mesh.normals.count {
             // log("Computing and assigning triangle normals to vertices\n");
@@ -73,10 +77,10 @@ buffer_mesh :: (mesh : *Mesh, info : *Display_Info) {
     }
 }
 
-render_mesh :: (mesh : Mesh, info : Display_Info, style : VertexLabelStyle, flash_dt : float = 0) {
+render_mesh :: (mesh : Mesh, using display_info : Display_Info, using render_info : Render_Info, style : VertexLabelStyle, flash_dt : float = 0) {
     using app;
 
-    assert(!info.is_dirty);
+    assert(!is_dirty);
 
     glUseProgram(mesh_shader);
 
@@ -99,18 +103,18 @@ render_mesh :: (mesh : Mesh, info : Display_Info, style : VertexLabelStyle, flas
 
     {
         mode_loc := glGetUniformLocation(mesh_shader, "display_mode");
-        glUniform1i(mode_loc, xx info.display_mode);
+        glUniform1i(mode_loc, xx display_mode);
     }
 
     {
         loc := glGetUniformLocation(mesh_shader, "wave");
-        wave := ifx info.flash_wave_dt == 0 then -1 else cos(5 * info.flash_wave_dt);
+        wave := ifx flash_wave_dt == 0 then -1 else cos(5 * flash_wave_dt);
         glUniform1f(loc, wave);
     }
 
     {
         color_loc := glGetUniformLocation(mesh_shader, "color");
-        glUniform4f(color_loc, info.color.x, info.color.y, info.color.z, info.color.w);
+        glUniform4f(color_loc, color.x, color.y, color.z, color.w);
     }
 
     {
@@ -124,8 +128,8 @@ render_mesh :: (mesh : Mesh, info : Display_Info, style : VertexLabelStyle, flas
     }
 
     glBindVertexArray(mesh_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, info.vbo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, info.ibo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 
     ATTRIB_POSITION  :: 0;
     ATTRIB_NORMAL    :: 1;
@@ -153,7 +157,7 @@ render_mesh :: (mesh : Mesh, info : Display_Info, style : VertexLabelStyle, flas
     glGetIntegerv(GL_POLYGON_MODE, xx last_polygon_mode.data);
     defer glPolygonMode(GL_FRONT_AND_BACK, last_polygon_mode[0]);
 
-    if info.wireframe {
+    if wireframe {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     } else {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -292,9 +296,10 @@ debug_vector :: (length : float, vector_world : Vector3, color : Vector4) {
     display_info.wireframe = true;
     display_info.color = color;
 
-    buffer_mesh(*debug_mesh, *display_info);
+    render_info : Render_Info;
+    buffer_mesh(*debug_mesh, *render_info);
 
-    render_mesh(debug_mesh, display_info, .{point_size=0, line_width=1});
+    render_mesh(debug_mesh, display_info, render_info, .{point_size=0, line_width=1});
 }
 
 debug_text_at_cursor :: (text : string)

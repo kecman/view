@@ -61,9 +61,9 @@ visible_entities_iterator :: (entities : *[..]*Entity, body : Code, flags : For_
             continue;
         }
 
-        // Make this explicit?
-        if entity.display_info.is_dirty {
-            buffer_mesh(*entity.mesh, *entity.display_info);
+        // @Cleanup Pull this out of this iterator to make it explicit, or maybe it's better that we're just dealing with it
+        if entity.render_info.is_dirty {
+            buffer_mesh(*entity.mesh, *entity.render_info);
         }
 
         `it_index := entity_index;
