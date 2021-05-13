@@ -205,17 +205,7 @@ show_scene_ui :: ()
                     }
 
                     if ImGui.Button("Reload Selected Items", size=*V2_ZERO) {
-                        for app.entities if get_mesh(it) && it.is_selected {
-                            entity := load_entity_from_file(it.fully_pathed_filename);
-                            if entity {
-                                deinit(it);
-                                app.entities[it_index] = entity;
-
-                                // Maintain the generation index and selected state after reloading (users may want to reload the same set of files many times)
-                                entity.generation_index = it.generation_index;
-                                entity.is_selected = true;
-                            }
-                        }
+                        reload_selected_entities();
                         ImGui.CloseCurrentPopup();
                     }
 

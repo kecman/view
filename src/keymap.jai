@@ -73,7 +73,7 @@ init_keymap :: ()
     add_key(*app.keymap, close_application, "close application", xx #char "q", .{shift_pressed=true, control_pressed=true});
     add_key(*app.keymap, call_fit_on_screen, "fit on screen", xx #char "r");
     add_key(*app.keymap, reset_camera, "reset camera", xx #char "r", .{shift_pressed=true});
-    add_key(*app.keymap, reload_selected_items, "reload selected items", xx Special_Key_Code.F5);
+    add_key(*app.keymap, reload_selected_entities, "reload selected items", xx Special_Key_Code.F5);
 
     add_key(*app.keymap, cycle_line_width, "cycle line width", xx #char "l");
     add_key(*app.keymap, cycle_point_size, "cycle point size", xx #char "p");
@@ -125,20 +125,6 @@ cycle_point_size               :: () { using app.vertex_label_style; if point_si
 cycle_line_width               :: () { using app.vertex_label_style; if line_width == 1 line_width = 2; else if line_width == 2 line_width = 3; else line_width = 1; }
 reset_camera                   :: () { init_camera(); }
 // debug_junk                     :: () { c:= app.camera; printv(#code c); }
-
-reload_selected_items :: () {
-    for app.entities if get_mesh(it) && it.is_selected {
-        entity := load_entity_from_file(it.fully_pathed_filename);
-        if entity {
-            deinit(it);
-            app.entities[it_index] = entity;
-
-            // Maintain the generation index and selected state after reloading (users may want to reload the same set of files many times)
-            entity.generation_index = it.generation_index;
-            entity.is_selected = true;
-        }
-    }
-}
 
 #scope_file
 

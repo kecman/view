@@ -111,8 +111,7 @@ entity_fully_pathed_filename_with_generation_index :: (using entity : Entity) ->
     return text;
 }
 
-load_entity_from_file :: (filename : string) -> *Entity
-{
+load_entity_from_file :: (filename : string) -> *Entity {
     // @Incomplete: support polygon types using wkt format and improve reporting here
     log("Loading file '%'... ", filename);
     mesh := load_obj(filename);
@@ -176,6 +175,22 @@ load_entity_from_file :: (filename : string) -> *Entity
             log("Skipped (unsupported geometry type %)\n", mesh.geometry_format);
             deinit(*mesh);
             return null;
+    }
+}
+
+reload_selected_entities :: () {
+    for app.entities if get_mesh(it) && it.is_selected {
+        entity := load_entity_from_file(it.fully_pathed_filename);
+        if entity {
+            // Maintain the following information after the entity reload
+            entity.display_info = it.display_info;
+            entity.generation_index = it.generation_index;
+            entity.is_selected = true;
+
+            deinit(it);
+
+            app.entities[it_index] = entity;
+        }
     }
 }
 
