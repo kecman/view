@@ -1,6 +1,8 @@
 # Version: v0.0.6, Unreleased
 
+- Added file load time to item context menu and made the filename fade from green to white to indicate a refresh occurred
 - Fixed a bug, introduced in v0.0.5, where the setting to update the camera to fit dropped items to the screen was not respected
+- Fixed flickering UI when removing items from the scene
 - Changed reloading multiple items to preserve the selection so enable users to reload the same selection more easily
 
 # Version: v0.0.5, 12 May 2021

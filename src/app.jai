@@ -81,6 +81,7 @@ visible_entities_iterator :: (entities : *[..]*Entity, body : Code, flags : For_
 #import "ImGui_";
 #import "GL";
 #import "Deep_Copy";
+#import "Time";
 
 #load "modules/ImGui_/examples/imgui_sdl_gl.jai";
 

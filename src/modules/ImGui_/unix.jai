@@ -187,6 +187,10 @@ ImGui :: struct {
         TextDisabled(text.data);
     }
 
+    TextColored :: (color : Vector4, fmt: string, args: .. Any) {
+        text := tprintz(fmt, ..args);    // Note, tprintz appends \0 at the end.
+        TextColored(*color, text.data);
+    }
 
     // Widgets: Main
     Button :: (label: *u8, size: *ImVec2/*= *v2zero*/) -> bool #foreign imgui "_ZN5ImGui6ButtonEPKcRK6ImVec2"; // 1225            // button

@@ -16,8 +16,8 @@ Entity :: struct {
 
     is_selected : bool;
     fully_pathed_filename : string;
-    generation_index : int; // entities with the same fully pathed_filename will increment this
     loaded_filetime : u64;
+    generation_index : int; // entities with the same fully pathed_filename will increment this
 }
 
 Polyline_Soup2_Entity :: struct {
@@ -125,6 +125,7 @@ load_entity_from_file :: (filename : string) -> *Entity {
     Common_Init :: () #expand {
         `entity.mesh = mesh;
         `entity.fully_pathed_filename = copy_string(filename);
+        `entity.loaded_filetime = get_current_file_time();
 
         hash := get_hash(`entity.fully_pathed_filename);
         `entity.display_info.color.x = cast(float)(hash % 257) / 256;
@@ -178,19 +179,23 @@ load_entity_from_file :: (filename : string) -> *Entity {
     }
 }
 
+replace_entity :: (old : *Entity, old_index : s64, new : *Entity) {
+    if new {
+        // Maintain the following information after the entity reload
+        new.display_info = old.display_info;
+        new.generation_index = old.generation_index;
+        new.is_selected = old.is_selected;
+
+        deinit(old);
+
+        app.entities[old_index] = new;
+    }
+}
+
 reload_selected_entities :: () {
     for app.entities if get_mesh(it) && it.is_selected {
         entity := load_entity_from_file(it.fully_pathed_filename);
-        if entity {
-            // Maintain the following information after the entity reload
-            entity.display_info = it.display_info;
-            entity.generation_index = it.generation_index;
-            entity.is_selected = true;
-
-            deinit(it);
-
-            app.entities[it_index] = entity;
-        }
+        replace_entity(it, it_index, entity);
     }
 }
 

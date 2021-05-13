@@ -104,7 +104,6 @@ show_scene_ui :: ()
             ImGui.SameLine();
             if ImGui.Button(imgui_label("Remove", it), size=*V2_ZERO) {
                 entity_to_remove = it_index;
-                break;
             }
 
             // Color picker
@@ -115,9 +114,21 @@ show_scene_ui :: ()
             ImGui.SameLine();
             if it.fully_pathed_filename.count {
                 text := entity_fully_pathed_filename_with_generation_index(<<it);
+
+                loaded_time_text := filetime_to_iso_date(it.loaded_filetime);
+                delta_time := get_current_file_time() - it.loaded_filetime;
+                FADE_TIME_SECS := 1;
+                color := Vector4.{1, 1, 1, 1};
+                if delta_time < xx (FADE_TIME_SECS * 10_000_000.) {
+                    alpha := clamp(delta_time / (FADE_TIME_SECS * 10_000_000.), 0., 1.);
+                    color = lerp(Vector4.{0, 1, 0, 1}, Vector4.{1, 1, 1, 1}, alpha);
+                }
+
+                ImGui.PushStyleColor(xx ImGui.Col.Text, *color);
                 if ImGui.Selectable(to_c_string(text), *it.is_selected, size=*V2_ZERO) {
                     if !io().KeyCtrl it.is_selected = !it.is_selected;
                 }
+                ImGui.PopStyleColor();
             } else {
                 ImGui.Selectable("---", *it.is_selected, size=*V2_ZERO);
             }
@@ -134,7 +145,7 @@ show_scene_ui :: ()
                 it.display_info.flash_wave_dt = 0;
             }
 
-            if ImGui.BeginPopupContextItem(imgui_label("##context_menu", it)) {
+            if ImGui.BeginPopupContextItem(imgui_label("##context_menu", xx it_index)) {
                 defer ImGui.EndPopup();
 
                 if !it.is_selected {
@@ -142,33 +153,10 @@ show_scene_ui :: ()
 
                         text := entity_fully_pathed_filename_with_generation_index(<<it);
                         ImGui.Text(text);
-
-                        if ImGui.Button(imgui_label("Reload Item", it), size=*V2_ZERO) {
-                            entity := load_entity_from_file(it.fully_pathed_filename);
-                            if entity {
-                                entity.generation_index = it.generation_index;
-                                deinit(it);
-                                app.entities[it_index] = entity;
-                            }
-                        }
                     }
 
-                    // Toggle visibility checkbox
-                    ImGui.Checkbox(imgui_label("Visible", it), *it.display_info.visible);
-
-                    // Toggle wireframe checkbox
-                    if it.type == .MESH || it.type == .POLYGON_SOUP {
-                        ImGui.Checkbox(imgui_label("Wireframe   ", it), *it.display_info.wireframe);
-                    }
-
-                    shift := make_vector3(mesh.world_from_model._14, mesh.world_from_model._24, mesh.world_from_model._34);
-                    ImGui.Text("shift");
-                    ImGui.SameLine();
-                    ImGui.DragFloat3("##shift", *shift.component, .05);
-                    mesh.world_from_model._14, mesh.world_from_model._24, mesh.world_from_model._34 = shift.x, shift.y, shift.z;
-
-                    ImGui.PushItemWidth(-1);
-                    combo_box("", *it.display_info.display_mode, type_info(type_of(it.display_info.display_mode)));
+                    loaded_time_text := filetime_to_iso_date(it.loaded_filetime);
+                    ImGui.Text("% %", "Created at:", loaded_time_text);
 
                     if it.type == {
                         case .POLYLINE_SOUP2;
@@ -196,6 +184,29 @@ show_scene_ui :: ()
                     ImGui.Text(to_c_string(tprint("AABB [%, %, %], [%, %, %]",
                                                   aabb.min_point.x, aabb.min_point.y, aabb.min_point.z,
                                                   aabb.max_point.x, aabb.max_point.y, aabb.max_point.z)));
+                    ImGui.Separator();
+
+                    if it.fully_pathed_filename.count && ImGui.Button(imgui_label("Reload Item", it), size=*V2_ZERO) {
+                        entity := load_entity_from_file(it.fully_pathed_filename);
+                        replace_entity(it, it_index, entity);
+                    }
+
+                    // Toggle visibility checkbox
+                    ImGui.Checkbox(imgui_label("Visible", it), *it.display_info.visible);
+
+                    // Toggle wireframe checkbox
+                    if it.type == .MESH || it.type == .POLYGON_SOUP {
+                        ImGui.Checkbox(imgui_label("Wireframe   ", it), *it.display_info.wireframe);
+                    }
+
+                    shift := make_vector3(mesh.world_from_model._14, mesh.world_from_model._24, mesh.world_from_model._34);
+                    ImGui.Text("shift");
+                    ImGui.SameLine();
+                    ImGui.DragFloat3("##shift", *shift.component, .05);
+                    mesh.world_from_model._14, mesh.world_from_model._24, mesh.world_from_model._34 = shift.x, shift.y, shift.z;
+
+                    ImGui.PushItemWidth(-1);
+                    combo_box("", *it.display_info.display_mode, type_info(type_of(it.display_info.display_mode)));
                 } else {
                     for app.entities if get_mesh(it) && it.is_selected {
                         if it.fully_pathed_filename.count {
