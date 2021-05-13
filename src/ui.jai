@@ -211,7 +211,7 @@ show_scene_ui :: ()
                                 entity.generation_index = it.generation_index;
                                 deinit(it);
                                 app.entities[it_index] = entity;
-                                it.is_selected = false;
+                                // Maintain the selection after reloading since the user might want to reload the same set of files shortly
                             }
                         }
                         ImGui.CloseCurrentPopup();

@@ -1,3 +1,7 @@
+# Version: v0.0.6, Unreleased
+
+- Changed 'Reload Selected Items' to preserve the selection after reload to enable users to reload the same selection more easily
+
 # Version: v0.0.5, 12 May 2021
 
 - Improved the UI by organising settings under collapsing headers
