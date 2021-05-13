@@ -1,11 +1,12 @@
 ## v0.0.6
 
-- [UI/UX] Hold shift to overwrite and otherwise append?
+- [Refactor] Separate Render_Info from Display_Info
 - Implement brute force search of closest point to ray cast and show the coordinates of it
   - Implement a button placing the orbit at the closest point
 - [Rendering] Render normals using geometry shader, use n to toggle normals on/off
 - [Rendering] Add transparency option
 - [Rendering] Add surface with edges option
+- [UI/UX] Support loading wkt file format to load Polygons in a reasonable way
 - [UI/UX] Mode line (bar along bottom) showing hovered mesh stats
 - [UI/UX] Fix camera panning
 - [UI/UX] Implement wild cards for file loading
@@ -55,7 +56,6 @@
 - [UI/UX] Write * to indicate an identical first and last point
 - [UI/UX] Sweep drag for removing items from the scene?
 - [UI/UX] Click to copy point coordinate in {1.8e} format so that it can be used as a float literal in code
-- [UI/UX] Support loading wkt file format to load Polygons in a reasonable way
 - [UI/UX] Implement sliding to show/hide the terminal
 - [UI/UX] Scroll to the bottom of the terminal
 - [Build,DevX] Compiled at time in Window, after version?

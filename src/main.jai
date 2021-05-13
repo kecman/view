@@ -230,15 +230,15 @@ main :: () {
                                     array_add(*app.entities, entity);
                                 }
                         }
-
-                        if app.settings.fit_to_screen_on_file_drop_event {
-                            fit_on_screen();
-                        }
                     } else {
                         entity := load_entity_from_file(dropped);
                         if entity {
                             array_add(*app.entities, entity);
                         }
+                    }
+
+                    if app.settings.fit_to_screen_on_file_drop_event {
+                        fit_on_screen();
                     }
                 }
             }

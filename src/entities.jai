@@ -18,6 +18,7 @@ Entity :: struct {
     is_selected : bool;
     fully_pathed_filename : string;
     generation_index : int; // entities with the same fully pathed_filename will increment this
+    loaded_filetime : u64;
 }
 
 Polyline_Soup2_Entity :: struct {

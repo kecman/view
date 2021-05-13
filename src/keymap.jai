@@ -130,10 +130,12 @@ reload_selected_items :: () {
     for app.entities if get_mesh(it) && it.is_selected {
         entity := load_entity_from_file(it.fully_pathed_filename);
         if entity {
-            entity.generation_index = it.generation_index;
             deinit(it);
             app.entities[it_index] = entity;
-            it.is_selected = false;
+
+            // Maintain the generation index and selected state after reloading (users may want to reload the same set of files many times)
+            entity.generation_index = it.generation_index;
+            entity.is_selected = true;
         }
     }
 }

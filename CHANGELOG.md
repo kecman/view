@@ -1,6 +1,7 @@
 # Version: v0.0.6, Unreleased
 
-- Changed 'Reload Selected Items' to preserve the selection after reload to enable users to reload the same selection more easily
+- Fixed a bug, introduced in v0.0.5, where the setting to update the camera to fit dropped items to the screen was not respected
+- Changed reloading multiple items to preserve the selection so enable users to reload the same selection more easily
 
 # Version: v0.0.5, 12 May 2021
 
