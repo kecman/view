@@ -1,9 +1,10 @@
 # Version: v0.0.6, Unreleased
 
-- Added file load time to item context menu and made the filename fade from green to white to indicate a refresh occurred
+- Added file load time to item context menu and added a visual fade to indicate a file load occurred
 - Fixed a bug, introduced in v0.0.5, where the setting to update the camera to fit dropped items to the screen was not respected
 - Fixed flickering UI when removing items from the scene
-- Changed reloading multiple items to preserve the selection so enable users to reload the same selection more easily
+- Changed item list to display only the filename rather than the fully pathed filename (which is still visible in the item context menu)
+- Changed reloading multiple items to preserve the selection, this makes reloading the same selection easier (a common use case)
 
 # Version: v0.0.5, 12 May 2021
 

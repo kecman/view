@@ -74,6 +74,7 @@ visible_entities_iterator :: (entities : *[..]*Entity, body : Code, flags : For_
 
 #import "Basic";
 #import "File";
+#import "File_Utilities";
 #import "String";
 #import "Reflection";
 #import "Math";

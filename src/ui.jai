@@ -113,9 +113,9 @@ show_scene_ui :: ()
             // Write filename
             ImGui.SameLine();
             if it.fully_pathed_filename.count {
-                text := entity_fully_pathed_filename_with_generation_index(<<it);
+                text := entity_filename_with_generation_index(<<it);
 
-                loaded_time_text := filetime_to_iso_date(it.loaded_filetime);
+                loaded_time_text := filetime_to_readable_date(it.loaded_filetime);
                 delta_time := get_current_file_time() - it.loaded_filetime;
                 FADE_TIME_SECS := 1;
                 color := Vector4.{1, 1, 1, 1};
@@ -155,8 +155,8 @@ show_scene_ui :: ()
                         ImGui.Text(text);
                     }
 
-                    loaded_time_text := filetime_to_iso_date(it.loaded_filetime);
-                    ImGui.Text("% %", "Created at:", loaded_time_text);
+                    loaded_time_text := filetime_to_readable_date(it.loaded_filetime);
+                    ImGui.Text("% %", "Loaded at", loaded_time_text);
 
                     if it.type == {
                         case .POLYLINE_SOUP2;

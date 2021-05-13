@@ -101,6 +101,23 @@ get_mesh :: (base : *Entity) -> *Mesh {
     return null;
 }
 
+entity_filename_with_generation_index :: (using entity : Entity) -> string {
+    text : string;
+
+    name := fully_pathed_filename;
+    path := parse_path(fully_pathed_filename);
+    if path.words.count {
+        name = path.words[path.words.count - 1];
+    }
+
+    if generation_index == 0 {
+        text = tprint("%", name);
+    } else {
+        text = tprint("% <%>", name, generation_index);
+    }
+    return text;
+}
+
 entity_fully_pathed_filename_with_generation_index :: (using entity : Entity) -> string {
     text : string;
     if generation_index == 0 {
