@@ -1,7 +1,6 @@
 ## Next Release
 
-- [Refactor] Separate Render_Info from Display_Info
-- Implement brute force search of closest point to ray cast and show the coordinates of it
+- [UI/UX] Implement brute force search of closest point to ray cast and show the coordinates of it
   - Implement a button placing the orbit at the closest point
 - [Rendering] Render normals using geometry shader, use n to toggle normals on/off
 - [Rendering] Add transparency option
@@ -14,6 +13,7 @@
 ## Backlog
 
 - [UI/UX] Load files in a separate thread and report loading progress in the mode line
+- [UI/UX] Feedback when refreshing a file gives the same result
 - [UI/UX] Display file load time
 - [UI/UX] Implement more options for bulk selection editing
   - [UI/UX] Add per-item line width/point size options
@@ -41,9 +41,11 @@
 - [UI/UX] Scale zoom speed with scene bounding box when shift is held?
 - [UI/UX] Implement a view cube using the Simp module
 - [Performance] Speed up text rendering, it's so slow right now!
+- [Performance,Formats] Natively support heightmaps, have native, simple and fast loading file formats
 - [UI/UX] Scale the axes according to the bbox of the scene?
 - [UI/UX] Arrow keys pan across bounding box?
 - [UI/UX] Write the fully pathed filename even for files loaded on the command line
+- [UI/UX] Handle infinities in files well
 - [Presentation] Explain high-level goals
 - [Refactor] Remove geometry module, just load files
 - [Meta-programming,Testing] Use @test to tag/run tests
