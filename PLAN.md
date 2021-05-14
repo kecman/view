@@ -1,4 +1,4 @@
-## v0.0.6
+## Next Release
 
 - [Refactor] Separate Render_Info from Display_Info
 - Implement brute force search of closest point to ray cast and show the coordinates of it
