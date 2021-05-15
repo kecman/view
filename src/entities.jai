@@ -128,6 +128,18 @@ entity_fully_pathed_filename_with_generation_index :: (using entity : Entity) ->
     return text;
 }
 
+get_opacity :: (entity : Entity) -> float {
+    return entity.display_info.color.w;
+}
+
+set_opacity :: (entity : *Entity, opacity : float) {
+    set_opacity(*entity.display_info, opacity);
+}
+
+set_opacity :: (info : *Display_Info, opacity : float) {
+    info.color.w = clamp(opacity, 0., 1.);
+}
+
 load_entity_from_file :: (filename : string) -> *Entity {
     // @Incomplete: support polygon types using wkt format and improve reporting here
     log("Loading file '%'... ", filename);

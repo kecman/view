@@ -362,8 +362,8 @@ io_mouse_middle_down :: () -> bool { return io().MouseDown[2]; }
 to_ndc :: (position_px : Vector2) -> Vector2
 {
     using position_ndc : Vector2 = ---;
-    x = 2 * (position_px.x / cast(float)app.current_window_width) - 1;
-    y = 2 * (position_px.y / cast(float)app.current_window_height) - 1;
+    x = 2 * (clamp(position_px.x, 0., xx app.current_window_width) / xx app.current_window_width) - 1;
+    y = 2 * (clamp(position_px.y, 0., xx app.current_window_height) / cast(float)app.current_window_height) - 1;
     y *= -1; // (-1,-1) => bottom-left of screen, (+1,+1) => top-right of screen
 
     // print("NDC : %", position_ndc);

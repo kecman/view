@@ -39,7 +39,7 @@ Display_Info :: struct {
     flash_wave_dt : float = 0.;
 
     wireframe := false;
-    color : Vector4;
+    color : Vector4 = .{1, 1, 1, 1}; // RGBA format
     display_mode := Display_Mode.BLINN_PHONG;
 }
 

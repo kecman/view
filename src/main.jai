@@ -337,10 +337,6 @@ main :: () {
             }
         }
 
-        triad.origin.display_info.visible = triad.visible;
-        triad.x_axis.display_info.visible = triad.visible;
-        triad.y_axis.display_info.visible = triad.visible;
-        triad.z_axis.display_info.visible = triad.visible;
         if triad.visible {
             using *app.camera;
             old_camera := app.camera;
