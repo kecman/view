@@ -70,7 +70,7 @@ entities_iterator :: (entities : *[..]*Entity, body : Code, flags : For_Flags, s
     }
 }
 
-visible_entities_iterator :: #bake_arguments entities_iterator(should_visit = (e)=>(e.display_info.visible));
+visible :: #bake_arguments entities_iterator(should_visit = (e)=>(e.display_info.visible));
 
 #import "Basic";
 #import "File";

@@ -389,7 +389,7 @@ visible_entities_bounding_sphere_fast :: () -> Sphere
     result : Sphere;
     first_entity := true;
 
-    for :visible_entities_iterator app.entities {
+    for :visible app.entities {
         sphere := it.render_info.bounding_sphere;
         transform(*sphere, it.mesh.world_from_model);
         if first_entity {
@@ -408,8 +408,7 @@ visible_entities_bounding_sphere_accurate :: () -> Sphere
 {
     // Compute the bounding sphere the points in the scene
     points_vs : [..]Point3;
-    for :visible_entities_iterator app.entities {
-
+    for :visible app.entities {
         mesh := get_mesh(it);
         if mesh {
             for * mesh.positions {

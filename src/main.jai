@@ -339,12 +339,12 @@ main :: () {
         is_visible_opaque :: (e : *Entity)->bool { return e.display_info.visible && get_opacity(<<e) == 1.; }
         is_visible_transparent :: (e : *Entity)->bool { return e.display_info.visible && get_opacity(<<e) != 1.; }
 
-        visible_opaque_entities :: #bake_arguments entities_iterator(should_visit = is_visible_opaque);
-        // visible_opaque_entities :: #bake_arguments entities_iterator_impl(should_visit = (e)=>(get_opacity(<<e) == 1.)); // @CompilerBug quick lambda should work here...
-        visible_transparent_entities :: #bake_arguments entities_iterator(should_visit = is_visible_transparent);
+        visible_opaque :: #bake_arguments entities_iterator(should_visit = is_visible_opaque);
+        // visible_opaque :: #bake_arguments entities_iterator_impl(should_visit = (e)=>(get_opacity(<<e) == 1.)); // @CompilerBug quick lambda should work here...
+        visible_transparent :: #bake_arguments entities_iterator(should_visit = is_visible_transparent);
 
-        for :visible_opaque_entities      app.entities Render_Entity(it);
-        for :visible_transparent_entities app.entities Render_Entity(it);
+        for :visible_opaque      app.entities Render_Entity(it);
+        for :visible_transparent app.entities Render_Entity(it);
 
         if triad.visible {
             using *app.camera;
