@@ -1,6 +1,8 @@
 # Version: v0.0.6, Unreleased
 
 - Added file load time to item context menu and added a visual fade to indicate a file load occurred
+- Added a quick toggle between display modes with a RMB click on the entity color picker
+- Added simple transparency rendering: opaque items are rendered before transparent ones
 - Fixed a bug, introduced in v0.0.5, where the setting to update the camera to fit dropped items to the screen was not respected
 - Fixed flickering UI when removing items from the scene
 - Changed item list to display only the filename rather than the fully pathed filename (which is still visible in the item context menu)

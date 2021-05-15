@@ -3,15 +3,16 @@
 - [UI/UX] Implement brute force search of closest point to ray cast and show the coordinates of it
   - Implement a button placing the orbit at the closest point
 - [Rendering] Render normals using geometry shader, use n to toggle normals on/off
-- [Rendering] Add transparency option
 - [Rendering] Add surface with edges option
 - [UI/UX] Support loading wkt file format to load Polygons in a reasonable way
 - [UI/UX] Mode line (bar along bottom) showing hovered mesh stats
 - [UI/UX] Fix camera panning
 - [UI/UX] Implement wild cards for file loading
+- [UI/UX] Implement gradient background
 
 ## Backlog
 
+- [Rendering] Do a better job transparency
 - [UI/UX] Load files in a separate thread and report loading progress in the mode line
 - [UI/UX] Feedback when refreshing a file gives the same result
 - [UI/UX] Display file load time

@@ -101,4 +101,7 @@ void main() {
 
         } break;
     }
+
+    // Respect blending of input color
+    out_color.w = color.w;
 }

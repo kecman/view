@@ -19,6 +19,14 @@ Display_Mode :: enum {
     BLINN_PHONG :: 2;
 }
 
+cycle_display_mode :: (mode : *Display_Mode) {
+    if #complete <<mode == {
+        case .NORMALS;     <<mode = .BLINN_PHONG;
+        case .SOLID_COLOR; <<mode = .NORMALS;
+        case .BLINN_PHONG; <<mode = .NORMALS;
+    }
+}
+
 // Things that needs updating when the geometry changes
 Render_Info :: struct {
     is_dirty := true;
@@ -162,6 +170,11 @@ render_mesh :: (mesh : Mesh, using display_info : Display_Info, using render_inf
     } else {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendEquation(GL_FUNC_ADD);
+    defer glDisable(GL_BLEND);
 
     if #complete mesh.geometry_format == {
         case .POINTS;

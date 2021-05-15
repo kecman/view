@@ -32,7 +32,7 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
         trailing_width : s32 = xx vertex_label_style.format_float.trailing_width;
         ImGui.InputInt("Float decimals", *trailing_width);
         vertex_label_style.format_float.trailing_width = clamp(trailing_width, 0, 12);
-        ShowTooltip("Number of digits following the decimal point");
+        Show_Tooltip("Number of digits following the decimal point");
         combo_box("Float format", *vertex_label_style.format_float.mode, type_info(FormatFloat.Mode));
         the_label_limit : s32 = xx label_limit;
         ImGui.InputInt("Label limit", *the_label_limit);
@@ -91,13 +91,13 @@ show_scene_ui :: ()
             // Entity index used to refer to geometry in console
             if app.show_console_ui {
                 ImGui.Text(to_c_string(tprint("%", it_index)));
-                ShowTooltip("Entity index for console commands");
+                Show_Tooltip("Entity index for console commands");
                 ImGui.SameLine();
             }
 
             // Toggle visibility checkbox
             visibility_toggled := checkbox_press_or_sweep_to_toggle(*it.display_info.visible, *it.display_info.visible_sweep_hovered, imgui_label("##Visible", it));
-            ShowTooltip("Visible");
+            Show_Tooltip("Visible");
             any_visibility_toggled = any_visibility_toggled || visibility_toggled;
 
             // Remove button
@@ -108,7 +108,14 @@ show_scene_ui :: ()
 
             // Color picker
             ImGui.SameLine();
-            ImGui.ColorEdit4(imgui_label("##color", it), *it.display_info.color.component, ImGui.ColorEditFlags.NoInputs);
+            if it.display_info.display_mode == .NORMALS {
+                ImGui.TextDisabled("NR.");
+            } else {
+                ImGui.ColorEdit4(imgui_label("##color", it), *it.display_info.color.component, ImGui.ColorEditFlags.NoInputs);
+            }
+            if ImGui.IsItemClicked(1) {
+                cycle_display_mode(*it.display_info.display_mode);
+            }
 
             // Write filename
             ImGui.SameLine();
@@ -132,7 +139,7 @@ show_scene_ui :: ()
             } else {
                 ImGui.Selectable("---", *it.is_selected, size=*V2_ZERO);
             }
-            ShowTooltip("RMB: Show item/selection context menu\nLMB: Focus item\nCtrl+LMB: Select item");
+            Show_Tooltip("RMB: Show item/selection context menu\nLMB: Focus item\nCtrl+LMB: Select item");
             if ImGui.IsItemClicked() {
                 if !io().KeyCtrl fit_on_screen(it);
             }
@@ -197,6 +204,7 @@ show_scene_ui :: ()
                     ImGui.PushItemWidth(70);
                     ImGui.DragFloat(imgui_label("##Opacity", it), *it.display_info.color.w, v_speed=.005, v_min=0., v_max=1.);
                     ImGui.PopItemWidth();
+                    Show_Tooltip("Opacity");
 
                     if it.type == .MESH || it.type == .POLYGON_SOUP {
                         ImGui.Checkbox(imgui_label("Wireframe   ", it), *it.display_info.wireframe);
@@ -326,7 +334,7 @@ show_camera_controls :: () {
 
     ImGui.PushItemWidth(100);
     combo_box("", *app.camera.rotation_axis, type_info(type_of(app.camera.rotation_axis)));
-    ShowTooltip("Camera Rotation Axis");
+    Show_Tooltip("Camera Rotation Axis");
 
     if app.camera.look_position != Vector3.{0, 0, 0} {
         if ImGui.Button(" Reset Orbit ", size=*V2_ZERO) {
@@ -440,7 +448,7 @@ checkbox_press_or_sweep_to_toggle :: (state : *bool, hovered : *bool, label : *u
     return changed;
 }
 
-ShowTooltip :: (description : string) #expand {
+Show_Tooltip :: (description : string) #expand {
     if (ImGui.IsItemHovered()) {
         ImGui.BeginTooltip();
         // ImGui.PushTextWrapPos(450);

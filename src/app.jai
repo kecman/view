@@ -53,13 +53,11 @@ Modifier_Flags :: struct {
     alt_pressed     := false;
 }
 
-visible_entities_iterator :: (entities : *[..]*Entity, body : Code, flags : For_Flags) #expand {
+entities_iterator :: (entities : *[..]*Entity, body : Code, flags : For_Flags, should_visit : (*Entity)->bool) #expand {
     #assert(flags == 0); // No options are supported
 
     for entity, entity_index : <<entities {
-        if !entity.display_info.visible {
-            continue;
-        }
+        if !should_visit(entity) continue;
 
         // @Cleanup Pull this out of this iterator to make it explicit, or maybe it's better that we're just dealing with it
         if entity.render_info.is_dirty {
@@ -71,6 +69,8 @@ visible_entities_iterator :: (entities : *[..]*Entity, body : Code, flags : For_
         #insert (remove=#assert(false), break=break entity) body;
     }
 }
+
+visible_entities_iterator :: #bake_arguments entities_iterator(should_visit = (e)=>(e.display_info.visible));
 
 #import "Basic";
 #import "File";
