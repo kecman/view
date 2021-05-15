@@ -5,6 +5,7 @@
 - Added simple transparency rendering: opaque items are rendered before transparent ones
 - Fixed a bug, introduced in v0.0.5, where the setting to update the camera to fit dropped items to the screen was not respected
 - Fixed flickering UI when removing items from the scene
+- Changed the hovered item to always render ignoring the depth buffer so that hovered items are easier to find
 - Changed item list to display only the filename rather than the fully pathed filename (which is still visible in the item context menu)
 - Changed reloading multiple items to preserve the selection, this makes reloading the same selection easier (a common use case)
 

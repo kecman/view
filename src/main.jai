@@ -336,15 +336,20 @@ main :: () {
             }
         }
 
-        is_visible_opaque :: (e : *Entity)->bool { return e.display_info.visible && get_opacity(<<e) == 1.; }
-        is_visible_transparent :: (e : *Entity)->bool { return e.display_info.visible && get_opacity(<<e) != 1.; }
+        is_visible_opaque :: (e : *Entity)->bool { return e.display_info.visible && !e.display_info.flash_hovered && get_opacity(<<e) == 1.; }
+        is_visible_transparent :: (e : *Entity)->bool { return e.display_info.visible && !e.display_info.flash_hovered && get_opacity(<<e) != 1.; }
+        is_visible_flash_hovered :: (e : *Entity)->bool { return e.display_info.visible && e.display_info.flash_hovered; }
 
         visible_opaque :: #bake_arguments entities_iterator(should_visit = is_visible_opaque);
-        // visible_opaque :: #bake_arguments entities_iterator_impl(should_visit = (e)=>(get_opacity(<<e) == 1.)); // @CompilerBug quick lambda should work here...
         visible_transparent :: #bake_arguments entities_iterator(should_visit = is_visible_transparent);
+        visible_hovered :: #bake_arguments entities_iterator(should_visit = is_visible_flash_hovered);
 
         for :visible_opaque      app.entities Render_Entity(it);
         for :visible_transparent app.entities Render_Entity(it);
+
+        // Render the flash hovered item over everything else to make it easy to find
+        glClear(GL_DEPTH_BUFFER_BIT);
+        for :visible_hovered     app.entities Render_Entity(it);
 
         if triad.visible {
             using *app.camera;
