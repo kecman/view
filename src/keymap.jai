@@ -66,8 +66,8 @@ init_keymap :: ()
     // @Incomplete that we don't have clashing key mappings
 
     add_key(*app.keymap_keydown, toggle_show_help_ui, "toggle help",  xx #char "h");
-    add_key(*app.keymap_keydown, toggle_show_global_settings_ui, "toggle global settings",  xx #char "h", .{shift_pressed=true});
-    add_key(*app.keymap_keydown, toggle_show_ui, "toggle all UI",  xx #char "`");
+    add_key(*app.keymap_keydown, toggle_show_global_settings_ui, "toggle settings",  xx #char "h", .{shift_pressed=true});
+    add_key(*app.keymap_keydown, toggle_show_ui, "toggle entire UI",  xx #char "`");
     add_key(*app.keymap_keydown, toggle_show_console_ui, "toggle console UI",  xx #char "`", .{control_pressed=true});
 
     add_key(*app.keymap, close_application, "close application", xx #char "q", .{shift_pressed=true, control_pressed=true});

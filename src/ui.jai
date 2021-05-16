@@ -265,7 +265,7 @@ show_scene_ui :: ()
 
         ImGui.SameLine();
         ImGui.Text("User selection");
-        Show_Tooltip("RMB: Show context menu\nLMB: Focus item\nCtrl+LMB in scene: add/remove closest vertex");
+        Show_Tooltip("RMB: Show context menu\nLMB: Focus item\nCtrl+LMB in scene: add/remove closest vertex\nEnable visibility to use");
         if ImGui.IsItemClicked() {
             fit_on_screen(it);
         }
@@ -273,7 +273,7 @@ show_scene_ui :: ()
         if ImGui.BeginPopupContextItem(imgui_label("##context_menu", it)) {
             defer ImGui.EndPopup();
 
-                ImGui.Text(to_c_string(tprint("#points, #triangles = %, %", it.mesh.positions.count, it.mesh.indices.count / 3)));
+                ImGui.Text(to_c_string(tprint("#points = %", it.mesh.positions.count)));
 
                 maybe_update_render_info(*it.render_info, *it.mesh);
                 aabb := it.render_info.bounding_aabb;

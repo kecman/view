@@ -24,7 +24,7 @@ app : struct {
 
     modifier_flags : Modifier_Flags; // @Cleanup io should come from one place, probably imgui
     show_ui := true;
-    show_global_settings_ui := true;
+    show_global_settings_ui := false;
     show_help_ui := false;
     show_console_ui := false;
 

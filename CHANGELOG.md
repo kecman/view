@@ -14,6 +14,7 @@
 - Changed the hovered item to always render ignoring the depth buffer so that hovered items are easier to find
 - Changed item list to display only the filename rather than the fully pathed filename (which is still visible in the item context menu)
 - Changed reloading multiple items to preserve the selection, this makes reloading the same selection easier (a common use case)
+- Changed settings to be hidden by default (press Shift-h to toggle them, press h for help)
 
 # Version: v0.0.5, 12 May 2021
 
