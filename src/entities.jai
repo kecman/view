@@ -161,8 +161,6 @@ load_entity_from_file :: (filename : string) -> *Entity {
         `entity.display_info.color.y = cast(float)(get_hash(hash) % 257) / 256;
         `entity.display_info.color.z = cast(float)(get_hash(get_hash(hash)) % 257) / 256;
 
-        buffer_mesh(*`entity.mesh, *`entity.render_info);
-
         log("Inferred entity type '%'", `entity.type);
     }
 

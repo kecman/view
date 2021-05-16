@@ -51,7 +51,7 @@ Display_Info :: struct {
     display_mode := Display_Mode.BLINN_PHONG;
 }
 
-buffer_mesh :: (mesh : *Mesh, info : *Render_Info) {
+maybe_update_render_info :: (info : *Render_Info, mesh : *Mesh) {
     if info.is_dirty {
         if mesh.geometry_format == .TRIANGLES && !mesh.normals.count {
             // log("Computing and assigning triangle normals to vertices\n");
@@ -85,10 +85,12 @@ buffer_mesh :: (mesh : *Mesh, info : *Render_Info) {
     }
 }
 
-render_mesh :: (mesh : Mesh, using display_info : Display_Info, using render_info : Render_Info, style : VertexLabelStyle, flash_dt : float = 0) {
+render_mesh :: (mesh : *Mesh, using render_info : *Render_Info, using display_info : Display_Info, style : VertexLabelStyle, flash_dt : float = 0) {
     using app;
 
-    assert(!is_dirty);
+    if render_info.is_dirty {
+        maybe_update_render_info(render_info, mesh);
+    }
 
     glUseProgram(mesh_shader);
 
@@ -310,9 +312,7 @@ debug_vector :: (length : float, vector_world : Vector3, color : Vector4) {
     display_info.color = color;
 
     render_info : Render_Info;
-    buffer_mesh(*debug_mesh, *render_info);
-
-    render_mesh(debug_mesh, display_info, render_info, .{point_size=0, line_width=1});
+    render_mesh(*debug_mesh, *render_info, display_info, .{point_size=0, line_width=1});
 }
 
 debug_text_at_cursor :: (text : string)

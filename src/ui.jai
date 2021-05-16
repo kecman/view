@@ -192,6 +192,7 @@ show_scene_ui :: ()
                             ImGui.Text(to_c_string(tprint("#points, #triangles = %, %", mesh.mesh.positions.count, mesh.mesh.indices.count / 3)));
                     }
 
+                    maybe_update_render_info(*it.render_info, *it.mesh);
                     aabb := it.render_info.bounding_aabb;
                     ImGui.Text(to_c_string(tprint("AABB [%, %, %], [%, %, %]",
                                                   aabb.min_point.x, aabb.min_point.y, aabb.min_point.z,

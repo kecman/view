@@ -196,11 +196,6 @@ make_axes_triad :: (axis_length : float) -> Axes_Triad
     z_axis.display_info = .{visible=true, color=.{0, 0, 1, 1}, display_mode=.BLINN_PHONG};
     origin.display_info = .{visible=true, color=.{1, 1, 1, 1}, display_mode=.BLINN_PHONG};
 
-    buffer_mesh(*x_axis.mesh, *x_axis.render_info);
-    buffer_mesh(*y_axis.mesh, *y_axis.render_info);
-    buffer_mesh(*z_axis.mesh, *z_axis.render_info);
-    buffer_mesh(*origin.mesh, *origin.render_info);
-
     return result;
 }
 

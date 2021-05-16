@@ -291,7 +291,7 @@ main :: () {
                 case .POLYLINE_SOUP2;
 
                     soup := cast(*Polyline_Soup2_Entity) entity;
-                    render_mesh(soup.mesh, entity.display_info, entity.render_info, app.vertex_label_style);
+                    render_mesh(*soup.mesh, *entity.render_info, entity.display_info, app.vertex_label_style);
                     for polyline : soup.shape.polylines {
                         Reserve_Labels(polyline.points.count);
                         if label_limit >= 0 {
@@ -302,7 +302,7 @@ main :: () {
                 case .POLYLINE_SOUP3;
 
                     soup := cast(*Polyline_Soup3_Entity) entity;
-                    render_mesh(soup.mesh, entity.display_info, entity.render_info, app.vertex_label_style);
+                    render_mesh(*soup.mesh, *entity.render_info, entity.display_info, app.vertex_label_style);
                     for polyline : soup.shape.polylines {
                         Reserve_Labels(polyline.points.count);
                         if label_limit >= 0 {
@@ -313,7 +313,7 @@ main :: () {
                 case .POLYGON_SOUP;
 
                     soup := cast(*Polygon_Soup_Entity) entity;
-                    render_mesh(soup.mesh, entity.display_info, entity.render_info, app.vertex_label_style);
+                    render_mesh(*soup.mesh, *entity.render_info, entity.display_info, app.vertex_label_style);
                     for polygon : soup.shape.polygons {
                         Reserve_Labels(point_count(polygon));
                         if label_limit >= 0 {
@@ -327,7 +327,7 @@ main :: () {
                 case .MESH;
 
                     mesh := cast(*Mesh_Entity) entity;
-                    render_mesh(mesh.mesh, entity.display_info, entity.render_info, app.vertex_label_style);
+                    render_mesh(*mesh.mesh, *entity.render_info, entity.display_info, app.vertex_label_style);
                     // @Cleanup so the transform is also available for text rendering
                     Reserve_Labels(mesh.mesh.positions.count);
                     if label_limit >= 0 {
@@ -384,10 +384,10 @@ main :: () {
             // glDisable(GL_DEPTH_TEST);
             // defer glEnable(GL_DEPTH_TEST);
 
-            render_mesh(triad.origin.mesh, triad.origin.display_info, triad.origin.render_info, .{point_size=0, line_width=1});
-            render_mesh(triad.x_axis.mesh, triad.x_axis.display_info, triad.x_axis.render_info, .{point_size=0, line_width=1});
-            render_mesh(triad.y_axis.mesh, triad.y_axis.display_info, triad.y_axis.render_info, .{point_size=0, line_width=1});
-            render_mesh(triad.z_axis.mesh, triad.z_axis.display_info, triad.z_axis.render_info, .{point_size=0, line_width=1});
+            render_mesh(*triad.origin.mesh, *triad.origin.render_info, triad.origin.display_info, .{point_size=0, line_width=1});
+            render_mesh(*triad.x_axis.mesh, *triad.x_axis.render_info, triad.x_axis.display_info, .{point_size=0, line_width=1});
+            render_mesh(*triad.y_axis.mesh, *triad.y_axis.render_info, triad.y_axis.display_info, .{point_size=0, line_width=1});
+            render_mesh(*triad.z_axis.mesh, *triad.z_axis.render_info, triad.z_axis.display_info, .{point_size=0, line_width=1});
         }
 
         ImGui.Render();

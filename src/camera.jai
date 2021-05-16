@@ -251,10 +251,6 @@ fit_on_screen :: (entity : *Entity, accurate : bool = false)
         return;
     }
 
-    if entity.render_info.is_dirty {
-        buffer_mesh(*entity.mesh, *entity.render_info);
-    }
-
     // Place orthographic planes to fit the scene
     fit_on_screen(accurate);
 
@@ -390,6 +386,7 @@ visible_entities_bounding_sphere_fast :: () -> Sphere
     first_entity := true;
 
     for :visible app.entities {
+        maybe_update_render_info(*it.render_info, *it.mesh);
         sphere := it.render_info.bounding_sphere;
         transform(*sphere, it.mesh.world_from_model);
         if first_entity {

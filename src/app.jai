@@ -59,11 +59,6 @@ entities_iterator :: (entities : *[..]*Entity, body : Code, flags : For_Flags, s
     for entity, entity_index : <<entities {
         if !should_visit(entity) continue;
 
-        // @Cleanup Pull this out of this iterator to make it explicit, or maybe it's better that we're just dealing with it
-        if entity.render_info.is_dirty {
-            buffer_mesh(*entity.mesh, *entity.render_info);
-        }
-
         `it_index := entity_index;
         `it := entity;
         #insert (remove=#assert(false), break=break entity) body;
