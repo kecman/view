@@ -99,11 +99,6 @@ main :: () {
     // ImGui.StyleColorsLight();
     ImGui.StyleColorsDark();
 
-    // cursor_text := alloc_string(16);
-    // defer free(cursor_text);
-    // cursor_text.data[cursor_text.count] = 0;
-    // cursor_text:="hello";
-
     {
         args := get_command_line_arguments();
         defer array_free(args);
@@ -291,35 +286,35 @@ main :: () {
                 case .POLYLINE_SOUP2;
 
                     soup := cast(*Polyline_Soup2_Entity) entity;
-                    render_mesh(*soup.mesh, *entity.render_info, entity.display_info, app.vertex_label_style);
+                    render_mesh(*soup.mesh, *entity.render_info, entity.display_info);
                     for polyline : soup.shape.polylines {
                         Reserve_Labels(polyline.points.count);
                         if label_limit >= 0 {
-                            render_vertex_labels(polyline.points, app.vertex_label_style);
+                            render_vertex_labels(polyline.points, entity.display_info.vertex_label_style);
                         }
                     }
 
                 case .POLYLINE_SOUP3;
 
                     soup := cast(*Polyline_Soup3_Entity) entity;
-                    render_mesh(*soup.mesh, *entity.render_info, entity.display_info, app.vertex_label_style);
+                    render_mesh(*soup.mesh, *entity.render_info, entity.display_info);
                     for polyline : soup.shape.polylines {
                         Reserve_Labels(polyline.points.count);
                         if label_limit >= 0 {
-                            render_vertex_labels(polyline.points, app.vertex_label_style);
+                            render_vertex_labels(polyline.points, entity.display_info.vertex_label_style);
                         }
                     }
 
                 case .POLYGON_SOUP;
 
                     soup := cast(*Polygon_Soup_Entity) entity;
-                    render_mesh(*soup.mesh, *entity.render_info, entity.display_info, app.vertex_label_style);
+                    render_mesh(*soup.mesh, *entity.render_info, entity.display_info);
                     for polygon : soup.shape.polygons {
                         Reserve_Labels(point_count(polygon));
                         if label_limit >= 0 {
-                            render_vertex_labels(polygon.outer_ring.points, app.vertex_label_style);
+                            render_vertex_labels(polygon.outer_ring.points, entity.display_info.vertex_label_style);
                             for inner_ring : polygon.inner_rings {
-                                render_vertex_labels(inner_ring.points, app.vertex_label_style);
+                                render_vertex_labels(inner_ring.points, entity.display_info.vertex_label_style);
                             }
                         }
                     }
@@ -327,28 +322,30 @@ main :: () {
                 case .MESH;
 
                     mesh := cast(*Mesh_Entity) entity;
-                    render_mesh(*mesh.mesh, *entity.render_info, entity.display_info, app.vertex_label_style);
+                    render_mesh(*mesh.mesh, *entity.render_info, entity.display_info);
                     // @Cleanup so the transform is also available for text rendering
                     Reserve_Labels(mesh.mesh.positions.count);
                     if label_limit >= 0 {
-                        render_vertex_labels(mesh.mesh.positions, app.vertex_label_style);
+                        render_vertex_labels(mesh.mesh.positions, entity.display_info.vertex_label_style);
                     }
             }
         }
 
-        is_visible_opaque :: (e : *Entity)->bool { return e.display_info.visible && !e.display_info.flash_hovered && get_opacity(<<e) == 1.; }
-        is_visible_transparent :: (e : *Entity)->bool { return e.display_info.visible && !e.display_info.flash_hovered && get_opacity(<<e) != 1.; }
-        is_visible_flash_hovered :: (e : *Entity)->bool { return e.display_info.visible && e.display_info.flash_hovered; }
+        if app.user_selection.display_info.visible {
+            Render_Entity(*app.user_selection);
+        }
 
-        visible_opaque :: #bake_arguments entities_iterator(should_visit = is_visible_opaque);
+        is_visible_opaque ::        (e : *Entity) -> bool { return e.display_info.visible && !e.display_info.flash_hovered && get_opacity(<<e) == 1.; }
+        is_visible_transparent ::   (e : *Entity) -> bool { return e.display_info.visible && !e.display_info.flash_hovered && get_opacity(<<e) != 1.; }
+        is_visible_flash_hovered :: (e : *Entity) -> bool { return e.display_info.visible &&  e.display_info.flash_hovered; }
+
+        visible_opaque ::      #bake_arguments entities_iterator(should_visit = is_visible_opaque);
         visible_transparent :: #bake_arguments entities_iterator(should_visit = is_visible_transparent);
-        visible_hovered :: #bake_arguments entities_iterator(should_visit = is_visible_flash_hovered);
+        visible_hovered ::     #bake_arguments entities_iterator(should_visit = is_visible_flash_hovered);
 
         for :visible_opaque      app.entities Render_Entity(it);
         for :visible_transparent app.entities Render_Entity(it);
-
-        // Render the flash hovered item over everything else to make it easy to find
-        glClear(GL_DEPTH_BUFFER_BIT);
+        glClear(GL_DEPTH_BUFFER_BIT); // Render the flash hovered item over everything else to make it easy to find
         for :visible_hovered     app.entities Render_Entity(it);
 
         if triad.visible {
@@ -380,27 +377,94 @@ main :: () {
             triad.y_axis.mesh.world_from_model = xform;
             triad.z_axis.mesh.world_from_model = xform;
 
+            // @FIXME This should clear the depth bit
             // Always render axes triad in front of everything else
             // glDisable(GL_DEPTH_TEST);
             // defer glEnable(GL_DEPTH_TEST);
 
-            render_mesh(*triad.origin.mesh, *triad.origin.render_info, triad.origin.display_info, .{point_size=0, line_width=1});
-            render_mesh(*triad.x_axis.mesh, *triad.x_axis.render_info, triad.x_axis.display_info, .{point_size=0, line_width=1});
-            render_mesh(*triad.y_axis.mesh, *triad.y_axis.render_info, triad.y_axis.display_info, .{point_size=0, line_width=1});
-            render_mesh(*triad.z_axis.mesh, *triad.z_axis.render_info, triad.z_axis.display_info, .{point_size=0, line_width=1});
+            render_mesh(*triad.origin.mesh, *triad.origin.render_info, triad.origin.display_info);
+            render_mesh(*triad.x_axis.mesh, *triad.x_axis.render_info, triad.x_axis.display_info);
+            render_mesh(*triad.y_axis.mesh, *triad.y_axis.render_info, triad.y_axis.display_info);
+            render_mesh(*triad.z_axis.mesh, *triad.z_axis.render_info, triad.z_axis.display_info);
         }
 
         ImGui.Render();
 
-        if app.show_cursor_text && ImGui.IsMousePosValid(*io().MousePos) {
-            // Render this last so it appears over everything else
+        // @TODO Add an enum representing the type of cursor text being displayed:
+        //       Cursor_Text_Mode :: enum {
+        //           INTERSECT_PLANE;
+        //           CLOSEST_POINT; // Could be inside a triangle
+        //           CLOSEST_VERTEX; // Must be a vertex of the entity
+        //       }
+        // @TODO Hide the cursor and display a line from the cursor to the point
+        if app.user_selection.display_info.visible && ImGui.IsMousePosValid(*io().MousePos) {
             view_from_clip := inverse(make_orthographic_projection_matrix(app.camera));
             world_from_view := inverse(make_look_at_matrix(app.camera));
-            world := world_from_view * view_from_clip * make_vector4(to_ndc(io().MousePos), 0., 0.);
-            world.xy += app.camera.eye_position.xy;
-            text := tprint("%,%", world.x, world.y);
+            transform := world_from_view * view_from_clip;
+            inverse_transpose := transpose(inverse(transform));
 
-            debug_text_at_cursor(text);
+            ray : Ray3 = ---;
+            ray.origin = (transform * make_vector4(to_ndc(io().MousePos), -1., 1.)).xyz;
+            ray.direction = (inverse_transpose * make_vector4(0., 0., 1., 0.)).xyz;
+            check := normalize_or_zero(*ray.direction);
+            assert(check != 0.); // @Robustness: handle this error
+
+            closest : Point3;
+            closest_vertex_index := -1;
+            closest_entity_index := -1;
+            dist2 := FLOAT32_INFINITY;
+            for entity, entity_index : app.entities {
+                if entity.display_info.visible {
+                    mesh := get_mesh(entity);
+                    if mesh {
+                        if mesh.positions.count <= app.user_selection_max_point_count_for_selectable_entity {
+                            for vertex, vertex_index : mesh.positions {
+                                p := (mesh.world_from_model * make_vector4(vertex, 1.)).xyz;
+                                c, d2, t := distance_point3_ray3(p, ray);
+                                if d2 < dist2 {
+                                    dist2 = d2;
+                                    closest = vertex;
+                                    closest_vertex_index = vertex_index;
+                                    closest_entity_index = entity_index;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // @FIXME
+            // if !io().WantCaptureMouse && ImGui.IsMouseClicked(0) && io().KeyShift {
+            //     look_direction := current_look_direction();
+            //     app.camera.look_position = closest;
+            //     app.camera.eye_position = app.camera.look_position - look_direction;
+            //     fit_on_screen();
+            // }
+
+            if !io().WantCaptureMouse && ImGui.IsMouseClicked(0) && io().KeyCtrl {
+                found_closest := dist2 != FLOAT32_INFINITY;
+                if found_closest {
+
+                    removed := false;
+                    for app.user_selection.mesh.positions {
+                        if closest == it {
+                            remove it;
+                            removed = true;
+                            break;
+                        }
+                    }
+                    if !removed {
+                        array_add(*app.user_selection.mesh.positions, closest);
+                    }
+
+                    app.user_selection.render_info.is_dirty = true;
+                }
+            }
+
+            if app.user_selection_cursor_text_shown && closest_entity_index != -1 {
+                text := tprint("#%,%: %", closest_entity_index, closest_vertex_index, closest);
+                debug_text_at_cursor(text, app.user_selection_cursor_text_scale);
+            }
         }
 
         SDL_GL_SwapWindow(app.window);

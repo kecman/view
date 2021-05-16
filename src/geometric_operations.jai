@@ -103,14 +103,29 @@ to_point :: (ray : Ray3, t : float) -> Point3 {
     return ray.origin + t * ray.direction;
 }
 
-signed_distance_point3_plane3 :: (point : Point3, plane : Hyperplane3, $compute_closest_point : bool = false) -> float, Point3
-{
+signed_distance_point3_plane3 :: (point : Point3, plane : Hyperplane3, $compute_closest_point : bool = false) -> float, Point3 {
     signed_distance := dot(plane.normal, point) - plane.d;
     closest_point : Point3 = ---;
     #if compute_closest_point {
         closest_point = point - signed_distance * plane.normal;
     }
     return signed_distance, closest_point;
+}
+
+// Returns closest = ray.origin + t * ray.direction and dist2, the squared distance between point and closest
+distance_point3_ray3 :: (point : Point3, ray : Ray3) -> (closest : Point3, dist2 : float, t : float) {
+
+    closest := ray.origin;
+
+    t := dot(ray.direction, point - ray.origin);
+    if t > 0  {
+        closest += t * ray.direction;
+    }
+
+    diff := point - closest;
+    dist2 := dot(diff, diff);
+
+    return closest, dist2, t;
 }
 
 // test_intersect_line3_plane3 :: (line : Line3, plane : Hyperplane3) -> bool #must

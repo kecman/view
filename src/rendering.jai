@@ -13,6 +13,14 @@ VertexLabelStyle :: struct {
     line_width : int = 1; // 1, 1, 2, 3
 }
 
+update_entities_using_default_vertex_label_style :: () {
+    for app.entities {
+        if it.using_default_vertex_label_style {
+            it.display_info.vertex_label_style = app.vertex_label_style;
+        }
+    }
+}
+
 Display_Mode :: enum {
     NORMALS :: 0;
     SOLID_COLOR :: 1;
@@ -49,6 +57,8 @@ Display_Info :: struct {
     wireframe := false;
     color : Vector4 = .{1, 1, 1, 1}; // RGBA format
     display_mode := Display_Mode.BLINN_PHONG;
+
+    vertex_label_style : VertexLabelStyle; // nocommit Refactor type name and remove global version??
 }
 
 maybe_update_render_info :: (info : *Render_Info, mesh : *Mesh) {
@@ -85,59 +95,58 @@ maybe_update_render_info :: (info : *Render_Info, mesh : *Mesh) {
     }
 }
 
-render_mesh :: (mesh : *Mesh, using render_info : *Render_Info, using display_info : Display_Info, style : VertexLabelStyle, flash_dt : float = 0) {
-    using app;
+render_mesh :: (mesh : *Mesh, using render_info : *Render_Info, using display_info : Display_Info, flash_dt : float = 0) {
 
     if render_info.is_dirty {
         maybe_update_render_info(render_info, mesh);
     }
 
-    glUseProgram(mesh_shader);
+    glUseProgram(app.mesh_shader);
 
     {
-        model_loc := glGetUniformLocation(mesh_shader, "world_from_model");
+        model_loc := glGetUniformLocation(app.mesh_shader, "world_from_model");
         glUniformMatrix4fv(model_loc, 1, true, *mesh.world_from_model._11);
     }
 
     {
-        view_loc := glGetUniformLocation(mesh_shader, "view_from_world");
-        view_from_world := make_look_at_matrix(camera);
+        view_loc := glGetUniformLocation(app.mesh_shader, "view_from_world");
+        view_from_world := make_look_at_matrix(app.camera);
         glUniformMatrix4fv(view_loc, 1, true, *view_from_world._11);
     }
 
     {
-        projection_loc := glGetUniformLocation(mesh_shader, "projection_from_view");
-        projection_from_view := make_orthographic_projection_matrix(camera);
+        projection_loc := glGetUniformLocation(app.mesh_shader, "projection_from_view");
+        projection_from_view := make_orthographic_projection_matrix(app.camera);
         glUniformMatrix4fv(projection_loc, 1, true, *projection_from_view._11);
     }
 
     {
-        mode_loc := glGetUniformLocation(mesh_shader, "display_mode");
+        mode_loc := glGetUniformLocation(app.mesh_shader, "display_mode");
         glUniform1i(mode_loc, xx display_mode);
     }
 
     {
-        loc := glGetUniformLocation(mesh_shader, "wave");
+        loc := glGetUniformLocation(app.mesh_shader, "wave");
         wave := ifx flash_wave_dt == 0 then -1 else cos(5 * flash_wave_dt);
         glUniform1f(loc, wave);
     }
 
     {
-        color_loc := glGetUniformLocation(mesh_shader, "color");
+        color_loc := glGetUniformLocation(app.mesh_shader, "color");
         glUniform4f(color_loc, color.x, color.y, color.z, color.w);
     }
 
     {
-        point_size_loc := glGetUniformLocation(mesh_shader, "point_size");
-        glUniform1f(point_size_loc, xx style.point_size);
+        point_size_loc := glGetUniformLocation(app.mesh_shader, "point_size");
+        glUniform1f(point_size_loc, xx vertex_label_style.point_size);
     }
 
     {
-        loc := glGetUniformLocation(mesh_shader, "camera.eye_position");
-        glUniform3f(loc, camera.eye_position.x, camera.eye_position.y, camera.eye_position.z);
+        loc := glGetUniformLocation(app.mesh_shader, "camera.eye_position");
+        glUniform3f(loc, app.camera.eye_position.x, app.camera.eye_position.y, app.camera.eye_position.z);
     }
 
-    glBindVertexArray(mesh_vao);
+    glBindVertexArray(app.mesh_vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 
@@ -161,7 +170,7 @@ render_mesh :: (mesh : *Mesh, using render_info : *Render_Info, using display_in
     glGetFloatv(GL_LINE_WIDTH, xx *last_line_width);
     defer glLineWidth(last_line_width);
 
-    glLineWidth(xx style.line_width); // 1, 2, 3... See also glEnable(GL_LINE_SMOOTH);
+    glLineWidth(xx vertex_label_style.line_width); // 1, 2, 3... See also glEnable(GL_LINE_SMOOTH);
 
     last_polygon_mode: [2]GLuint;
     glGetIntegerv(GL_POLYGON_MODE, xx last_polygon_mode.data);
@@ -310,19 +319,19 @@ debug_vector :: (length : float, vector_world : Vector3, color : Vector4) {
     display_info : Display_Info;
     display_info.wireframe = true;
     display_info.color = color;
+    display_info.vertex_label_style = .{point_size=0, line_width=1};
 
     render_info : Render_Info;
-    render_mesh(*debug_mesh, *render_info, display_info, .{point_size=0, line_width=1});
+    render_mesh(*debug_mesh, *render_info, display_info);
 }
 
-debug_text_at_cursor :: (text : string)
+debug_text_at_cursor :: (text : string, scale := .5)
 {
     glEnable(GL_BLEND);
     defer glDisable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     text_w := get_text_width_in_pixels(text, 1.0);
-    scale := 0.5;
     render_text_quad(app.text_shader,
                      text,
                      // make_vector2(25.0, WINDOW_HEIGHT - FONT_SIZE * scale),
@@ -371,7 +380,7 @@ get_shader_program :: (shader_vertex : string, shader_fragment : string) -> GLui
         glGetProgramInfoLog(shader_p, BUFFER_SIZE_LOG, null, log.data);
         print("[Shader] %\n", to_string(log.data));
         exit(1); // Hard-exit for now.
-    } 
+    }
 
     glDeleteShader(shader_v);
     glDeleteShader(shader_f);

@@ -1,7 +1,6 @@
 ## Next Release
 
-- [UI/UX] Implement brute force search of closest point to ray cast and show the coordinates of it
-  - Implement a button placing the orbit at the closest point
+- [UI/UX] Implement a button placing the orbit at the closest point
 - [Rendering] Render normals using geometry shader, use n to toggle normals on/off
 - [Rendering] Add surface with edges option
 - [UI/UX] Support loading wkt file format to load Polygons in a reasonable way
@@ -9,6 +8,8 @@
 - [UI/UX] Fix camera panning
 - [UI/UX] Implement wild cards for file loading
 - [UI/UX] Implement gradient background
+- [UI/UX] Reload files only if they change, and adjust the fade color if the geometry is unchanged
+- [UI/UX] Implement an infinite grid, maybe http://asliceofrendering.com/scene%20helper/2020/01/05/InfiniteGrid/
 
 ## Backlog
 
@@ -96,4 +97,6 @@
 - [UI/UX] Hover over UI element (button/checkbox) and press a key to bind that key to it, display the bound keys in a list somewhere
 - [UI/UX] When hovering over items in the scene make the others/overlapping ones transparent
 - [XXL,UI/UX] Suggested values when transforming an item
+- [UI/UX] Add a button to capture a screenshot, look at the Jai Clipboard module
+- [XXL,UI/UX] Think about how to do literate programming in Jai, use this to generate the user documentation. Maybe with notes attached to procedures or decalarations? It would be cool to generate context specific help windows using this information in comments/notes somehow, maybe a local variable matching some pattern get processed by a meta program?
 

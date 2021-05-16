@@ -12,8 +12,7 @@ Entity :: struct {
     display_info : Display_Info;
     mesh : Mesh;
 
-    // @TODO add mesh bounding box here
-
+    using_default_vertex_label_style : bool = true;
     is_selected : bool;
     fully_pathed_filename : string;
     loaded_filetime : u64;

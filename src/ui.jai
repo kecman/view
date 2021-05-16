@@ -28,12 +28,14 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
         ImGui.Checkbox("Index labels", *vertex_label_style.show_index);
         ImGui.SameLine();
         ImGui.Checkbox("Position labels", *vertex_label_style.show_position);
-
         trailing_width : s32 = xx vertex_label_style.format_float.trailing_width;
         ImGui.InputInt("Float decimals", *trailing_width);
         vertex_label_style.format_float.trailing_width = clamp(trailing_width, 0, 12);
         Show_Tooltip("Number of digits following the decimal point");
         combo_box("Float format", *vertex_label_style.format_float.mode, type_info(FormatFloat.Mode));
+        ImGui.DragFloat("Label scale", *vertex_label_style.label_scale, .005, .2, 1., display_format="%.3f");
+        ImGui.ColorEdit4("Label color", *vertex_label_style.label_color.component, ImGui.ColorEditFlags.NoInputs);
+
         the_label_limit : s32 = xx label_limit;
         ImGui.InputInt("Label limit", *the_label_limit);
         label_limit = the_label_limit;
@@ -41,16 +43,9 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
             color := ImVec4.{1., .4, .4, 1.};
             ImGui.TextColored(*color, "%s", "Warning: label limit > 2000 may be slow");
         }
-        ImGui.DragFloat("Label scale", *vertex_label_style.label_scale, .005, .2, 1., display_format="%.3f");
-        ImGui.ColorEdit4("Label color", *vertex_label_style.label_color.component, ImGui.ColorEditFlags.NoInputs);
-    }
 
-    if ImGui.TreeNode("%", "Cursor Settings") {
-        defer ImGui.TreePop();
-        ImGui.Unindent(ImGui.GetTreeNodeToLabelSpacing());
-        defer ImGui.Indent(ImGui.GetTreeNodeToLabelSpacing());
-
-        ImGui.Checkbox("Show cursor text", *show_cursor_text);
+        // @Speed Only need to do this if something changed
+        update_entities_using_default_vertex_label_style();
     }
 
     if current_window_width != INITIAL_WINDOW_WIDTH && current_window_height != INITIAL_WINDOW_HEIGHT {
@@ -83,15 +78,22 @@ show_scene_ui :: ()
 
     any_visibility_toggled := false;
 
+
     entity_to_remove := -1;
     for entities {
         mesh := get_mesh(it);
         if mesh {
 
-            // Entity index used to refer to geometry in console
-            if app.show_console_ui {
-                ImGui.Text(to_c_string(tprint("%", it_index)));
-                Show_Tooltip("Entity index for console commands");
+            // Entity index used to refer to geometry in console or annotate the text following ther cursor when adding to the user selection
+            if app.show_console_ui || app.user_selection.display_info.visible {
+                label := to_c_string(tprint("#%", it_index));
+                if mesh.positions.count <= app.user_selection_max_point_count_for_selectable_entity {
+                    ImGui.Text(label);
+                    Show_Tooltip("Entity index for console commands\nand user selection cursor labels");
+                } else {
+                    ImGui.TextDisabled(label);
+                    Show_Tooltip("Entity index for console commands\nand user selection cursor labels\nIncrease max point count to select this entity");
+                }
                 ImGui.SameLine();
             }
 
@@ -241,6 +243,78 @@ show_scene_ui :: ()
         }
     }
 
+    {
+        ImGui.Separator();
+
+        it := *app.user_selection;
+
+        // Toggle visibility checkbox
+        visibility_toggled := checkbox_press_or_sweep_to_toggle(*it.display_info.visible, *it.display_info.visible_sweep_hovered, imgui_label("##Visible", it));
+        Show_Tooltip("Visible");
+        any_visibility_toggled = any_visibility_toggled || visibility_toggled;
+
+        // Remove button
+        ImGui.SameLine();
+        if ImGui.Button(imgui_label("Clear ", it), size=*V2_ZERO) {
+            deinit(it);
+        }
+
+        // Color picker
+        ImGui.SameLine();
+        ImGui.ColorEdit4(imgui_label("##color", it), *it.display_info.color.component, ImGui.ColorEditFlags.NoInputs);
+
+        ImGui.SameLine();
+        ImGui.Text("User selection");
+        Show_Tooltip("RMB: Show context menu\nLMB: Focus item\nCtrl+LMB in scene: add/remove closest vertex");
+        if ImGui.IsItemClicked() {
+            fit_on_screen(it);
+        }
+
+        if ImGui.BeginPopupContextItem(imgui_label("##context_menu", it)) {
+            defer ImGui.EndPopup();
+
+                ImGui.Text(to_c_string(tprint("#points, #triangles = %, %", it.mesh.positions.count, it.mesh.indices.count / 3)));
+
+                maybe_update_render_info(*it.render_info, *it.mesh);
+                aabb := it.render_info.bounding_aabb;
+                ImGui.Text(to_c_string(tprint("AABB [%, %, %], [%, %, %]",
+                                              aabb.min_point.x, aabb.min_point.y, aabb.min_point.z,
+                                              aabb.max_point.x, aabb.max_point.y, aabb.max_point.z)));
+
+                ImGui.Separator();
+
+                // combo_box("", *it.display_info.display_mode, type_info(type_of(it.display_info.display_mode)));
+                // ImGui.SameLine();
+                // ImGui.PushItemWidth(70);
+                // ImGui.DragFloat(imgui_label("##Opacity", it), *it.display_info.color.w, v_speed=.005, v_min=0., v_max=1.);
+                // ImGui.PopItemWidth();
+                // Show_Tooltip("Opacity");
+
+                vertex_label_style := *it.display_info.vertex_label_style;
+
+                ImGui.Checkbox("Position labels", *vertex_label_style.show_position);
+                ImGui.SameLine();
+                ImGui.ColorEdit4("Label color", *vertex_label_style.label_color.component, ImGui.ColorEditFlags.NoInputs);
+                point_size : s32 = xx vertex_label_style.point_size;
+                ImGui.InputInt("Point size", *point_size, 2);
+                vertex_label_style.point_size = xx clamp(point_size, 2, 6);
+
+                trailing_width : s32 = xx vertex_label_style.format_float.trailing_width;
+                ImGui.InputInt("Float decimals", *trailing_width);
+
+
+                vertex_label_style.format_float.trailing_width = clamp(trailing_width, 0, 12);
+                Show_Tooltip("Number of digits following the decimal point");
+                combo_box("Float format", *vertex_label_style.format_float.mode, type_info(FormatFloat.Mode));
+                ImGui.DragFloat("Label scale", *vertex_label_style.label_scale, .005, .2, 1., display_format="%.3f");
+
+                ImGui.Checkbox("Show cursor text", *app.user_selection_cursor_text_shown);
+                Show_Tooltip("Format is '#E,I {X,Y,Z}'\n X,Y,Z are the coordinates of the closest vertex\n E is entity index to which it belongs\n I is the vertex index within the entity");
+                ImGui.DragFloat("Cursor text scale", *app.user_selection_cursor_text_scale, .005, .2, 1., display_format="%.3f");
+                ImGui.InputInt("Max #points for selectable entities", xx *app.user_selection_max_point_count_for_selectable_entity);
+        }
+    }
+
     if app.settings.fit_to_screen_on_visibility_toggle && any_visibility_toggled {
         fit_on_screen();
     }
@@ -250,12 +324,6 @@ show_scene_ui :: ()
         free(entities[entity_to_remove]);
         array_ordered_remove_by_index(*entities, entity_to_remove);
     }
-
-    // @FIXME
-    // if ImGui.InputText("Cursor Text", cursor_text.data, xx cursor_text.count) {
-    //     // cursor_text.count = str_length(cursor_text.data);
-    // }
-    // ImGui.Text("%", cursor_text);
 }
 
 show_camera_controls :: () {

@@ -27,7 +27,18 @@ app : struct {
     show_global_settings_ui := true;
     show_help_ui := false;
     show_console_ui := false;
-    show_cursor_text := false;
+
+    user_selection : Mesh_Entity;
+    user_selection_cursor_text_shown := false;
+    user_selection_cursor_text_scale := .4;
+    user_selection_max_point_count_for_selectable_entity := 10_000;
+
+    // Set the default vertex label style for the user selection mesh
+    user_selection.display_info.visible = false;
+    user_selection.display_info.color = .{0, 0, 0, 1};
+    user_selection.display_info.vertex_label_style.show_position = true;
+    user_selection.display_info.vertex_label_style.point_size = 6;
+    user_selection.display_info.vertex_label_style.label_color = .{0, 0, 0, 1};
 
     camera : Camera;
     console : Console;

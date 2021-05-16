@@ -1,5 +1,11 @@
 # Version: v0.0.6, Unreleased
 
+- Added initial version of user selection:
+  - User selection is enabled if the "User selection" item is set to visible in the item list
+  - Ctrl+LMB adds/removes the vertex closest to a ray shot under the cursor to the user selection
+  - Vertex selection works using brute force search so only entities with <= 10,000 vertices are searched by default
+  - The search limit is conservative and can be changed in the user selection context menu (access via RMB on "User selection" text)
+  - If multiple vertices have the same distance from the ray one is arbitrarily chosen (the behaviour will be improved)
 - Added file load time to item context menu and added a visual fade to indicate a file load occurred
 - Added a quick toggle between display modes with a RMB click on the entity color picker
 - Added simple transparency rendering: opaque items are rendered before transparent ones

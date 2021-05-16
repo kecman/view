@@ -118,11 +118,11 @@ rotate_look_direction_15_cw    :: () { rotate_look_direction(camera_rotation_axi
 rotate_look_direction_15_ccw   :: () { rotate_look_direction(camera_rotation_axis(),  15); }
 rotate_look_direction_45_cw    :: () { rotate_look_direction(camera_rotation_axis(), -45); }
 rotate_look_direction_45_ccw   :: () { rotate_look_direction(camera_rotation_axis(),  45); }
-cycle_point_index_labels       :: () { using app.vertex_label_style; show_index    = !show_index; }
-cycle_point_position_labels    :: () { using app.vertex_label_style; show_position = !show_position; }
-clear_labels                   :: () { using app.vertex_label_style; show_index = false; show_position = false; }
-cycle_point_size               :: () { using app.vertex_label_style; if point_size == 0 point_size = 2; else if point_size == 2 point_size = 4; else point_size = 0; }
-cycle_line_width               :: () { using app.vertex_label_style; if line_width == 1 line_width = 2; else if line_width == 2 line_width = 3; else line_width = 1; }
+cycle_point_index_labels       :: () { using app.vertex_label_style; show_index    = !show_index; update_entities_using_default_vertex_label_style();}
+cycle_point_position_labels    :: () { using app.vertex_label_style; show_position = !show_position; update_entities_using_default_vertex_label_style();}
+clear_labels                   :: () { using app.vertex_label_style; show_index = false; show_position = false; update_entities_using_default_vertex_label_style();}
+cycle_point_size               :: () { using app.vertex_label_style; if point_size == 0 point_size = 2; else if point_size == 2 point_size = 4; else point_size = 0; update_entities_using_default_vertex_label_style();}
+cycle_line_width               :: () { using app.vertex_label_style; if line_width == 1 line_width = 2; else if line_width == 2 line_width = 3; else line_width = 1; update_entities_using_default_vertex_label_style();}
 reset_camera                   :: () { init_camera(); }
 // debug_junk                     :: () { c:= app.camera; printv(#code c); }
 
