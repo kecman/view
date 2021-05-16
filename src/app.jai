@@ -44,7 +44,7 @@ app : struct {
     console : Console;
     entities : [..]*Entity;
 
-    vertex_label_style : VertexLabelStyle;
+    vertex_label_style : Vertex_Label_Style;
     label_limit := 2000;
 
     keymap : Keymap;

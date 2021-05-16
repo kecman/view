@@ -1,4 +1,4 @@
-VertexLabelStyle :: struct {
+Vertex_Label_Style :: struct {
     show_position := false;
     show_index := false;
 
@@ -58,7 +58,7 @@ Display_Info :: struct {
     color : Vector4 = .{1, 1, 1, 1}; // RGBA format
     display_mode := Display_Mode.BLINN_PHONG;
 
-    vertex_label_style : VertexLabelStyle; // nocommit Refactor type name and remove global version??
+    vertex_label_style : Vertex_Label_Style;
 }
 
 maybe_update_render_info :: (info : *Render_Info, mesh : *Mesh) {
@@ -200,7 +200,7 @@ render_mesh :: (mesh : *Mesh, using render_info : *Render_Info, using display_in
     glDrawArrays(GL_POINTS, 0, xx mesh.positions.count);
 }
 
-render_vertex_labels :: (points : []$T, style : VertexLabelStyle, label_index_offset : int = 0) {
+render_vertex_labels :: (points : []$T, style : Vertex_Label_Style, label_index_offset : int = 0) {
     #assert(T == Vector2 || T == Vector3);
     dim :: #run dimension_of(T);
 
