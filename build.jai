@@ -89,7 +89,7 @@ build :: () {
 #run build();
 
 version_string :: #string DONE
-VERSION_STRING :: "0.0.6";
+VERSION_STRING :: "0.0.7-rc";
 DONE
 
 help_string :: #string DONE
