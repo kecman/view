@@ -432,17 +432,14 @@ main :: () {
                 }
             }
 
-            // @FIXME
-            // if !io().WantCaptureMouse && ImGui.IsMouseClicked(0) && io().KeyShift {
-            //     look_direction := current_look_direction();
-            //     app.camera.look_position = closest;
-            //     app.camera.eye_position = app.camera.look_position - look_direction;
-            //     fit_on_screen();
-            // }
+            if !io().WantCaptureMouse && ImGui.IsMouseClicked(2) && io().KeyCtrl {
+                increment := closest - app.camera.look_position;
+                app.camera.eye_position += increment;
+                app.camera.look_position += increment;
+            }
 
             if !io().WantCaptureMouse && ImGui.IsMouseClicked(0) && io().KeyCtrl {
-                found_closest := dist2 != FLOAT32_INFINITY;
-                if found_closest {
+                if closest_entity_index != -1 {
 
                     removed := false;
                     for app.user_selection.mesh.positions {

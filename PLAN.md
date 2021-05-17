@@ -1,6 +1,5 @@
 ## Next Release
 
-- [UI/UX] Implement a button placing the orbit at the closest point
 - [Rendering] Render normals using geometry shader, use n to toggle normals on/off
 - [Rendering] Add surface with edges option
 - [UI/UX] Support loading wkt file format to load Polygons in a reasonable way
@@ -13,6 +12,7 @@
 
 ## Backlog
 
+- [UI/UX] Implement simple undo for file loading, would be handy to be able to undo file clobbering...
 - [Rendering] Do a better job transparency
 - [UI/UX] Load files in a separate thread and report loading progress in the mode line
 - [UI/UX] Feedback when refreshing a file gives the same result
@@ -42,6 +42,9 @@
 - [UI/UX] Option to render the cumulative vertex number for polyline soups and polygon inner/outer rings or polygon soups
 - [UI/UX] Scale zoom speed with scene bounding box when shift is held?
 - [UI/UX] Implement a view cube using the Simp module
+  - Call SDL_GetWindowWMInfo to get a https://wiki.libsdl.org/SDL_SysWMinfo from which you can get the X11.Window to pass to sim
+        SDL_GetWindowWMInfo(window, *wmInfo);
+        io.ImeWindowHandle = wmInfo.info.win.window;
 - [Performance] Speed up text rendering, it's so slow right now!
 - [Performance,Formats] Natively support heightmaps, have native, simple and fast loading file formats
 - [UI/UX] Scale the axes according to the bbox of the scene?
