@@ -325,14 +325,10 @@ main :: () {
                     render_mesh(*mesh.mesh, *entity.render_info, entity.display_info);
                     // @Cleanup so the transform is also available for text rendering
                     Reserve_Labels(mesh.mesh.positions.count);
-                    if label_limit >= 0 {
+                    if label_limit >= 0 || (entity == *app.user_selection) {
                         render_vertex_labels(mesh.mesh.positions, entity.display_info.vertex_label_style);
                     }
             }
-        }
-
-        if app.user_selection.display_info.visible {
-            Render_Entity(*app.user_selection);
         }
 
         is_visible_opaque ::        (e : *Entity) -> bool { return e.display_info.visible && !e.display_info.flash_hovered && get_opacity(<<e) == 1.; }
@@ -345,6 +341,14 @@ main :: () {
 
         for :visible_opaque      app.entities Render_Entity(it);
         for :visible_transparent app.entities Render_Entity(it);
+
+        if app.user_selection.display_info.visible {
+            if app.user_selection.display_info.flash_hovered {
+                glClear(GL_DEPTH_BUFFER_BIT);
+            }
+            Render_Entity(*app.user_selection);
+        }
+
         glClear(GL_DEPTH_BUFFER_BIT); // Render the flash hovered item over everything else to make it easy to find
         for :visible_hovered     app.entities Render_Entity(it);
 
@@ -376,11 +380,6 @@ main :: () {
             triad.x_axis.mesh.world_from_model = xform;
             triad.y_axis.mesh.world_from_model = xform;
             triad.z_axis.mesh.world_from_model = xform;
-
-            // @FIXME This should clear the depth bit
-            // Always render axes triad in front of everything else
-            // glDisable(GL_DEPTH_TEST);
-            // defer glEnable(GL_DEPTH_TEST);
 
             render_mesh(*triad.origin.mesh, *triad.origin.render_info, triad.origin.display_info);
             render_mesh(*triad.x_axis.mesh, *triad.x_axis.render_info, triad.x_axis.display_info);

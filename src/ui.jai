@@ -269,6 +269,14 @@ show_scene_ui :: ()
         if ImGui.IsItemClicked() {
             fit_on_screen(it);
         }
+        was_flash_hovered := it.display_info.flash_hovered;
+        if ImGui.IsItemHovered() {
+            it.display_info.flash_hovered = true;
+            it.display_info.flash_wave_dt += io().DeltaTime;
+        } else if was_flash_hovered {
+            it.display_info.flash_hovered = false;
+            it.display_info.flash_wave_dt = 0;
+        }
 
         if ImGui.BeginPopupContextItem(imgui_label("##context_menu", it)) {
             defer ImGui.EndPopup();

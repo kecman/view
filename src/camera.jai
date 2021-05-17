@@ -118,25 +118,31 @@ update_camera :: (delta_time : float) {
     // Pan with middle down.
     if io_mouse_middle_down() && mouse_move_valid {
 
-        get_pan_position :: (mouse_position_px : Vector2, world_from_projection : Matrix4, camera : Camera) -> Vector3 {
+        get_pan_position :: (mouse_position_px : Vector2, world_from_projection : Matrix4, camera : Camera) -> Vector3, bool {
             plane := make_hyperplane3(unit_vector(camera.eye_position - camera.look_position), camera.look_position);
             line : Line3 = ---;
             line.origin = (world_from_projection * make_vector4(to_ndc(mouse_position_px), -1, 1)).xyz;
             line.direction = -plane.normal;
 
             intersect_count, intersect_t := find_intersect_line3_plane3(line, plane);
+            if intersect_count != 1 || intersect_t < 0 {
+                return .{}, false;
+            }
+
             assert(intersect_count == 1, "Expected 1 intersection, got %", intersect_count);
             assert(intersect_t >= 0, "Expected intersection in front of near plane with t >= 0, got t = %", intersect_t);
-            return to_point(line, intersect_t);
+            return to_point(line, intersect_t), true;
         }
 
         // Shoot ray through pixel along the look vector to hit a plane through the look position with the same normal
-        curr_pan_point := get_pan_position(io().MousePos, world_from_projection, <<camera);
-        prev_pan_point := get_pan_position(io().MousePos - io().MouseDelta, world_from_projection, <<camera);
-        increment := -(curr_pan_point - prev_pan_point) / 2; // @Cleanup WHY this divide by 2, there is probably a bug elsewhere... ?
+        curr_pan_point, curr_ok := get_pan_position(io().MousePos, world_from_projection, <<camera);
+        prev_pan_point, prev_ok := get_pan_position(io().MousePos - io().MouseDelta, world_from_projection, <<camera);
+        if curr_ok && prev_ok {
+            increment := -(curr_pan_point - prev_pan_point) / 2; // @Cleanup WHY this divide by 2, there is probably a bug elsewhere... ?
 
-        camera.eye_position += increment;
-        camera.look_position += increment;
+            camera.eye_position += increment;
+            camera.look_position += increment;
+        }
 
     } else if ImGui.IsMouseDragging(1, 0.) && mouse_move_valid { // Orbit about the look position using right button
 
