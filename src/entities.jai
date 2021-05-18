@@ -214,6 +214,51 @@ load_entity_from_file :: (filename : string) -> *Entity {
     }
 }
 
+Closest_Vertex_On_Entity :: struct {
+    vertex_position : Point3;
+    vertex_index : int = -1;
+    entity_index : int = -1;
+}
+
+find_closest_vertex_on_visible_entities :: () -> Closest_Vertex_On_Entity {
+
+    view_from_clip := inverse(make_orthographic_projection_matrix(app.camera));
+    world_from_view := inverse(make_look_at_matrix(app.camera));
+    transform := world_from_view * view_from_clip;
+    inverse_transpose := transpose(inverse(transform));
+
+    ray : Ray3 = ---;
+    ray.origin = (transform * make_vector4(to_ndc(io().MousePos), -1., 1.)).xyz;
+    ray.direction = (inverse_transpose * make_vector4(0., 0., 1., 0.)).xyz;
+    check := normalize_or_zero(*ray.direction);
+    assert(check != 0.); // @Robustness: handle this error
+
+    result : Closest_Vertex_On_Entity;
+
+    dist2 := FLOAT32_INFINITY;
+    for entity, entity_index : app.entities {
+        if entity.display_info.visible {
+            mesh := get_mesh(entity);
+            if mesh {
+                if mesh.positions.count <= app.user_selection_max_point_count_for_selectable_entity {
+                    for vertex, vertex_index : mesh.positions {
+                        p := (mesh.world_from_model * make_vector4(vertex, 1.)).xyz;
+                        c, d2, t := distance_point3_ray3(p, ray);
+                        if d2 < dist2 {
+                            dist2 = d2;
+                            result.vertex_position = vertex;
+                            result.vertex_index = vertex_index;
+                            result.entity_index = entity_index;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
 replace_entity :: (old : *Entity, old_index : s64, new : *Entity) {
     if new {
         // Maintain the following information after the entity reload

@@ -84,19 +84,6 @@ show_scene_ui :: ()
         mesh := get_mesh(it);
         if mesh {
 
-            // Entity index used to refer to geometry in console or annotate the text following ther cursor when adding to the user selection
-            if app.show_console_ui || app.user_selection.display_info.visible {
-                label := to_c_string(tprint("#%", it_index));
-                if mesh.positions.count <= app.user_selection_max_point_count_for_selectable_entity {
-                    ImGui.Text(label);
-                    Show_Tooltip("Entity index for console commands\nand user selection cursor labels");
-                } else {
-                    ImGui.TextDisabled(label);
-                    Show_Tooltip("Entity index for console commands\nand user selection cursor labels\nIncrease max point count to select this entity");
-                }
-                ImGui.SameLine();
-            }
-
             // Toggle visibility checkbox
             visibility_toggled := checkbox_press_or_sweep_to_toggle(*it.display_info.visible, *it.display_info.visible_sweep_hovered, imgui_label("##Visible", it));
             Show_Tooltip("Visible");
@@ -117,6 +104,20 @@ show_scene_ui :: ()
             }
             if ImGui.IsItemClicked(1) {
                 cycle_display_mode(*it.display_info.display_mode);
+            }
+
+            // Entity index used to refer to geometry in console or annotate the text following ther cursor when adding to the user selection
+            if app.show_console_ui || app.user_selection.display_info.visible {
+                ImGui.SameLine();
+                label := to_c_string(tprint("#%", it_index));
+                if mesh.positions.count <= app.user_selection_max_point_count_for_selectable_entity {
+                    ImGui.Text(label);
+                    Show_Tooltip("Entity index for console commands\nand user selection cursor labels");
+                } else {
+                    ImGui.TextDisabled(label);
+                    Show_Tooltip("Entity index for console commands\nand user selection cursor labels\nIncrease max point count to select this entity");
+                }
+                ImGui.SameLine();
             }
 
             // Write filename
@@ -316,7 +317,7 @@ show_scene_ui :: ()
                 combo_box("Float format", *vertex_label_style.format_float.mode, type_info(FormatFloat.Mode));
                 ImGui.DragFloat("Label scale", *vertex_label_style.label_scale, .005, .2, 1., display_format="%.3f");
 
-                ImGui.Checkbox("Show cursor text", *app.user_selection_cursor_text_shown);
+                ImGui.Checkbox("Dynamically show the closest vertex result at cursor", *app.user_selection_cursor_text_shown);
                 Show_Tooltip("Format is '#E,I {X,Y,Z}'\n X,Y,Z are the coordinates of the closest vertex\n E is entity index to which it belongs\n I is the vertex index within the entity");
                 ImGui.DragFloat("Cursor text scale", *app.user_selection_cursor_text_scale, .005, .2, 1., display_format="%.3f");
                 ImGui.InputInt("Max #points for selectable entities", xx *app.user_selection_max_point_count_for_selectable_entity);

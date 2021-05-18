@@ -1,6 +1,8 @@
 # Version: v0.0.7, Unreleased
 
 - Improved the colors generated from filenames
+- Changed user selection queries to only compute when the result will be used rather than every frame
+- Changed position of item index to come just before the filename for a more stable item list UI
 
 # Version: v0.0.6, 17 May 2021
 

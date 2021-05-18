@@ -396,70 +396,41 @@ main :: () {
         //           CLOSEST_VERTEX; // Must be a vertex of the entity
         //       }
         // @TODO Hide the cursor and display a line from the cursor to the point
-        if app.user_selection.display_info.visible && ImGui.IsMousePosValid(*io().MousePos) {
-            view_from_clip := inverse(make_orthographic_projection_matrix(app.camera));
-            world_from_view := inverse(make_look_at_matrix(app.camera));
-            transform := world_from_view * view_from_clip;
-            inverse_transpose := transpose(inverse(transform));
+        if app.user_selection.display_info.visible && !io().WantCaptureMouse && ImGui.IsMousePosValid(*io().MousePos) {
+            use_result_for_adding_to_selection := ImGui.IsMouseClicked(0) && io().KeyCtrl;
+            use_result_for_repositioning_cameara := ImGui.IsMouseClicked(2) && io().KeyCtrl;
+            use_result_for_rendering_cursor_text := app.user_selection_cursor_text_shown;
 
-            ray : Ray3 = ---;
-            ray.origin = (transform * make_vector4(to_ndc(io().MousePos), -1., 1.)).xyz;
-            ray.direction = (inverse_transpose * make_vector4(0., 0., 1., 0.)).xyz;
-            check := normalize_or_zero(*ray.direction);
-            assert(check != 0.); // @Robustness: handle this error
+            if use_result_for_adding_to_selection || use_result_for_repositioning_cameara || use_result_for_rendering_cursor_text {
 
-            closest : Point3;
-            closest_vertex_index := -1;
-            closest_entity_index := -1;
-            dist2 := FLOAT32_INFINITY;
-            for entity, entity_index : app.entities {
-                if entity.display_info.visible {
-                    mesh := get_mesh(entity);
-                    if mesh {
-                        if mesh.positions.count <= app.user_selection_max_point_count_for_selectable_entity {
-                            for vertex, vertex_index : mesh.positions {
-                                p := (mesh.world_from_model * make_vector4(vertex, 1.)).xyz;
-                                c, d2, t := distance_point3_ray3(p, ray);
-                                if d2 < dist2 {
-                                    dist2 = d2;
-                                    closest = vertex;
-                                    closest_vertex_index = vertex_index;
-                                    closest_entity_index = entity_index;
-                                }
-                            }
-                        }
-                    }
+                closest := find_closest_vertex_on_visible_entities();
+
+                if use_result_for_repositioning_cameara {
+                    increment := closest.vertex_position - app.camera.look_position;
+                    app.camera.eye_position += increment;
+                    app.camera.look_position += increment;
                 }
-            }
 
-            if !io().WantCaptureMouse && ImGui.IsMouseClicked(2) && io().KeyCtrl {
-                increment := closest - app.camera.look_position;
-                app.camera.eye_position += increment;
-                app.camera.look_position += increment;
-            }
-
-            if !io().WantCaptureMouse && ImGui.IsMouseClicked(0) && io().KeyCtrl {
-                if closest_entity_index != -1 {
-
+                if use_result_for_adding_to_selection && closest.entity_index != -1 {
                     removed := false;
                     for app.user_selection.mesh.positions {
-                        if closest == it {
+                        if closest.vertex_position == it {
                             remove it;
                             removed = true;
                             break;
                         }
                     }
                     if !removed {
-                        array_add(*app.user_selection.mesh.positions, closest);
+                        array_add(*app.user_selection.mesh.positions, closest.vertex_position);
                     }
 
                     app.user_selection.render_info.is_dirty = true;
                 }
-            }
 
-            if app.user_selection_cursor_text_shown && closest_entity_index != -1 {
-                text := tprint("#%,%: %", closest_entity_index, closest_vertex_index, closest);
-                debug_text_at_cursor(text, app.user_selection_cursor_text_scale);
+                if use_result_for_rendering_cursor_text {
+                    text := tprint("#%,%: %", closest.entity_index, closest.vertex_index, closest.vertex_position);
+                    debug_text_at_cursor(text, app.user_selection_cursor_text_scale);
+                }
             }
         }
 
