@@ -155,10 +155,19 @@ load_entity_from_file :: (filename : string) -> *Entity {
         `entity.fully_pathed_filename = copy_string(filename);
         `entity.loaded_filetime = get_current_file_time();
 
-        hash := get_hash(`entity.fully_pathed_filename);
-        `entity.display_info.color.x = cast(float)(hash % 257) / 256;
-        `entity.display_info.color.y = cast(float)(get_hash(hash) % 257) / 256;
-        `entity.display_info.color.z = cast(float)(get_hash(get_hash(hash)) % 257) / 256;
+        n := get_hash(`entity.fully_pathed_filename);
+        m := get_hash(n);
+
+        h := (cast(float)(n % 257) / 256);
+        s := 1.;
+        v := (cast(float)(m % 257) / 256) * .3 + .7;
+
+        r, g, b : float;
+        ImGui.ColorConvertHSVtoRGB(h, s, v, *r, *g, *b);
+
+        `entity.display_info.color.x = r;
+        `entity.display_info.color.y = g;
+        `entity.display_info.color.z = b;
 
         log("Inferred entity type '%'", `entity.type);
     }

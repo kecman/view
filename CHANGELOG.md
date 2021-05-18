@@ -1,5 +1,7 @@
 # Version: v0.0.7, Unreleased
 
+- Improved the colors generated from filenames
+
 # Version: v0.0.6, 17 May 2021
 
 - Added initial version of user selection:
