@@ -1,5 +1,8 @@
 # Version: v0.0.7, Unreleased
 
+- Added a fabulous background shader enabled by default [ty [@LoganBarnes](https://github.com/LoganBarnes)]
+  - Future work will hotload this shader and the provide inputs expected by Shadertoy
+  - The boring solid color option can be chosen in settings (press Shift-h to access)
 - Improved the colors generated from filenames
 - Changed user selection queries to only compute when the result will be used rather than every frame
 - Changed position of item index to come just before the filename for a more stable item list UI

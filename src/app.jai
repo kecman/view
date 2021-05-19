@@ -9,9 +9,6 @@ app : struct {
     current_window_height := INITIAL_WINDOW_HEIGHT;
     fullscreen := false;
 
-    // clear_color := make_vector4(0.45, 0.55, 0.60, 1.00);
-    // clear_color := make_vector4(87./256, 194./256, 248./256, 1.00); // light blue
-    clear_color : Vector4 = .{170./256, 170./256, 170./256, 1.00}; // light grey
 
     text_shader : GLuint; // @Cleanup rename to program
     text_vao : GLuint;
@@ -20,6 +17,13 @@ app : struct {
     mesh_shader : GLuint;  // @Cleanup rename to program
     mesh_vao : GLuint;
 
+    Background_Style :: enum #specified {
+        SOLID_COLOR :: 0;
+        CUSTOM_SHADER :: 1;
+    };
+
+    background_style := Background_Style.CUSTOM_SHADER;
+    background_solid_color := Vector4.{170./256, 170./256, 170./256, 1.00};
     background_program : GLuint;
     background_vao : GLuint; // Makes GL happy
 

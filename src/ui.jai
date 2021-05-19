@@ -12,8 +12,10 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
     defer ImGui.End();
     defer if entities.count ImGui.Separator();
 
-    ImGui.ColorEdit4("Background", *clear_color.component, ImGui.ColorEditFlags.NoInputs);
-    ImGui.SameLine();
+    combo_box("Background", *app.background_style, type_info(Background_Style));
+    if app.background_style == .SOLID_COLOR {
+        ImGui.ColorEdit4("Background Color", *background_solid_color.component, ImGui.ColorEditFlags.NoInputs);
+    }
     ImGui.Checkbox("World Axes", *world_axes.visible);
 
     // :UserConfig add a button to overwrite the user settings file with new defaults here?

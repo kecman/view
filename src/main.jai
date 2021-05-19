@@ -278,23 +278,25 @@ main :: () {
 
         // Rendering
         glViewport(0, 0, xx io().DisplaySize.x, xx io().DisplaySize.y); // @TODO Is DisplaySize updated with window resizing? Use current_window_height/width here?
-        glClearColor(app.clear_color.x, app.clear_color.y, app.clear_color.z, app.clear_color.w);
         glEnable(GL_DEPTH_TEST);
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-        {
-            glDisable(GL_DEPTH_TEST);
-            defer glEnable(GL_DEPTH_TEST);
-            glUseProgram(app.background_program);
 
-            iResolution_loc := glGetUniformLocation(app.background_program, "iResolution");
-            x, y, z : float = xx app.current_window_width, xx app.current_window_height, 1.;
-            glUniform3f(iResolution_loc, x, y, z);
+        if #complete app.background_style == {
+            case .SOLID_COLOR;
 
-            iTime_loc := glGetUniformLocation(app.background_program, "iTime");
-            glUniform1f(iTime_loc, ImGui.GetTime());
+                using app.background_solid_color;
+                glClearColor(x, y, z, w);
 
-            glBindVertexArray(app.background_vao);
-            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+            case .CUSTOM_SHADER;
+
+                glDisable(GL_DEPTH_TEST);
+                defer glEnable(GL_DEPTH_TEST);
+                glUseProgram(app.background_program);
+                x, y, z : float = xx app.current_window_width, xx app.current_window_height, 1.;
+                glUniform3f(glGetUniformLocation(app.background_program, "iResolution"), x, y, z);
+                glUniform1f(glGetUniformLocation(app.background_program, "iTime"), ImGui.GetTime());
+                glBindVertexArray(app.background_vao);
+                glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         }
 
         // Update after clearing viewport so we can debug visualise stuff
