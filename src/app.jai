@@ -13,14 +13,15 @@ app : struct {
     // clear_color := make_vector4(87./256, 194./256, 248./256, 1.00); // light blue
     clear_color : Vector4 = .{170./256, 170./256, 170./256, 1.00}; // light grey
 
-    text_shader : GLuint;
+    text_shader : GLuint; // @Cleanup rename to program
     text_vao : GLuint;
     text_vbo : GLuint;
 
-    mesh_shader : GLuint;
+    mesh_shader : GLuint;  // @Cleanup rename to program
     mesh_vao : GLuint;
-    polyline_shader : GLuint;
-    polyline_vao : GLuint;
+
+    background_program : GLuint;
+    background_vao : GLuint; // Makes GL happy
 
     modifier_flags : Modifier_Flags; // @Cleanup io should come from one place, probably imgui
     show_ui := true;

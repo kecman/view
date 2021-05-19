@@ -386,8 +386,8 @@ ImGui :: struct {
     // IMGUI_API bool          IsAnyWindowHovered();                                               // is mouse hovering any visible window
     // IMGUI_API bool          IsRectVisible(const ImVec2& size);                                  // test if rectangle (of given size, starting from cursor position) is visible / not clipped.
     // IMGUI_API bool          IsRectVisible(const ImVec2& rect_min, const ImVec2& rect_max);      // test if rectangle (in screen space) is visible / not clipped. to perform coarse clipping on user's side.
-    // IMGUI_API float         GetTime();
-    // IMGUI_API int           GetFrameCount();
+    GetTime ::       () -> float #foreign imgui "_ZN5ImGui7GetTimeEv";
+    GetFrameCount :: () -> s32   #foreign imgui "_ZN5ImGui13GetFrameCountEv";
     // IMGUI_API ImDrawList*   GetOverlayDrawList();                                               // this draw list will be the last rendered one, useful to quickly draw overlays shapes/text
     // IMGUI_API ImDrawListSharedData* GetDrawListSharedData();
     // IMGUI_API const char*   GetStyleColorName(ImGuiCol idx);

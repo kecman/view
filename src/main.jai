@@ -74,11 +74,19 @@ main :: () {
         app.mesh_shader = get_shader_program(vert, frag);
     }
 
+    // Setup background shader
+    {
+        vert :: #run read_entire_file("src/shaders/background.vert");
+        frag :: #run read_entire_file("src/shaders/background.frag");
+        app.background_program = get_shader_program(vert, frag);
+    }
+
     // Prepare VAO
     {
-        glGenVertexArrays(1, *app.polyline_vao);
         glGenVertexArrays(1, *app.mesh_vao);
+        glGenVertexArrays(1, *app.background_vao);
     }
+
 
     TRIAD_AXIS_LENGTH :: 1;
     triad := make_axes_triad(TRIAD_AXIS_LENGTH);
@@ -273,6 +281,21 @@ main :: () {
         glClearColor(app.clear_color.x, app.clear_color.y, app.clear_color.z, app.clear_color.w);
         glEnable(GL_DEPTH_TEST);
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+        {
+            glDisable(GL_DEPTH_TEST);
+            defer glEnable(GL_DEPTH_TEST);
+            glUseProgram(app.background_program);
+
+            iResolution_loc := glGetUniformLocation(app.background_program, "iResolution");
+            x, y, z : float = xx app.current_window_width, xx app.current_window_height, 1.;
+            glUniform3f(iResolution_loc, x, y, z);
+
+            iTime_loc := glGetUniformLocation(app.background_program, "iTime");
+            glUniform1f(iTime_loc, ImGui.GetTime());
+
+            glBindVertexArray(app.background_vao);
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        }
 
         // Update after clearing viewport so we can debug visualise stuff
         // @Cleanup: use delta_time argument?
