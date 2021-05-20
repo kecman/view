@@ -429,32 +429,39 @@ main :: () {
             if use_result_for_adding_to_selection || use_result_for_repositioning_cameara || use_result_for_rendering_cursor_text {
 
                 closest := find_closest_vertex_on_visible_entities();
+                if closest.entity_index != -1 {
 
-                if use_result_for_repositioning_cameara {
-                    increment := closest.vertex_position - app.camera.look_position;
-                    app.camera.eye_position += increment;
-                    app.camera.look_position += increment;
-                }
+                    if use_result_for_repositioning_cameara {
+                        increment := closest.vertex_position - app.camera.look_position;
+                        app.camera.eye_position += increment;
+                        app.camera.look_position += increment;
 
-                if use_result_for_adding_to_selection && closest.entity_index != -1 {
-                    removed := false;
-                    for app.user_selection.mesh.positions {
-                        if closest.vertex_position == it {
-                            remove it;
-                            removed = true;
-                            break;
+                        sphere := make_sphere(app.camera.look_position, 0.);
+                        expand(*sphere, app.camera.scene_bounding_sphere);
+                        fit_on_screen(sphere);
+                    }
+
+                    if use_result_for_adding_to_selection {
+
+                        removed := false;
+                        for app.user_selection.mesh.positions {
+                            if closest.vertex_position == it {
+                                remove it;
+                                removed = true;
+                                break;
+                            }
                         }
-                    }
-                    if !removed {
-                        array_add(*app.user_selection.mesh.positions, closest.vertex_position);
+                        if !removed {
+                            array_add(*app.user_selection.mesh.positions, closest.vertex_position);
+                        }
+
+                        app.user_selection.render_info.is_dirty = true;
                     }
 
-                    app.user_selection.render_info.is_dirty = true;
-                }
-
-                if use_result_for_rendering_cursor_text {
-                    text := tprint("#%,%: %", closest.entity_index, closest.vertex_index, closest.vertex_position);
-                    debug_text_at_cursor(text, app.user_selection_cursor_text_scale, app.user_selection.display_info.color);
+                    if use_result_for_rendering_cursor_text {
+                        text := tprint("#%,%: %", closest.entity_index, closest.vertex_index, closest.vertex_position);
+                        debug_text_at_cursor(text, app.user_selection_cursor_text_scale, app.user_selection.display_info.color);
+                    }
                 }
             }
         }

@@ -1,7 +1,9 @@
 ## Next Release
 
 - [Rendering] Render normals using geometry shader, use n to toggle normals on/off
+- [Rendering] Render aabbs using geometry shader, show it when the box extents are hovered in the UI
 - [Rendering] Add surface with edges option
+- [UI/UX] Hash the filename only by default to reproduce colours across machines, add a combo box to switch that
 - [UI/UX] Support loading wkt file format to load Polygons in a reasonable way
 - [UI/UX] Mode line (bar along bottom) showing hovered mesh stats
 - [UI/UX] Fix camera panning
