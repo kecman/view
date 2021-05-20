@@ -319,7 +319,7 @@ show_scene_ui :: ()
                 combo_box("Float format", *vertex_label_style.format_float.mode, type_info(FormatFloat.Mode));
                 ImGui.DragFloat("Label scale", *vertex_label_style.label_scale, .005, .2, 1., display_format="%.3f");
 
-                ImGui.Checkbox("Dynamically show the closest vertex result at cursor", *app.user_selection_cursor_text_shown);
+                ImGui.Checkbox("Dynamic closest vertex result at cursor", *app.user_selection_cursor_text_shown);
                 Show_Tooltip("Format is '#E,I {X,Y,Z}'\n X,Y,Z are the coordinates of the closest vertex\n E is entity index to which it belongs\n I is the vertex index within the entity");
                 ImGui.DragFloat("Cursor text scale", *app.user_selection_cursor_text_scale, .005, .2, 1., display_format="%.3f");
                 ImGui.InputInt("Max #points for selectable entities", xx *app.user_selection_max_point_count_for_selectable_entity);

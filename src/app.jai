@@ -40,7 +40,7 @@ app : struct {
 
     // Set the default vertex label style for the user selection mesh
     user_selection.display_info.visible = false;
-    user_selection.display_info.color = .{0, 0, 0, 1};
+    user_selection.display_info.color = .{1, 0, .8, 1}; // Used for the dynamic label text too
     user_selection.display_info.vertex_label_style.show_position = true;
     user_selection.display_info.vertex_label_style.point_size = 6;
     user_selection.display_info.vertex_label_style.label_color = .{0, 0, 0, 1};

@@ -204,6 +204,7 @@ load_entity_from_file :: (filename : string) -> *Entity {
 
             entity := New(Mesh_Entity);
             Common_Init();
+            entity.display_info.vertex_label_style.point_size = 2;
             return entity;
 
         case .UNKNOWN;

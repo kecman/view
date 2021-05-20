@@ -423,7 +423,7 @@ main :: () {
         // @TODO Hide the cursor and display a line from the cursor to the point
         if app.user_selection.display_info.visible && !io().WantCaptureMouse && ImGui.IsMousePosValid(*io().MousePos) {
             use_result_for_adding_to_selection := ImGui.IsMouseClicked(0) && io().KeyCtrl;
-            use_result_for_repositioning_cameara := ImGui.IsMouseClicked(2) && io().KeyCtrl;
+            use_result_for_repositioning_cameara := ImGui.IsMouseClicked(1) && io().KeyCtrl;
             use_result_for_rendering_cursor_text := app.user_selection_cursor_text_shown;
 
             if use_result_for_adding_to_selection || use_result_for_repositioning_cameara || use_result_for_rendering_cursor_text {
@@ -454,7 +454,7 @@ main :: () {
 
                 if use_result_for_rendering_cursor_text {
                     text := tprint("#%,%: %", closest.entity_index, closest.vertex_index, closest.vertex_position);
-                    debug_text_at_cursor(text, app.user_selection_cursor_text_scale);
+                    debug_text_at_cursor(text, app.user_selection_cursor_text_scale, app.user_selection.display_info.color);
                 }
             }
         }

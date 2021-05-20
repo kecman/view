@@ -9,7 +9,7 @@ Vertex_Label_Style :: struct {
     label_scale := .3;
     label_color : Vector4 = .{1., 1., 1., 1.};
 
-    point_size : int = 2; // 0, 2, 4, 6
+    point_size : int = 0; // 0, 2, 4, 6
     line_width : int = 1; // 1, 1, 2, 3
 }
 
@@ -325,8 +325,7 @@ debug_vector :: (length : float, vector_world : Vector3, color : Vector4) {
     render_mesh(*debug_mesh, *render_info, display_info);
 }
 
-debug_text_at_cursor :: (text : string, scale := .5)
-{
+debug_text_at_cursor :: (text : string, scale := .5, color : Vector4 = .{1, 1, 1, 1}) {
     glEnable(GL_BLEND);
     defer glDisable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -337,7 +336,7 @@ debug_text_at_cursor :: (text : string, scale := .5)
                      // make_vector2(25.0, WINDOW_HEIGHT - FONT_SIZE * scale),
                      make_vector2(io().MousePos.x, app.current_window_height - io().MousePos.y),
                      scale,
-                     make_vector4(1., 1., 1., 1));
+                     color);
 }
 
 get_shader_program :: (shader_vertex : string, shader_fragment : string) -> GLuint {

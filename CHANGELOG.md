@@ -1,11 +1,13 @@
 # Version: v0.0.7, Unreleased
 
-- Added a fabulous background shader enabled by default [ty [@LoganBarnes](https://github.com/LoganBarnes)]
+- Added a more joyful background shader enabled by default [ty [@LoganBarnes](https://github.com/LoganBarnes)]
   - Future work will hotload this shader and the provide inputs expected by Shadertoy
-  - The boring solid color option can be chosen in settings (press Shift-h to access)
+  - The boring solid color option is still available in settings (press Shift-h to access)
 - Improved the colors generated from filenames
+- Changed binding to set orbit position in user selection mode from Ctrl+MMB to Ctrl+RMB
 - Changed user selection queries to only compute when the result will be used rather than every frame
 - Changed position of item index to come just before the filename for a more stable item list UI
+- Changed default point size on startup to be zero, when point clouds are inferred they will have a point size of 2
 
 # Version: v0.0.6, 17 May 2021
 
