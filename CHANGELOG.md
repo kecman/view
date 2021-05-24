@@ -1,6 +1,7 @@
 # Version: v0.0.7, Unreleased
 
 - Added a more joyful background shader enabled by default [ty [@LoganBarnes](https://github.com/LoganBarnes)]
+  - Changed the default label color so it works well on both both white and grey backgrounds
   - Future work will hotload this shader and the provide inputs expected by Shadertoy
   - The boring solid color option is still available in settings (press Shift-h to access)
 - Improved the colors generated from filenames
