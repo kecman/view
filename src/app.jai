@@ -10,11 +10,11 @@ app : struct {
     fullscreen := false;
 
 
-    text_shader : GLuint; // @Cleanup rename to program
+    text_program : GLuint;
     text_vao : GLuint;
     text_vbo : GLuint;
 
-    mesh_shader : GLuint;  // @Cleanup rename to program
+    mesh_program : GLuint;
     mesh_vao : GLuint;
 
     Background_Style :: enum #specified {

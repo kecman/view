@@ -103,7 +103,7 @@ render_text_quad :: (shader_program: GLuint, text: string, position: Vector2, sc
     glUniform4f(glGetUniformLocation(shader_program, "text_color"), color.x, color.y, color.z, color.w);
 
     mvp := orthographic_projection_matrix(0.0, xx current_window_width, 0.0, xx current_window_height, -1.0, 1.0);
-    glUniformMatrix4fv(glGetUniformLocation(app.text_shader, "mvp"), 1, true, *mvp._11);
+    glUniformMatrix4fv(glGetUniformLocation(app.text_program, "mvp"), 1, true, *mvp._11);
 
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(text_vao);

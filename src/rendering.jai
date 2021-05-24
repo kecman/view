@@ -101,48 +101,48 @@ render_mesh :: (mesh : *Mesh, using render_info : *Render_Info, using display_in
         maybe_update_render_info(render_info, mesh);
     }
 
-    glUseProgram(app.mesh_shader);
+    glUseProgram(app.mesh_program);
 
     {
-        model_loc := glGetUniformLocation(app.mesh_shader, "world_from_model");
-        glUniformMatrix4fv(model_loc, 1, true, *mesh.world_from_model._11);
+        loc := glGetUniformLocation(app.mesh_program, "world_from_model");
+        glUniformMatrix4fv(loc, 1, true, *mesh.world_from_model._11);
     }
 
     {
-        view_loc := glGetUniformLocation(app.mesh_shader, "view_from_world");
+        loc := glGetUniformLocation(app.mesh_program, "view_from_world");
         view_from_world := make_look_at_matrix(app.camera);
-        glUniformMatrix4fv(view_loc, 1, true, *view_from_world._11);
+        glUniformMatrix4fv(loc, 1, true, *view_from_world._11);
     }
 
     {
-        projection_loc := glGetUniformLocation(app.mesh_shader, "projection_from_view");
-        projection_from_view := make_orthographic_projection_matrix(app.camera);
-        glUniformMatrix4fv(projection_loc, 1, true, *projection_from_view._11);
+        loc := glGetUniformLocation(app.mesh_program, "clip_from_view");
+        clip_from_view := make_orthographic_projection_matrix(app.camera);
+        glUniformMatrix4fv(loc, 1, true, *clip_from_view._11);
     }
 
     {
-        mode_loc := glGetUniformLocation(app.mesh_shader, "display_mode");
-        glUniform1i(mode_loc, xx display_mode);
+        loc := glGetUniformLocation(app.mesh_program, "display_mode");
+        glUniform1i(loc, xx display_mode);
     }
 
     {
-        loc := glGetUniformLocation(app.mesh_shader, "wave");
+        loc := glGetUniformLocation(app.mesh_program, "wave");
         wave := ifx flash_wave_dt == 0 then -1 else cos(5 * flash_wave_dt);
         glUniform1f(loc, wave);
     }
 
     {
-        color_loc := glGetUniformLocation(app.mesh_shader, "color");
-        glUniform4f(color_loc, color.x, color.y, color.z, color.w);
+        loc := glGetUniformLocation(app.mesh_program, "color");
+        glUniform4f(loc, color.x, color.y, color.z, color.w);
     }
 
     {
-        point_size_loc := glGetUniformLocation(app.mesh_shader, "point_size");
-        glUniform1f(point_size_loc, xx vertex_label_style.point_size);
+        loc := glGetUniformLocation(app.mesh_program, "point_size");
+        glUniform1f(loc, xx vertex_label_style.point_size);
     }
 
     {
-        loc := glGetUniformLocation(app.mesh_shader, "camera.eye_position");
+        loc := glGetUniformLocation(app.mesh_program, "camera.eye_position");
         glUniform3f(loc, app.camera.eye_position.x, app.camera.eye_position.y, app.camera.eye_position.z);
     }
 
@@ -247,29 +247,28 @@ render_vertex_labels :: (points : []$T, style : Vertex_Label_Style, label_index_
             text_position_px.x = cast(float)app.current_window_width * (text_position_px.x + 1) / 2;
             text_position_px.y = cast(float)app.current_window_height * (text_position_px.y + 1) / 2;
 
-            render_text_quad(app.text_shader, text, text_position_px.xy, style.label_scale, style.label_color);
+            render_text_quad(app.text_program, text, text_position_px.xy, style.label_scale, style.label_color);
         }
     }
 }
 
-debug_print_active_uniforms :: (shader : GLuint) {
-    using app;
+debug_print_active_uniforms :: (program : GLuint) {
 
     max_length: GLint;
-    glGetProgramiv(mesh_shader, GL_ACTIVE_UNIFORM_MAX_LENGTH, *max_length);
+    glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, *max_length);
     name := alloc_string(max_length);
     defer free(name);
     // print("GL_ACTIVE_UNIFORM_MAX_LENGTH = %\n", max_length);
 
     count : s32;
-    glGetProgramiv(shader, GL_ACTIVE_UNIFORMS, *count);
-    print("[debug %] Shader % has % active uniforms:\n", #location(), shader, count);
+    glGetProgramiv(program, GL_ACTIVE_UNIFORMS, *count);
+    print("[debug %] Program % has % active uniforms:\n", #location(), program, count);
     for 0..count-1 {
         size: GLint;
         type: GLenum;
         length: GLsizei;
 
-        glGetActiveUniform(shader, cast(GLuint) it, xx max_length, *length, *size, *type, name.data);
+        glGetActiveUniform(program, cast(GLuint) it, xx max_length, *length, *size, *type, name.data);
         name.count = xx length;
         print("Uniform #% Type: 0x% Size: % Name: %\n", it, formatInt(type, base=16), size, name);
     }
@@ -331,7 +330,7 @@ debug_text_at_cursor :: (text : string, scale := .5, color : Vector4 = .{1, 1, 1
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     text_w := get_text_width_in_pixels(text, 1.0);
-    render_text_quad(app.text_shader,
+    render_text_quad(app.text_program,
                      text,
                      // make_vector2(25.0, WINDOW_HEIGHT - FONT_SIZE * scale),
                      make_vector2(io().MousePos.x, app.current_window_height - io().MousePos.y),

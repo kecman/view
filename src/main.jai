@@ -51,7 +51,7 @@ main :: () {
     {
         vert :: #run read_entire_file("src/shaders/text.vert");
         frag :: #run read_entire_file("src/shaders/text.frag");
-        app.text_shader = get_shader_program(vert, frag);
+        app.text_program = get_shader_program(vert, frag);
     }
 
     // Prepare VAO for text quads.
@@ -71,7 +71,7 @@ main :: () {
     {
         vert :: #run read_entire_file("src/shaders/mesh.vert");
         frag :: #run read_entire_file("src/shaders/mesh.frag");
-        app.mesh_shader = get_shader_program(vert, frag);
+        app.mesh_program = get_shader_program(vert, frag);
     }
 
     // Setup background shader
