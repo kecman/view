@@ -5,6 +5,7 @@
   - Future work will hotload this shader and the provide inputs expected by Shadertoy
   - The boring solid color option is still available in settings (press Shift-h to access)
 - Improved the colors generated from filenames
+- Added a screentone effect when rendering a backfacing triangle
 - Changed binding to set orbit position in user selection mode from Ctrl+MMB to Ctrl+RMB
 - Changed user selection queries to only compute when the result will be used rather than every frame
 - Changed position of item index to come just before the filename for a more stable item list UI

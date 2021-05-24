@@ -14,6 +14,8 @@ in vec3 fragment_position_ws;
 
 out vec4 out_color;
 
+const bool SCREENTONE_BACKFACES = true;
+
 struct Point_Light {
     vec3  position;
     vec3  color;
@@ -96,10 +98,24 @@ void main() {
                 color_linear.xyz += blinn_phong_brdf(N, V, L, light.color, light.power);
             }
 
+            // // TODO: When changing shaders render the previous settings on half of the screen with the following:
+            // if(gl_FragCoord.x < 400) { // e.g., for 800x600 viewport
+            //     FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+            // } else {
+            //     FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+            // }
+
             vec4 color_gamma_corrected = vec4(pow(ambient_color + color_linear.xyz, vec3(1 / gamma)), 1);
             out_color = mix(color_gamma_corrected, vec4(1.f), wave * .5f + .5f);
 
         } break;
+    }
+
+    // TODO: modify the input color instead so we get lighting on the screentone pixels too
+    if (SCREENTONE_BACKFACES && !gl_FrontFacing) {
+        if (int(gl_FragCoord.x) % 3 == 0 && int(gl_FragCoord.y) % 3 == 0) {
+            out_color = vec4(.3, .3, .3, .0);
+        }
     }
 
     // Respect blending of input color
