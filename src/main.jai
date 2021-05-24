@@ -72,6 +72,7 @@ main :: () {
         vert :: #run read_entire_file("src/shaders/mesh.vert");
         frag :: #run read_entire_file("src/shaders/mesh.frag");
         app.mesh_program = get_shader_program(vert, frag);
+        glGenVertexArrays(1, *app.mesh_vao);
     }
 
     // Setup background shader
@@ -79,14 +80,8 @@ main :: () {
         vert :: #run read_entire_file("src/shaders/background.vert");
         frag :: #run read_entire_file("src/shaders/background.frag");
         app.background_program = get_shader_program(vert, frag);
-    }
-
-    // Prepare VAO
-    {
-        glGenVertexArrays(1, *app.mesh_vao);
         glGenVertexArrays(1, *app.background_vao);
     }
-
 
     TRIAD_AXIS_LENGTH :: 1;
     triad := make_axes_triad(TRIAD_AXIS_LENGTH);
