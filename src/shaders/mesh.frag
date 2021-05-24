@@ -59,7 +59,7 @@ vec3 blinn_phong_brdf(vec3 N, vec3 V, vec3 L, vec3 light_color, float light_powe
 }
 
 void main() {
-    vec3 N = normalize(vertex_normal_ws);
+    vec3 N = vertex_normal_ws;
 
     switch (display_mode) {
 

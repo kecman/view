@@ -14,7 +14,7 @@ out vec3 fragment_position_ws;
 void main() {
     mat4 clip_from_model = clip_from_view * view_from_world * world_from_model;
 
-    vertex_normal_ws = (transpose(inverse(world_from_model)) * vec4(in_normal, 0.)).xyz;
+    vertex_normal_ws = normalize((transpose(inverse(world_from_model)) * vec4(in_normal, 0.)).xyz);
     fragment_position_ws = (world_from_model * vec4(in_vertex, 1.)).xyz;
 
     gl_Position = clip_from_model * vec4(in_vertex, 1.);
