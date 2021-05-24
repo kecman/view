@@ -423,21 +423,23 @@ main :: () {
         // @TODO Hide the cursor and display a line from the cursor to the point
         if app.user_selection.display_info.visible && !io().WantCaptureMouse && ImGui.IsMousePosValid(*io().MousePos) {
             use_result_for_adding_to_selection := ImGui.IsMouseClicked(0) && io().KeyCtrl;
-            use_result_for_repositioning_cameara := ImGui.IsMouseClicked(1) && io().KeyCtrl;
+            use_result_for_repositioning_camera := ImGui.IsMouseClicked(1) && io().KeyCtrl;
             use_result_for_rendering_cursor_text := app.user_selection_cursor_text_shown;
 
-            if use_result_for_adding_to_selection || use_result_for_repositioning_cameara || use_result_for_rendering_cursor_text {
+            if use_result_for_adding_to_selection || use_result_for_repositioning_camera || use_result_for_rendering_cursor_text {
 
                 closest := find_closest_vertex_on_visible_entities();
                 if closest.entity_index != -1 {
 
-                    if use_result_for_repositioning_cameara {
+                    if use_result_for_repositioning_camera {
                         increment := closest.vertex_position - app.camera.look_position;
                         app.camera.eye_position += increment;
                         app.camera.look_position += increment;
 
-                        sphere := make_sphere(app.camera.look_position, 0.);
-                        expand(*sphere, app.camera.scene_bounding_sphere);
+                        // @TODO Improve the fit here
+                        sphere : Sphere = ---;
+                        sphere.center = app.camera.look_position;
+                        sphere.radius = app.camera.scene_bounding_sphere.radius + length(increment);
                         fit_on_screen(sphere);
                     }
 
