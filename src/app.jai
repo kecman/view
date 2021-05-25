@@ -9,13 +9,15 @@ app : struct {
     current_window_height := INITIAL_WINDOW_HEIGHT;
     fullscreen := false;
 
-
     text_program : GLuint;
     text_vao : GLuint;
     text_vbo : GLuint;
 
     mesh_program : GLuint;
     mesh_vao : GLuint;
+
+    normals_program : GLuint;
+    normals_vao : GLuint;
 
     Background_Style :: enum #specified {
         SOLID_COLOR :: 0;

@@ -95,6 +95,61 @@ maybe_update_render_info :: (info : *Render_Info, mesh : *Mesh) {
     }
 }
 
+render_normals :: (mesh : *Mesh, using render_info : *Render_Info, using display_info : Display_Info) {
+    if render_info.is_dirty {
+        maybe_update_render_info(render_info, mesh);
+    }
+
+    glUseProgram(app.normals_program);
+
+    {
+        loc := glGetUniformLocation(app.normals_program, "world_from_model");
+        glUniformMatrix4fv(loc, 1, true, *mesh.world_from_model._11);
+    }
+
+    {
+        loc := glGetUniformLocation(app.normals_program, "view_from_world");
+        view_from_world := make_look_at_matrix(app.camera);
+        glUniformMatrix4fv(loc, 1, true, *view_from_world._11);
+    }
+
+    {
+        loc := glGetUniformLocation(app.normals_program, "clip_from_view");
+        clip_from_view := make_orthographic_projection_matrix(app.camera);
+        glUniformMatrix4fv(loc, 1, true, *clip_from_view._11);
+    }
+
+    glBindVertexArray(app.normals_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+
+    ATTRIB_POSITION  :: 0;
+    ATTRIB_NORMAL    :: 1;
+
+    glEnableVertexAttribArray(ATTRIB_POSITION);
+    glEnableVertexAttribArray(ATTRIB_NORMAL);
+    defer glDisableVertexAttribArray(ATTRIB_POSITION);
+    defer glDisableVertexAttribArray(ATTRIB_NORMAL);
+
+    NP := size_of(Vector3) * mesh.positions.count;
+
+    glVertexAttribPointer(ATTRIB_POSITION, 3, GL_FLOAT, false, size_of(Vector3), null);
+    glVertexAttribPointer(ATTRIB_NORMAL, 3, GL_FLOAT, false, size_of(Vector3), cast(*void)(NP));
+
+    last_line_width: float;
+    glGetFloatv(GL_LINE_WIDTH, xx *last_line_width);
+    defer glLineWidth(last_line_width);
+    glLineWidth(2); // 1, 2, 3... See also glEnable(GL_LINE_SMOOTH);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendEquation(GL_FUNC_ADD);
+    defer glDisable(GL_BLEND);
+
+    // @Cleanup Maybe we should do this using points rather than triangles to support oriented point clouds?
+    glDrawElements(GL_TRIANGLES, xx mesh.indices.count, GL_UNSIGNED_INT, null);
+}
+
 render_mesh :: (mesh : *Mesh, using render_info : *Render_Info, using display_info : Display_Info, flash_dt : float = 0) {
 
     if render_info.is_dirty {
@@ -338,7 +393,8 @@ debug_text_at_cursor :: (text : string, scale := .5, color : Vector4 = .{1, 1, 1
                      color);
 }
 
-get_shader_program :: (shader_vertex : string, shader_fragment : string) -> GLuint {
+get_shader_program :: (shader_vertex : string, shader_fragment : string, shader_geometry : string = "") -> GLuint {
+
     make_shader_object :: (shader : string, shader_type : GLenum) -> GLuint {
         shader_object := glCreateShader(shader_type);
 
@@ -361,27 +417,38 @@ get_shader_program :: (shader_vertex : string, shader_fragment : string) -> GLui
         return shader_object;
     }
 
-    shader_v := make_shader_object(shader_vertex, GL_VERTEX_SHADER);
-    shader_f := make_shader_object(shader_fragment, GL_FRAGMENT_SHADER);
-    shader_p := glCreateProgram();
+    program := glCreateProgram();
 
-    glAttachShader(shader_p, shader_v);
-    glAttachShader(shader_p, shader_f);
-    glLinkProgram(shader_p);
+    shader_v := make_shader_object(shader_vertex, GL_VERTEX_SHADER);
+    glAttachShader(program, shader_v);
+
+    shader_g : GLuint;
+    if shader_geometry.count {
+        shader_g = make_shader_object(shader_geometry, GL_GEOMETRY_SHADER);
+        glAttachShader(program, shader_g);
+    }
+
+    shader_f := make_shader_object(shader_fragment, GL_FRAGMENT_SHADER);
+    glAttachShader(program, shader_f);
+
+    glLinkProgram(program);
 
     success : GLint = 0;
-    glGetProgramiv(shader_p, GL_LINK_STATUS, *success);
+    glGetProgramiv(program, GL_LINK_STATUS, *success);
 
     if !success then {
         BUFFER_SIZE_LOG :: 512;
         log : [BUFFER_SIZE_LOG] u8;
-        glGetProgramInfoLog(shader_p, BUFFER_SIZE_LOG, null, log.data);
+        glGetProgramInfoLog(program, BUFFER_SIZE_LOG, null, log.data);
         print("[Shader] %\n", to_string(log.data));
         exit(1); // Hard-exit for now.
     }
 
     glDeleteShader(shader_v);
     glDeleteShader(shader_f);
+    if shader_geometry.count {
+        glDeleteShader(shader_g);
+    }
 
-    return shader_p;
+    return program;
 }

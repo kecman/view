@@ -75,6 +75,15 @@ main :: () {
         glGenVertexArrays(1, *app.mesh_vao);
     }
 
+    // Setup mesh normals shader
+    {
+        vert :: #run read_entire_file("src/shaders/normals.vert");
+        geom :: #run read_entire_file("src/shaders/normals.geom");
+        frag :: #run read_entire_file("src/shaders/normals.frag");
+        app.normals_program = get_shader_program(vert, frag, geom);
+        glGenVertexArrays(1, *app.normals_vao);
+    }
+
     // Setup background shader
     {
         vert :: #run read_entire_file("src/shaders/background.vert");
@@ -343,6 +352,7 @@ main :: () {
 
                     mesh := cast(*Mesh_Entity) entity;
                     render_mesh(*mesh.mesh, *entity.render_info, entity.display_info);
+                    render_normals(*mesh.mesh, *entity.render_info, entity.display_info);
                     // @Cleanup so the transform is also available for text rendering
                     Reserve_Labels(mesh.mesh.positions.count);
                     if label_limit >= 0 || (entity == *app.user_selection) {
