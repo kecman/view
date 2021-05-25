@@ -10,6 +10,7 @@ Don't screentone backfaces when wireframe mode (or transparency?) is on
   - The boring solid color option is still available in settings (press Shift+h to access)
 - Added a screentone effect when rendering a backfacing triangle (press RMB item name to access)
 - Added normal rendering with options to set color and length in the item context menu
+  - Normal rendering also works for oriented point clouds loaded from an obj file containing v, vn and p codes
 - Added a new UI idiom in which bindings will affect the currently hovered unselected item, all selected items (Ctrl+LMB selects a item)
   - ***** Added a binding to toggle normals (n) which using this idiom
   - ***** Added a binding to toggle opacity (o) which uses this idiom
