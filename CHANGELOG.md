@@ -18,8 +18,8 @@ Don't screentone backfaces when wireframe mode (or transparency?) is on
   - ***** Changed the bindings for cycling point size (p) to follow this idiom
   - ***** Changed the bindings for cycling line width (l) to follow this idiom
   - ***** Changed the binding to popup the item context menu (RMB) to follow this idiom, also added more options to this context menu
-- ***** Added a binding to select/deselect all items (Ctrl+a)
-- ***** Added a binding to toggle/complement the current item selection (Alt+a)
+- Added a binding to select/deselect all items (Ctrl+a)
+- Added a binding to toggle/complement the current item selection (Alt+a)
 - Changed binding to set orbit position in user selection mode from Ctrl+MMB to Ctrl+RMB
 - Changed user selection queries to only compute when the result will be used rather than every frame
 - Changed default point size on startup to be 0, when point clouds are inferred they will have a point size of 2

@@ -74,6 +74,8 @@ init_keymap :: ()
     add_key(*app.keymap, call_fit_on_screen, "fit on screen", xx #char "r");
     add_key(*app.keymap, reset_camera, "reset camera", xx #char "r", .{shift_pressed=true});
     add_key(*app.keymap, reload_entities, "reload hovered or selected item(s)", xx Special_Key_Code.F5);
+    add_key(*app.keymap, select_or_deselect_all, "Select/deselect all items", xx #char "a", .{control_pressed=true});
+    add_key(*app.keymap, toggle_current_selection, "Select/deselect all items", xx #char "a", .{alt_pressed=true});
 
     add_key(*app.keymap, cycle_line_width, "cycle line width", xx #char "l");
     add_key(*app.keymap, cycle_point_size, "cycle point size", xx #char "p");
@@ -102,6 +104,8 @@ init_keymap :: ()
     }
 }
 
+#scope_file
+
 //
 // Bindable procedures
 //
@@ -123,9 +127,8 @@ cycle_point_position_labels    :: () { using app.vertex_label_style; show_positi
 clear_labels                   :: () { using app.vertex_label_style; show_index = false; show_position = false; update_entities_using_default_vertex_label_style();}
 cycle_point_size               :: () { using app.vertex_label_style; if point_size == 0 point_size = 2; else if point_size == 2 point_size = 4; else point_size = 0; update_entities_using_default_vertex_label_style();}
 cycle_line_width               :: () { using app.vertex_label_style; if line_width == 1 line_width = 2; else if line_width == 2 line_width = 3; else line_width = 1; update_entities_using_default_vertex_label_style();}
+select_or_deselect_all         :: () { if !app.entities.count return; mode := false; for app.entities if it.is_selected mode = true; for app.entities it.is_selected = !mode; }
+toggle_current_selection       :: () { for app.entities it.is_selected = !it.is_selected; }
 reset_camera                   :: () { init_camera(); }
 // debug_junk                     :: () { c:= app.camera; printv(#code c); }
-
-#scope_file
-
 #import "Reflection";
