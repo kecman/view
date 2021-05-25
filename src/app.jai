@@ -96,6 +96,13 @@ visible :: #bake_arguments entities_iterator(should_visit = (e)=>(e.display_info
 #import "GL";
 #import "Deep_Copy";
 #import "Time";
+#import "Text_File_Handler";
+#import "Hash";
+#import "Hash_Table";
+#import "freetype255";
+#import "System";
+
+#import "geometry";
 
 #load "modules/ImGui_/examples/imgui_sdl_gl.jai";
 

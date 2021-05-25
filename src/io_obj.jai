@@ -259,12 +259,3 @@ parse_triangle :: (handler : *Text_File_Handler, str : string) -> Triangle {
 
     return t;
 }
-
-#import "Text_File_Handler";
-#import "Basic";
-#import "File";
-#import "String";
-#import "Math";
-#import "Hash";
-
-#import "geometry";

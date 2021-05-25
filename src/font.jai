@@ -1,8 +1,3 @@
-#import "GL";
-#import "Hash_Table";
-#import "freetype255";
-#import "System";
-
 FONT_SIZE :: 58;
 ASCII_COUNT :: 128;
 

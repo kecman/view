@@ -131,4 +131,3 @@ select_or_deselect_all         :: () { if !app.entities.count return; mode := fa
 toggle_current_selection       :: () { for app.entities it.is_selected = !it.is_selected; }
 reset_camera                   :: () { init_camera(); }
 // debug_junk                     :: () { c:= app.camera; printv(#code c); }
-#import "Reflection";
