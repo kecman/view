@@ -1,20 +1,18 @@
 #version 330 core
 
-layout (triangles) in;
-layout (line_strip, max_vertices = 6) out;
+layout (points) in;
+layout (line_strip, max_vertices = 2) out;
 
 in VERTEX_SHADER_OUT {
     vec3 normal;
 } geom_in[];
 
+uniform float normal_length = 1.;
 uniform mat4 clip_from_view;
 
-const float NORMAL_LENGTH = 1.;
-
-// @TODO Make the tip more obvious, maybe with an arrow head
 void normal_segment(int index) {
     vec4 base = gl_in[index].gl_Position;
-    vec4 tip = base + vec4(geom_in[index].normal, 0.) * NORMAL_LENGTH;
+    vec4 tip = base + vec4(geom_in[index].normal, 0.) * normal_length;
 
     gl_Position = clip_from_view * base;
     EmitVertex();
@@ -25,6 +23,4 @@ void normal_segment(int index) {
 
 void main() {
     normal_segment(0);
-    normal_segment(1);
-    normal_segment(2);
 }

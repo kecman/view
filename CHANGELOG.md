@@ -1,3 +1,7 @@
+Fix camera orbit positioning zoom level when
+Fix selection to account for any applied shift
+Don't screentone backfaces when wireframe mode (or transparency?) is on
+
 # Version: v0.0.7, Unreleased
 
 - Added a more joyful background shader enabled by default [ty [@LoganBarnes](https://github.com/LoganBarnes)]
@@ -5,8 +9,9 @@
   - Future work will hotload this shader and the provide inputs expected by Shadertoy
   - The boring solid color option is still available in settings (press Shift-h to access)
 - Improved the colors generated from filenames
+- Improved the item list by swapping remove/clear buttons with visiblity checkbox
 - Added a screentone effect when rendering a backfacing triangle
-- Added a normal rendering, toggle with n (press h for help)
+- Added a normal rendering with options to set color and length, toggle with a checkbox
 - Changed binding to set orbit position in user selection mode from Ctrl+MMB to Ctrl+RMB
 - Changed user selection queries to only compute when the result will be used rather than every frame
 - Changed position of item index to come just before the filename for a more stable item list UI

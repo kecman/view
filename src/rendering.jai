@@ -48,15 +48,19 @@ Render_Info :: struct {
 
 // Things that should be preserved when the geometry changes
 Display_Info :: struct {
-    visible := true;
+    visible := true; // Separate to opacity so we can toggle transparent meshes
     visible_sweep_hovered := false;
 
     flash_hovered := false;
     flash_wave_dt : float = 0.;
 
     wireframe := false;
-    color : Vector4 = .{1, 1, 1, 1}; // RGBA format
+    color : Vector4 = .{1., 1., 1., 1.}; // RGBA
     display_mode := Display_Mode.BLINN_PHONG;
+
+    normals_visible := false; // Separate to opacity so we can toggle transparent normals
+    normals_color : Vector4 = .{0., 0., .8, 1.}; // RGBA
+    normals_length : float = 1.;
 
     vertex_label_style : Vertex_Label_Style;
 }
@@ -96,6 +100,10 @@ maybe_update_render_info :: (info : *Render_Info, mesh : *Mesh) {
 }
 
 render_normals :: (mesh : *Mesh, using render_info : *Render_Info, using display_info : Display_Info) {
+    if !normals_visible {
+        return;
+    }
+
     if render_info.is_dirty {
         maybe_update_render_info(render_info, mesh);
     }
@@ -117,6 +125,16 @@ render_normals :: (mesh : *Mesh, using render_info : *Render_Info, using display
         loc := glGetUniformLocation(app.normals_program, "clip_from_view");
         clip_from_view := make_orthographic_projection_matrix(app.camera);
         glUniformMatrix4fv(loc, 1, true, *clip_from_view._11);
+    }
+
+    {
+        loc := glGetUniformLocation(app.normals_program, "normals_color");
+        glUniform4f(loc, normals_color.x, normals_color.y, normals_color.z, normals_color.w);
+    }
+
+    {
+        loc := glGetUniformLocation(app.normals_program, "normal_length");
+        glUniform1f(loc, normals_length);
     }
 
     glBindVertexArray(app.normals_vao);
@@ -146,8 +164,7 @@ render_normals :: (mesh : *Mesh, using render_info : *Render_Info, using display
     glBlendEquation(GL_FUNC_ADD);
     defer glDisable(GL_BLEND);
 
-    // @Cleanup Maybe we should do this using points rather than triangles to support oriented point clouds?
-    glDrawElements(GL_TRIANGLES, xx mesh.indices.count, GL_UNSIGNED_INT, null);
+    glDrawArrays(GL_POINTS, 0, xx mesh.positions.count);
 }
 
 render_mesh :: (mesh : *Mesh, using render_info : *Render_Info, using display_info : Display_Info, flash_dt : float = 0) {

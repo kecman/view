@@ -86,18 +86,16 @@ show_scene_ui :: ()
         mesh := get_mesh(it);
         if mesh {
 
-            // Toggle visibility checkbox
-            visibility_toggled := checkbox_press_or_sweep_to_toggle(*it.display_info.visible, *it.display_info.visible_sweep_hovered, imgui_label("##Visible", it));
-            Show_Tooltip("Visible");
-            any_visibility_toggled = any_visibility_toggled || visibility_toggled;
-
             // Remove button
-            ImGui.SameLine();
             if ImGui.Button(imgui_label("Remove", it), size=*V2_ZERO) {
                 entity_to_remove = it_index;
             }
 
-            // Color picker
+            // Toggle visibility and set color
+            ImGui.SameLine();
+            visibility_toggled := checkbox_press_or_sweep_to_toggle(*it.display_info.visible, *it.display_info.visible_sweep_hovered, imgui_label("##Visible", it));
+            Show_Tooltip("Visible");
+            any_visibility_toggled = any_visibility_toggled || visibility_toggled;
             ImGui.SameLine();
             if it.display_info.display_mode == .NORMALS {
                 ImGui.TextDisabled("NR.");
@@ -205,17 +203,33 @@ show_scene_ui :: ()
 
                     ImGui.Separator();
 
+                    ImGui.PushItemWidth(120);
                     combo_box("", *it.display_info.display_mode, type_info(type_of(it.display_info.display_mode)));
+                    ImGui.PopItemWidth();
                     ImGui.SameLine();
                     ImGui.PushItemWidth(70);
                     ImGui.DragFloat(imgui_label("##Opacity", it), *it.display_info.color.w, v_speed=.005, v_min=0., v_max=1.);
                     ImGui.PopItemWidth();
                     Show_Tooltip("Opacity");
 
+                    // @Cleanup Does this UI really need to change based on type?
                     if it.type == .MESH || it.type == .POLYGON_SOUP {
                         ImGui.Checkbox(imgui_label("Wireframe   ", it), *it.display_info.wireframe);
+
+                        ImGui.Checkbox(imgui_label("##normals_visible", it), *it.display_info.normals_visible);
+                        ImGui.SameLine();
+                        ImGui.ColorEdit4(imgui_label("##normals_color", it), *it.display_info.normals_color.component, ImGui.ColorEditFlags.NoInputs);
+                        ImGui.SameLine();
+                        ImGui.PushItemWidth(70);
+                        ImGui.DragFloat(imgui_label("##normals_length", it), *it.display_info.normals_length, .05);
+                        ImGui.PopItemWidth();
+                        ImGui.SameLine();
+                        ImGui.Text("Normals Visible|Color|Length");
+
+                        // @Incomplete: Add AABB visiblity and color
                     }
 
+                    ImGui.Separator();
                     shift := make_vector3(mesh.world_from_model._14, mesh.world_from_model._24, mesh.world_from_model._34);
                     // ImGui.PushItemWidth(-1);
                     ImGui.DragFloat3(imgui_label("Shift", it), *shift.component, .05);
@@ -251,18 +265,16 @@ show_scene_ui :: ()
 
         it := *app.user_selection;
 
-        // Toggle visibility checkbox
-        visibility_toggled := checkbox_press_or_sweep_to_toggle(*it.display_info.visible, *it.display_info.visible_sweep_hovered, imgui_label("##Visible", it));
-        Show_Tooltip("Visible");
-        any_visibility_toggled = any_visibility_toggled || visibility_toggled;
-
         // Remove button
-        ImGui.SameLine();
         if ImGui.Button(imgui_label("Clear ", it), size=*V2_ZERO) {
             deinit(it);
         }
 
-        // Color picker
+        // Toggle visibility checkbox
+        ImGui.SameLine();
+        visibility_toggled := checkbox_press_or_sweep_to_toggle(*it.display_info.visible, *it.display_info.visible_sweep_hovered, imgui_label("##Visible", it));
+        Show_Tooltip("User Selection Visible");
+        any_visibility_toggled = any_visibility_toggled || visibility_toggled;
         ImGui.SameLine();
         ImGui.ColorEdit4(imgui_label("##color", it), *it.display_info.color.component, ImGui.ColorEditFlags.NoInputs);
 
