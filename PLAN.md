@@ -2,6 +2,10 @@
 
 - [Rendering] Render normals using geometry shader, use n to toggle normals on/off
 - [Rendering] Render aabbs using geometry shader, show it when the box extents are hovered in the UI
+- [Rendering] Render plane using geometry shader and implement mesh clipping
+- [UI/UX] Per-item mesh properties
+- [UI/UX] Make Ctrl+Scroll do the scroll that doesn't zoom into where the cursor is pointing, this is handy when you set the camera orbit and want to zoom in
+
 - [Rendering] Add surface with edges option
 - [UI/UX] Hash the filename only by default to reproduce colours across machines, add a combo box to switch that
 - [UI/UX] Support loading wkt file format to load Polygons in a reasonable way
@@ -14,8 +18,10 @@
 
 ## Backlog
 
+- [UI/UX] Add a hotloading mode to files (Hotloader module not implemented on linux)
 - [UI/UX] Implement simple undo for file loading, would be handy to be able to undo file clobbering...
 - [Rendering] Do a better job transparency
+- [Rendering] Do something with depth rendering? out_color = vec4(vec3(gl_FragCoord.z), 1.);
 - [UI/UX] Load files in a separate thread and report loading progress in the mode line
 - [UI/UX] Feedback when refreshing a file gives the same result
 - [UI/UX] Display file load time
@@ -104,4 +110,4 @@
 - [XXL,UI/UX] Suggested values when transforming an item
 - [UI/UX] Add a button to capture a screenshot, look at the Jai Clipboard module
 - [XXL,UI/UX] Think about how to do literate programming in Jai, use this to generate the user documentation. Maybe with notes attached to procedures or decalarations? It would be cool to generate context specific help windows using this information in comments/notes somehow, maybe a local variable matching some pattern get processed by a meta program?
-
+- [XXL] Think about a plugin system where you write bindings for c++ libraries and benefit from Jai introspection e.g., bind to C++ datastructures/algorithms, and auto generate UI for Jai versions of those for fast experimentation/UI generation
