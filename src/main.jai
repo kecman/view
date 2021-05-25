@@ -361,19 +361,19 @@ main :: () {
             }
         }
 
-        is_visible_opaque ::        (e : *Entity) -> bool { return e.display_info.visible && !e.display_info.flash_hovered && get_opacity(<<e) == 1.; }
-        is_visible_transparent ::   (e : *Entity) -> bool { return e.display_info.visible && !e.display_info.flash_hovered && get_opacity(<<e) != 1.; }
-        is_visible_flash_hovered :: (e : *Entity) -> bool { return e.display_info.visible &&  e.display_info.flash_hovered; }
+        is_visible_opaque ::      (e : *Entity) -> bool { return e.display_info.visible && !e.is_hovered && get_opacity(<<e) == 1.; }
+        is_visible_transparent :: (e : *Entity) -> bool { return e.display_info.visible && !e.is_hovered && get_opacity(<<e) != 1.; }
+        is_visible_hovered ::     (e : *Entity) -> bool { return e.display_info.visible &&  e.is_hovered; }
 
         visible_opaque ::      #bake_arguments entities_iterator(should_visit = is_visible_opaque);
         visible_transparent :: #bake_arguments entities_iterator(should_visit = is_visible_transparent);
-        visible_hovered ::     #bake_arguments entities_iterator(should_visit = is_visible_flash_hovered);
+        visible_hovered ::     #bake_arguments entities_iterator(should_visit = is_visible_hovered);
 
         for :visible_opaque      app.entities Render_Entity(it);
         for :visible_transparent app.entities Render_Entity(it);
 
         if app.user_selection.display_info.visible {
-            if app.user_selection.display_info.flash_hovered {
+            if app.user_selection.is_hovered {
                 glClear(GL_DEPTH_BUFFER_BIT);
             }
             Render_Entity(*app.user_selection);

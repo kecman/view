@@ -51,7 +51,6 @@ Display_Info :: struct {
     visible := true; // Separate to opacity so we can toggle transparent meshes
     visible_sweep_hovered := false;
 
-    flash_hovered := false;
     flash_wave_dt : float = 0.;
 
     wireframe := false;

@@ -73,7 +73,7 @@ init_keymap :: ()
     add_key(*app.keymap, close_application, "close application", xx #char "q", .{shift_pressed=true, control_pressed=true});
     add_key(*app.keymap, call_fit_on_screen, "fit on screen", xx #char "r");
     add_key(*app.keymap, reset_camera, "reset camera", xx #char "r", .{shift_pressed=true});
-    add_key(*app.keymap, reload_selected_entities, "reload selected items", xx Special_Key_Code.F5);
+    add_key(*app.keymap, reload_entities, "reload hovered or selected item(s)", xx Special_Key_Code.F5);
 
     add_key(*app.keymap, cycle_line_width, "cycle line width", xx #char "l");
     add_key(*app.keymap, cycle_point_size, "cycle point size", xx #char "p");
@@ -124,6 +124,16 @@ clear_labels                   :: () { using app.vertex_label_style; show_index 
 cycle_point_size               :: () { using app.vertex_label_style; if point_size == 0 point_size = 2; else if point_size == 2 point_size = 4; else point_size = 0; update_entities_using_default_vertex_label_style();}
 cycle_line_width               :: () { using app.vertex_label_style; if line_width == 1 line_width = 2; else if line_width == 2 line_width = 3; else line_width = 1; update_entities_using_default_vertex_label_style();}
 reset_camera                   :: () { init_camera(); }
+reload_entities                :: () {
+    num_reloaded := reload_selected_entities();
+    if num_reloaded == 0 {
+        for app.entities if get_mesh(it) && it.is_hovered {
+            entity := load_entity_from_file(it.fully_pathed_filename);
+            replace_entity(it, it_index, entity);
+            break; // There can be only hovered item so break
+        }
+    }
+}
 // debug_junk                     :: () { c:= app.camera; printv(#code c); }
 
 #scope_file

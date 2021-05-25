@@ -7,15 +7,25 @@ Don't screentone backfaces when wireframe mode (or transparency?) is on
 - Added a more joyful background shader enabled by default [ty [@LoganBarnes](https://github.com/LoganBarnes)]
   - Changed the default label color so it works well on both both white and grey backgrounds
   - Future work will hotload this shader and the provide inputs expected by Shadertoy
-  - The boring solid color option is still available in settings (press Shift-h to access)
-- Improved the colors generated from filenames
-- Improved the item list by swapping remove/clear buttons with visiblity checkbox
-- Added a screentone effect when rendering a backfacing triangle
-- Added a normal rendering with options to set color and length, toggle with a checkbox
+  - The boring solid color option is still available in settings (press Shift+h to access)
+- Added a screentone effect when rendering a backfacing triangle (press RMB item name to access)
+- Added normal rendering with options to set color and length in the item context menu
+- Added a new UI idiom in which bindings will affect the currently hovered unselected item, all selected items (Ctrl+LMB selects a item)
+  - ***** Added a binding to toggle normals (n) which using this idiom
+  - ***** Added a binding to toggle opacity (o) which uses this idiom
+  - Changed the binding for reloading items (F5) to follow this idiom
+  - ***** Changed the bindings for cycling point size (p) to follow this idiom
+  - ***** Changed the bindings for cycling line width (l) to follow this idiom
+  - ***** Changed the binding to popup the item context menu (RMB) to follow this idiom, also added more options to this context menu
+- ***** Added a binding to select/deselect all items (Ctrl+a)
+- ***** Added a binding to toggle/complement the current item selection (Alt+a)
 - Changed binding to set orbit position in user selection mode from Ctrl+MMB to Ctrl+RMB
 - Changed user selection queries to only compute when the result will be used rather than every frame
-- Changed position of item index to come just before the filename for a more stable item list UI
-- Changed default point size on startup to be zero, when point clouds are inferred they will have a point size of 2
+- Changed default point size on startup to be 0, when point clouds are inferred they will have a point size of 2
+- Improved the item list UI
+  - Improved the colors generated from filenames **** generated from the filenames only to match across machines, old behaviour is available in settings (Shift+h to access)
+  - Moved the item index to come just before the filename (makes the item list UI jump around less)
+  - Swapped the visiblity checkbox with the Remove/Clear buttons
 
 # Version: v0.0.6, 17 May 2021
 
@@ -23,7 +33,7 @@ Don't screentone backfaces when wireframe mode (or transparency?) is on
   - User selection is enabled if the "User selection" item is set to visible in the item list
   - Ctrl+LMB adds/removes the vertex closest to a ray shot under the cursor to the user selection
   - Vertex selection works using brute force search so only items with <= 10,000 vertices are searched by default
-  - The search limit is conservative and can be changed in the user selection context menu (access via RMB on "User selection" text)
+  - The search limit is conservative and can be changed in the user selection context menu (press RMB on "User selection" text to access)
   - If multiple vertices have the same distance from the ray one is arbitrarily chosen
   - Ctrl+MMB shifts the camera look/orbit position to the closest vertex while preserving the look direction
 - Added file load time to item context menu and added a visual fade to indicate a file load occurred
@@ -34,7 +44,7 @@ Don't screentone backfaces when wireframe mode (or transparency?) is on
 - Changed the hovered item to always render ignoring the depth buffer so that hovered items are easier to find
 - Changed item list to display only the filename rather than the fully pathed filename (which is still visible in the item context menu)
 - Changed reloading multiple items to preserve the selection, this makes reloading the same selection easier (a common use case)
-- Changed settings to be hidden by default (press Shift-h to toggle them, press h for help)
+- Changed settings to be hidden by default (press Shift+h to toggle them, press h for help)
 
 # Version: v0.0.5, 12 May 2021
 
@@ -58,7 +68,7 @@ Don't screentone backfaces when wireframe mode (or transparency?) is on
 - Added configurable behaviour for loading files with the same path, by default files are appended scene and display with an incremented generation index
 - Changed the item context menu to display the fully pathed filename, only the filename (and generation index) is shown in the items list
 - Changed the item context menu to display the axis aligned bounding box of an item
-- Changed the key-binding to close the application to Ctrl+Shift+Q, since it was easy to loose work by accidently pressing Esc
+- Changed the key-binding to close the application to Ctrl+Shift+q, since it was easy to loose work by accidently pressing Esc
 - Most settings/options mentioned above can be changed at runtime in a 'User settings' section (press h for help). Future work will persist user settings across sessions
 
 # Version: v0.0.3, 5 April 2021
@@ -70,7 +80,7 @@ Don't screentone backfaces when wireframe mode (or transparency?) is on
 - Added text label options (floating point format, text scale and colour) accessible via global settings menu (press h for help)
 - Added an option to increase the label rendering limit, a warning message is printed if this exceeds 2000 (text rendering is still super slow)
 - Changed the default to point size to 2 from 0 so visualising point clouds is more convenient
-- Changed shift+LMB to rotate about the currently selected camera rotation axis
+- Changed Shift+LMB to rotate about the currently selected camera rotation axis
 - Pressing F11 toggles between fullscreen and windowed modes
 
 # Version: v0.0.2, 28 March 2021

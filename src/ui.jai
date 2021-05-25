@@ -135,7 +135,7 @@ show_scene_ui :: ()
                 }
 
                 ImGui.PushStyleColor(xx ImGui.Col.Text, *color);
-                if ImGui.Selectable(to_c_string(text), *it.is_selected, size=*V2_ZERO) {
+                if ImGui.Selectable(to_c_string(join(text, tprint("##%", it))), *it.is_selected, size=*V2_ZERO) { // @Leak? free the join'd string?
                     if !io().KeyCtrl it.is_selected = !it.is_selected;
                 }
                 ImGui.PopStyleColor();
@@ -146,12 +146,11 @@ show_scene_ui :: ()
             if ImGui.IsItemClicked() {
                 if !io().KeyCtrl fit_on_screen(it);
             }
-            was_flash_hovered := it.display_info.flash_hovered;
+            was_hovered := it.is_hovered;
+            it.is_hovered = ImGui.IsItemHovered();
             if ImGui.IsItemHovered() {
-                it.display_info.flash_hovered = true;
                 it.display_info.flash_wave_dt += io().DeltaTime;
-            } else if was_flash_hovered {
-                it.display_info.flash_hovered = false;
+            } else if was_hovered {
                 it.display_info.flash_wave_dt = 0;
             }
 
@@ -284,12 +283,11 @@ show_scene_ui :: ()
         if ImGui.IsItemClicked() {
             fit_on_screen(it);
         }
-        was_flash_hovered := it.display_info.flash_hovered;
-        if ImGui.IsItemHovered() {
-            it.display_info.flash_hovered = true;
+        was_hovered := it.is_hovered;
+        it.is_hovered = ImGui.IsItemHovered();
+        if it.is_hovered {
             it.display_info.flash_wave_dt += io().DeltaTime;
-        } else if was_flash_hovered {
-            it.display_info.flash_hovered = false;
+        } else if was_hovered {
             it.display_info.flash_wave_dt = 0;
         }
 

@@ -13,7 +13,8 @@ Entity :: struct {
     mesh : Mesh;
 
     using_default_vertex_label_style : bool = true;
-    is_selected : bool;
+    is_selected := false;
+    is_hovered := false;
     fully_pathed_filename : string;
     loaded_filetime : u64;
     generation_index : int; // entities with the same fully pathed_filename will increment this
@@ -273,11 +274,15 @@ replace_entity :: (old : *Entity, old_index : s64, new : *Entity) {
     }
 }
 
-reload_selected_entities :: () {
+// Returns the number of reloaded entities
+reload_selected_entities :: () -> int {
+    count := 0;
     for app.entities if get_mesh(it) && it.is_selected {
         entity := load_entity_from_file(it.fully_pathed_filename);
         replace_entity(it, it_index, entity);
+        count += 1;
     }
+    return count;
 }
 
 test_load_entity_from_file :: () {
