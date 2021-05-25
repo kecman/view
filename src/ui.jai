@@ -296,45 +296,45 @@ show_scene_ui :: ()
         if ImGui.BeginPopupContextItem(imgui_label("##context_menu", it)) {
             defer ImGui.EndPopup();
 
-                ImGui.Text(to_c_string(tprint("#points = %", it.mesh.positions.count)));
+            ImGui.Text(to_c_string(tprint("#points = %", it.mesh.positions.count)));
 
-                maybe_update_render_info(*it.render_info, *it.mesh);
-                aabb := it.render_info.bounding_aabb;
-                ImGui.Text(to_c_string(tprint("AABB [%, %, %], [%, %, %]",
-                                              aabb.min_point.x, aabb.min_point.y, aabb.min_point.z,
-                                              aabb.max_point.x, aabb.max_point.y, aabb.max_point.z)));
+            maybe_update_render_info(*it.render_info, *it.mesh);
+            aabb := it.render_info.bounding_aabb;
+            ImGui.Text(to_c_string(tprint("AABB [%, %, %], [%, %, %]",
+                                          aabb.min_point.x, aabb.min_point.y, aabb.min_point.z,
+                                          aabb.max_point.x, aabb.max_point.y, aabb.max_point.z)));
 
-                ImGui.Separator();
+            ImGui.Separator();
 
-                // combo_box("", *it.display_info.display_mode, type_info(type_of(it.display_info.display_mode)));
-                // ImGui.SameLine();
-                // ImGui.PushItemWidth(70);
-                // ImGui.DragFloat(imgui_label("##Opacity", it), *it.display_info.color.w, v_speed=.005, v_min=0., v_max=1.);
-                // ImGui.PopItemWidth();
-                // Show_Tooltip("Opacity");
+            // combo_box("", *it.display_info.display_mode, type_info(type_of(it.display_info.display_mode)));
+            // ImGui.SameLine();
+            // ImGui.PushItemWidth(70);
+            // ImGui.DragFloat(imgui_label("##Opacity", it), *it.display_info.color.w, v_speed=.005, v_min=0., v_max=1.);
+            // ImGui.PopItemWidth();
+            // Show_Tooltip("Opacity");
 
-                vertex_label_style := *it.display_info.vertex_label_style;
+            vertex_label_style := *it.display_info.vertex_label_style;
 
-                ImGui.Checkbox("Position labels", *vertex_label_style.show_position);
-                ImGui.SameLine();
-                ImGui.ColorEdit4("Label color", *vertex_label_style.label_color.component, ImGui.ColorEditFlags.NoInputs);
-                point_size : s32 = xx vertex_label_style.point_size;
-                ImGui.InputInt("Point size", *point_size, 2);
-                vertex_label_style.point_size = xx clamp(point_size, 2, 6);
+            ImGui.Checkbox("Position labels", *vertex_label_style.show_position);
+            ImGui.SameLine();
+            ImGui.ColorEdit4("Label color", *vertex_label_style.label_color.component, ImGui.ColorEditFlags.NoInputs);
+            point_size : s32 = xx vertex_label_style.point_size;
+            ImGui.InputInt("Point size", *point_size, 2);
+            vertex_label_style.point_size = xx clamp(point_size, 2, 6);
 
-                trailing_width : s32 = xx vertex_label_style.format_float.trailing_width;
-                ImGui.InputInt("Float decimals", *trailing_width);
+            trailing_width : s32 = xx vertex_label_style.format_float.trailing_width;
+            ImGui.InputInt("Float decimals", *trailing_width);
 
 
-                vertex_label_style.format_float.trailing_width = clamp(trailing_width, 0, 12);
-                Show_Tooltip("Number of digits following the decimal point");
-                combo_box("Float format", *vertex_label_style.format_float.mode, type_info(FormatFloat.Mode));
-                ImGui.DragFloat("Label scale", *vertex_label_style.label_scale, .005, .2, 1., display_format="%.3f");
+            vertex_label_style.format_float.trailing_width = clamp(trailing_width, 0, 12);
+            Show_Tooltip("Number of digits following the decimal point");
+            combo_box("Float format", *vertex_label_style.format_float.mode, type_info(FormatFloat.Mode));
+            ImGui.DragFloat("Label scale", *vertex_label_style.label_scale, .005, .2, 1., display_format="%.3f");
 
-                ImGui.Checkbox("Dynamic closest vertex result at cursor", *app.user_selection_cursor_text_shown);
-                Show_Tooltip("Format is '#E,I {X,Y,Z}'\n X,Y,Z are the coordinates of the closest vertex\n E is entity index to which it belongs\n I is the vertex index within the entity");
-                ImGui.DragFloat("Cursor text scale", *app.user_selection_cursor_text_scale, .005, .2, 1., display_format="%.3f");
-                ImGui.InputInt("Max #points for selectable entities", xx *app.user_selection_max_point_count_for_selectable_entity);
+            ImGui.Checkbox("Dynamic closest vertex result at cursor", *app.user_selection_cursor_text_shown);
+            Show_Tooltip("Format is '#E,I {X,Y,Z}'\n X,Y,Z are the coordinates of the closest vertex\n E is entity index to which it belongs\n I is the vertex index within the entity");
+            ImGui.DragFloat("Cursor text scale", *app.user_selection_cursor_text_scale, .005, .2, 1., display_format="%.3f");
+            ImGui.InputInt("Max #points for selectable entities", xx *app.user_selection_max_point_count_for_selectable_entity);
         }
     }
 
