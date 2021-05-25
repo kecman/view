@@ -243,7 +243,7 @@ show_scene_ui :: ()
                     }
 
                     if ImGui.Button("Reload Selected Items", size=*V2_ZERO) {
-                        reload_selected_entities();
+                        reload_entities();
                         ImGui.CloseCurrentPopup();
                     }
 

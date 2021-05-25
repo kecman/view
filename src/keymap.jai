@@ -124,16 +124,6 @@ clear_labels                   :: () { using app.vertex_label_style; show_index 
 cycle_point_size               :: () { using app.vertex_label_style; if point_size == 0 point_size = 2; else if point_size == 2 point_size = 4; else point_size = 0; update_entities_using_default_vertex_label_style();}
 cycle_line_width               :: () { using app.vertex_label_style; if line_width == 1 line_width = 2; else if line_width == 2 line_width = 3; else line_width = 1; update_entities_using_default_vertex_label_style();}
 reset_camera                   :: () { init_camera(); }
-reload_entities                :: () {
-    num_reloaded := reload_selected_entities();
-    if num_reloaded == 0 {
-        for app.entities if get_mesh(it) && it.is_hovered {
-            entity := load_entity_from_file(it.fully_pathed_filename);
-            replace_entity(it, it_index, entity);
-            break; // There can be only hovered item so break
-        }
-    }
-}
 // debug_junk                     :: () { c:= app.camera; printv(#code c); }
 
 #scope_file

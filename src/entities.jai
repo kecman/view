@@ -274,15 +274,23 @@ replace_entity :: (old : *Entity, old_index : s64, new : *Entity) {
     }
 }
 
-// Returns the number of reloaded entities
-reload_selected_entities :: () -> int {
+// Reload the selected entities or the hovered entity if none are selected
+reload_entities :: () {
     count := 0;
     for app.entities if get_mesh(it) && it.is_selected {
         entity := load_entity_from_file(it.fully_pathed_filename);
         replace_entity(it, it_index, entity);
         count += 1;
     }
-    return count;
+
+    if count == 0 {
+        for app.entities if get_mesh(it) && it.is_hovered {
+            entity := load_entity_from_file(it.fully_pathed_filename);
+            replace_entity(it, it_index, entity);
+            count += 1;
+            break; // There can be only hovered item so break
+        }
+    }
 }
 
 test_load_entity_from_file :: () {
