@@ -270,7 +270,6 @@ reload_entities :: () {
             entity := load_entity_from_file(it.fully_pathed_filename);
             replace_entity(it, it_index, entity);
             count += 1;
-            break; // There can be only hovered item so break
         }
     }
 }

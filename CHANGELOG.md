@@ -1,6 +1,5 @@
-Fix camera orbit positioning zoom level when
-Fix selection to account for any applied shift
-Don't screentone backfaces when wireframe mode (or transparency?) is on
+***** Fix camera orbit positioning zoom level when
+***** Don't screentone backfaces when wireframe mode (or transparency?) is on
 
 # Version: v0.0.7, Unreleased
 
@@ -12,8 +11,8 @@ Don't screentone backfaces when wireframe mode (or transparency?) is on
 - Added normal rendering with options to set color and length in the item context menu
   - Normal rendering also works for oriented point clouds loaded from an obj file containing v, vn and p codes
 - Added a new UI idiom in which bindings will affect the currently hovered unselected item, all selected items (Ctrl+LMB selects a item)
-  - ***** Added a binding to toggle normals (n) which using this idiom
-  - ***** Added a binding to toggle opacity (o) which uses this idiom
+  - Added a binding to cycle normals visibility (n) using this idiom
+  - Added a binding to cycle opacity 20%/50%/100% (o) using this idiom
   - Changed the binding for reloading items (F5) to follow this idiom
   - ***** Changed the bindings for cycling point size (p) to follow this idiom
   - ***** Changed the bindings for cycling line width (l) to follow this idiom

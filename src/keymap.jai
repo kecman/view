@@ -75,8 +75,10 @@ init_keymap :: ()
     add_key(*app.keymap, reset_camera, "reset camera", xx #char "r", .{shift_pressed=true});
     add_key(*app.keymap, reload_entities, "reload hovered or selected item(s)", xx Special_Key_Code.F5);
     add_key(*app.keymap, select_or_deselect_all, "Select/deselect all items", xx #char "a", .{control_pressed=true});
-    add_key(*app.keymap, toggle_current_selection, "Select/deselect all items", xx #char "a", .{alt_pressed=true});
+    add_key(*app.keymap, toggle_current_selection, "Toggle/complement current item selection", xx #char "a", .{alt_pressed=true});
 
+    add_key(*app.keymap, cycle_opacity, "cycle opacity 20%/50%/100% for hovered/selected item(s)", xx #char "o");
+    add_key(*app.keymap, cycle_normals_visibility, "cycle normals visibility for hovered/selected item(s)", xx #char "n");
     add_key(*app.keymap, cycle_line_width, "cycle line width", xx #char "l");
     add_key(*app.keymap, cycle_point_size, "cycle point size", xx #char "p");
     add_key(*app.keymap, cycle_point_index_labels, "cycle point index labels", xx #char "p", .{shift_pressed=true});
@@ -131,3 +133,35 @@ select_or_deselect_all         :: () { if !app.entities.count return; mode := fa
 toggle_current_selection       :: () { for app.entities it.is_selected = !it.is_selected; }
 reset_camera                   :: () { init_camera(); }
 // debug_junk                     :: () { c:= app.camera; printv(#code c); }
+
+cycle_opacity :: () {
+    count := 0;
+    for app.entities if it.is_selected {
+        if      it.display_info.color.w == 1.  it.display_info.color.w = .5;
+        else if it.display_info.color.w == .5  it.display_info.color.w = .2;
+        else    it.display_info.color.w =  1.;
+        count += 1;
+    }
+
+    if count == 0 {
+        for app.entities if it.is_hovered {
+            if      it.display_info.color.w == 1.  it.display_info.color.w = .5;
+            else if it.display_info.color.w == .5  it.display_info.color.w = .2;
+            else    it.display_info.color.w =  1.;
+        }
+    }
+}
+
+cycle_normals_visibility :: () {
+    count := 0;
+    for app.entities if it.is_selected {
+        it.display_info.normals_visible = !it.display_info.normals_visible;
+        count += 1;
+    }
+
+    if count == 0 {
+        for app.entities if it.is_hovered {
+            it.display_info.normals_visible = !it.display_info.normals_visible;
+        }
+    }
+}
