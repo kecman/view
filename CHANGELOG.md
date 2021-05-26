@@ -27,6 +27,7 @@ Don't screentone backfaces when wireframe mode (or transparency?) is on
   - Improved the colors generated from filenames **** generated from the filenames only to match across machines, old behaviour is available in settings (Shift+h to access)
   - Moved the item index to come just before the filename (makes the item list UI jump around less)
   - Swapped the visiblity checkbox with the Remove/Clear buttons
+- Fixed a bug where user selection did not correctly account for transformed (shifted) items
 
 # Version: v0.0.6, 17 May 2021
 

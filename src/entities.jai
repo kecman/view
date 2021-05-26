@@ -248,7 +248,7 @@ find_closest_vertex_on_visible_entities :: () -> Closest_Vertex_On_Entity {
                         c, d2, t := distance_point3_ray3(p, ray);
                         if d2 < dist2 {
                             dist2 = d2;
-                            result.vertex_position = vertex;
+                            result.vertex_position = p;
                             result.vertex_index = vertex_index;
                             result.entity_index = entity_index;
                         }
