@@ -83,177 +83,173 @@ show_scene_ui :: ()
 
     entity_to_remove := -1;
     for entities {
-        mesh := get_mesh(it);
-        if mesh {
+        // Remove button
+        if ImGui.Button(imgui_label("Remove", it), size=*V2_ZERO) {
+            entity_to_remove = it_index;
+        }
 
-            // Remove button
-            if ImGui.Button(imgui_label("Remove", it), size=*V2_ZERO) {
-                entity_to_remove = it_index;
-            }
+        // Toggle visibility and set color
+        ImGui.SameLine();
+        visibility_toggled := checkbox_press_or_sweep_to_toggle(*it.display_info.visible, *it.display_info.visible_sweep_hovered, imgui_label("##Visible", it));
+        Show_Tooltip("Visible");
+        any_visibility_toggled = any_visibility_toggled || visibility_toggled;
+        ImGui.SameLine();
+        if it.display_info.display_mode == .NORMALS {
+            ImGui.TextDisabled("NR.");
+        } else {
+            ImGui.ColorEdit4(imgui_label("##color", it), *it.display_info.color.component, ImGui.ColorEditFlags.NoInputs);
+        }
+        if ImGui.IsItemClicked(1) {
+            cycle_display_mode(*it.display_info.display_mode);
+        }
 
-            // Toggle visibility and set color
+        // Entity index used to refer to geometry in console or annotate the text following ther cursor when adding to the user selection
+        if app.show_console_ui || app.user_selection.display_info.visible {
             ImGui.SameLine();
-            visibility_toggled := checkbox_press_or_sweep_to_toggle(*it.display_info.visible, *it.display_info.visible_sweep_hovered, imgui_label("##Visible", it));
-            Show_Tooltip("Visible");
-            any_visibility_toggled = any_visibility_toggled || visibility_toggled;
-            ImGui.SameLine();
-            if it.display_info.display_mode == .NORMALS {
-                ImGui.TextDisabled("NR.");
+            label := to_c_string(tprint("#%", it_index));
+            if it.mesh.positions.count <= app.user_selection_max_point_count_for_selectable_entity {
+                ImGui.Text(label);
+                Show_Tooltip("Entity index for console commands\nand user selection cursor labels");
             } else {
-                ImGui.ColorEdit4(imgui_label("##color", it), *it.display_info.color.component, ImGui.ColorEditFlags.NoInputs);
+                ImGui.TextDisabled(label);
+                Show_Tooltip("Entity index for console commands\nand user selection cursor labels\nIncrease max point count to select this entity");
             }
-            if ImGui.IsItemClicked(1) {
-                cycle_display_mode(*it.display_info.display_mode);
-            }
-
-            // Entity index used to refer to geometry in console or annotate the text following ther cursor when adding to the user selection
-            if app.show_console_ui || app.user_selection.display_info.visible {
-                ImGui.SameLine();
-                label := to_c_string(tprint("#%", it_index));
-                if mesh.positions.count <= app.user_selection_max_point_count_for_selectable_entity {
-                    ImGui.Text(label);
-                    Show_Tooltip("Entity index for console commands\nand user selection cursor labels");
-                } else {
-                    ImGui.TextDisabled(label);
-                    Show_Tooltip("Entity index for console commands\nand user selection cursor labels\nIncrease max point count to select this entity");
-                }
-                ImGui.SameLine();
-            }
-
-            // Write filename
             ImGui.SameLine();
-            if it.fully_pathed_filename.count {
-                text := entity_filename_with_generation_index(<<it);
+        }
+
+        // Write filename
+        ImGui.SameLine();
+        if it.fully_pathed_filename.count {
+            text := entity_filename_with_generation_index(<<it);
+
+            loaded_time_text := filetime_to_readable_date(it.loaded_filetime);
+            delta_time := get_current_file_time() - it.loaded_filetime;
+            FADE_TIME_SECS := 1;
+            color := Vector4.{1, 1, 1, 1};
+            if delta_time < xx (FADE_TIME_SECS * 10_000_000.) {
+                alpha := clamp(delta_time / (FADE_TIME_SECS * 10_000_000.), 0., 1.);
+                color = lerp(Vector4.{0, 1, 0, 1}, Vector4.{1, 1, 1, 1}, alpha);
+            }
+
+            ImGui.PushStyleColor(xx ImGui.Col.Text, *color);
+            if ImGui.Selectable(to_c_string(join(text, tprint("##%", it))), *it.is_selected, size=*V2_ZERO) { // @Leak? free the join'd string?
+                if !io().KeyCtrl it.is_selected = !it.is_selected;
+            }
+            ImGui.PopStyleColor();
+        } else {
+            ImGui.Selectable("---", *it.is_selected, size=*V2_ZERO);
+        }
+        Show_Tooltip("RMB: Show item/selection context menu\nLMB: Focus item\nCtrl+LMB: Select item");
+        if ImGui.IsItemClicked() {
+            if !io().KeyCtrl fit_on_screen(it);
+        }
+        was_hovered := it.is_hovered;
+        it.is_hovered = ImGui.IsItemHovered();
+        if ImGui.IsItemHovered() {
+            it.display_info.flash_wave_dt += io().DeltaTime;
+        } else if was_hovered {
+            it.display_info.flash_wave_dt = 0;
+        }
+
+        if ImGui.BeginPopupContextItem(imgui_label("##context_menu", xx it_index)) {
+            defer ImGui.EndPopup();
+
+            if !it.is_selected {
+                if it.fully_pathed_filename.count {
+
+                    text := entity_fully_pathed_filename_with_generation_index(<<it);
+                    ImGui.Text(text);
+                }
 
                 loaded_time_text := filetime_to_readable_date(it.loaded_filetime);
-                delta_time := get_current_file_time() - it.loaded_filetime;
-                FADE_TIME_SECS := 1;
-                color := Vector4.{1, 1, 1, 1};
-                if delta_time < xx (FADE_TIME_SECS * 10_000_000.) {
-                    alpha := clamp(delta_time / (FADE_TIME_SECS * 10_000_000.), 0., 1.);
-                    color = lerp(Vector4.{0, 1, 0, 1}, Vector4.{1, 1, 1, 1}, alpha);
+                ImGui.Text("% %", "Loaded at", loaded_time_text);
+                ImGui.SameLine();
+                if it.fully_pathed_filename.count && ImGui.SmallButton(imgui_label("Reload", it)) {
+                    entity := load_entity_from_file(it.fully_pathed_filename);
+                    replace_entity(it, it_index, entity);
                 }
 
-                ImGui.PushStyleColor(xx ImGui.Col.Text, *color);
-                if ImGui.Selectable(to_c_string(join(text, tprint("##%", it))), *it.is_selected, size=*V2_ZERO) { // @Leak? free the join'd string?
-                    if !io().KeyCtrl it.is_selected = !it.is_selected;
+                if it.type == {
+                    case .POLYLINE_SOUP2;
+
+                        using soup := cast(*Polyline_Soup2_Entity)it;
+                        ImGui.Text(to_c_string(tprint("#points, #polylines = %, %", point_count(shape), shape.polylines.count)));
+
+                    case .POLYLINE_SOUP3;
+
+                        using soup := cast(*Polyline_Soup3_Entity)it;
+                        ImGui.Text(to_c_string(tprint("#points, #polylines = %, %", point_count(shape), shape.polylines.count)));
+
+                    case .POLYGON_SOUP;
+
+                        using soup := cast(*Polygon_Soup_Entity)it;
+                        ImGui.Text(to_c_string(tprint("#points, #polygons = %, %", point_count(shape), shape.polygons.count)));
+
+                    case .MESH;
+
+                        mesh := cast(*Mesh_Entity)it;
+                        ImGui.Text(to_c_string(tprint("#points, #triangles = %, %", mesh.mesh.positions.count, mesh.mesh.indices.count / 3)));
                 }
-                ImGui.PopStyleColor();
+
+                maybe_update_render_info(*it.render_info, *it.mesh);
+                aabb := it.render_info.bounding_aabb;
+                ImGui.Text(to_c_string(tprint("AABB [%, %, %], [%, %, %]",
+                                              aabb.min_point.x, aabb.min_point.y, aabb.min_point.z,
+                                              aabb.max_point.x, aabb.max_point.y, aabb.max_point.z)));
+
+                ImGui.Separator();
+
+                ImGui.PushItemWidth(120);
+                combo_box("", *it.display_info.display_mode, type_info(type_of(it.display_info.display_mode)));
+                ImGui.PopItemWidth();
+                ImGui.SameLine();
+                ImGui.PushItemWidth(70);
+                ImGui.DragFloat(imgui_label("##Opacity", it), *it.display_info.color.w, v_speed=.005, v_min=0., v_max=1.);
+                ImGui.PopItemWidth();
+                Show_Tooltip("Opacity");
+
+                // @Cleanup Does this UI really need to change based on type?
+                if it.type == .MESH || it.type == .POLYGON_SOUP {
+                    ImGui.Checkbox(imgui_label("Wireframe   ", it), *it.display_info.wireframe);
+
+                    ImGui.Checkbox(imgui_label("##normals_visible", it), *it.display_info.normals_visible);
+                    ImGui.SameLine();
+                    ImGui.ColorEdit4(imgui_label("##normals_color", it), *it.display_info.normals_color.component, ImGui.ColorEditFlags.NoInputs);
+                    ImGui.SameLine();
+                    ImGui.PushItemWidth(70);
+                    ImGui.DragFloat(imgui_label("##normals_length", it), *it.display_info.normals_length, .05);
+                    ImGui.PopItemWidth();
+                    ImGui.SameLine();
+                    ImGui.Text("Normals Visible|Color|Length");
+
+                    // @Incomplete: Add AABB visiblity and color
+                }
+
+                ImGui.Separator();
+                shift := make_vector3(it.mesh.world_from_model._14, it.mesh.world_from_model._24, it.mesh.world_from_model._34);
+                // ImGui.PushItemWidth(-1);
+                ImGui.DragFloat3(imgui_label("Shift", it), *shift.component, .05);
+                // ImGui.PopItemWidth();
+                it.mesh.world_from_model._14, it.mesh.world_from_model._24, it.mesh.world_from_model._34 = shift.x, shift.y, shift.z;
             } else {
-                ImGui.Selectable("---", *it.is_selected, size=*V2_ZERO);
-            }
-            Show_Tooltip("RMB: Show item/selection context menu\nLMB: Focus item\nCtrl+LMB: Select item");
-            if ImGui.IsItemClicked() {
-                if !io().KeyCtrl fit_on_screen(it);
-            }
-            was_hovered := it.is_hovered;
-            it.is_hovered = ImGui.IsItemHovered();
-            if ImGui.IsItemHovered() {
-                it.display_info.flash_wave_dt += io().DeltaTime;
-            } else if was_hovered {
-                it.display_info.flash_wave_dt = 0;
-            }
-
-            if ImGui.BeginPopupContextItem(imgui_label("##context_menu", xx it_index)) {
-                defer ImGui.EndPopup();
-
-                if !it.is_selected {
+                for app.entities if it.is_selected {
                     if it.fully_pathed_filename.count {
-
                         text := entity_fully_pathed_filename_with_generation_index(<<it);
                         ImGui.Text(text);
                     }
+                }
 
-                    loaded_time_text := filetime_to_readable_date(it.loaded_filetime);
-                    ImGui.Text("% %", "Loaded at", loaded_time_text);
-                    ImGui.SameLine();
-                    if it.fully_pathed_filename.count && ImGui.SmallButton(imgui_label("Reload", it)) {
-                        entity := load_entity_from_file(it.fully_pathed_filename);
-                        replace_entity(it, it_index, entity);
+                if ImGui.Button("Reload Selected Items", size=*V2_ZERO) {
+                    reload_entities();
+                    ImGui.CloseCurrentPopup();
+                }
+
+                ImGui.SameLine();
+                if ImGui.Button("Clear Selection", size=*V2_ZERO) {
+                    for app.entities if it.is_selected {
+                        it.is_selected = false;
                     }
-
-                    if it.type == {
-                        case .POLYLINE_SOUP2;
-
-                            using soup := cast(*Polyline_Soup2_Entity)it;
-                            ImGui.Text(to_c_string(tprint("#points, #polylines = %, %", point_count(shape), shape.polylines.count)));
-
-                        case .POLYLINE_SOUP3;
-
-                            using soup := cast(*Polyline_Soup3_Entity)it;
-                            ImGui.Text(to_c_string(tprint("#points, #polylines = %, %", point_count(shape), shape.polylines.count)));
-
-                        case .POLYGON_SOUP;
-
-                            using soup := cast(*Polygon_Soup_Entity)it;
-                            ImGui.Text(to_c_string(tprint("#points, #polygons = %, %", point_count(shape), shape.polygons.count)));
-
-                        case .MESH;
-
-                            mesh := cast(*Mesh_Entity)it;
-                            ImGui.Text(to_c_string(tprint("#points, #triangles = %, %", mesh.mesh.positions.count, mesh.mesh.indices.count / 3)));
-                    }
-
-                    maybe_update_render_info(*it.render_info, *it.mesh);
-                    aabb := it.render_info.bounding_aabb;
-                    ImGui.Text(to_c_string(tprint("AABB [%, %, %], [%, %, %]",
-                                                  aabb.min_point.x, aabb.min_point.y, aabb.min_point.z,
-                                                  aabb.max_point.x, aabb.max_point.y, aabb.max_point.z)));
-
-                    ImGui.Separator();
-
-                    ImGui.PushItemWidth(120);
-                    combo_box("", *it.display_info.display_mode, type_info(type_of(it.display_info.display_mode)));
-                    ImGui.PopItemWidth();
-                    ImGui.SameLine();
-                    ImGui.PushItemWidth(70);
-                    ImGui.DragFloat(imgui_label("##Opacity", it), *it.display_info.color.w, v_speed=.005, v_min=0., v_max=1.);
-                    ImGui.PopItemWidth();
-                    Show_Tooltip("Opacity");
-
-                    // @Cleanup Does this UI really need to change based on type?
-                    if it.type == .MESH || it.type == .POLYGON_SOUP {
-                        ImGui.Checkbox(imgui_label("Wireframe   ", it), *it.display_info.wireframe);
-
-                        ImGui.Checkbox(imgui_label("##normals_visible", it), *it.display_info.normals_visible);
-                        ImGui.SameLine();
-                        ImGui.ColorEdit4(imgui_label("##normals_color", it), *it.display_info.normals_color.component, ImGui.ColorEditFlags.NoInputs);
-                        ImGui.SameLine();
-                        ImGui.PushItemWidth(70);
-                        ImGui.DragFloat(imgui_label("##normals_length", it), *it.display_info.normals_length, .05);
-                        ImGui.PopItemWidth();
-                        ImGui.SameLine();
-                        ImGui.Text("Normals Visible|Color|Length");
-
-                        // @Incomplete: Add AABB visiblity and color
-                    }
-
-                    ImGui.Separator();
-                    shift := make_vector3(mesh.world_from_model._14, mesh.world_from_model._24, mesh.world_from_model._34);
-                    // ImGui.PushItemWidth(-1);
-                    ImGui.DragFloat3(imgui_label("Shift", it), *shift.component, .05);
-                    // ImGui.PopItemWidth();
-                    mesh.world_from_model._14, mesh.world_from_model._24, mesh.world_from_model._34 = shift.x, shift.y, shift.z;
-                } else {
-                    for app.entities if get_mesh(it) && it.is_selected {
-                        if it.fully_pathed_filename.count {
-                            text := entity_fully_pathed_filename_with_generation_index(<<it);
-                            ImGui.Text(text);
-                        }
-                    }
-
-                    if ImGui.Button("Reload Selected Items", size=*V2_ZERO) {
-                        reload_entities();
-                        ImGui.CloseCurrentPopup();
-                    }
-
-                    ImGui.SameLine();
-                    if ImGui.Button("Clear Selection", size=*V2_ZERO) {
-                        for app.entities if get_mesh(it) && it.is_selected {
-                            it.is_selected = false;
-                        }
-                        ImGui.CloseCurrentPopup();
-                    }
+                    ImGui.CloseCurrentPopup();
                 }
             }
         }

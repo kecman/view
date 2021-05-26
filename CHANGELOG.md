@@ -22,12 +22,14 @@ Don't screentone backfaces when wireframe mode (or transparency?) is on
 - Added a binding to toggle/complement the current item selection (Alt+a)
 - Changed binding to set orbit position in user selection mode from Ctrl+MMB to Ctrl+RMB
 - Changed user selection queries to only compute when the result will be used rather than every frame
+- Fixed a bug where user selection did not correctly account for transformed (shifted) items
+- Fixed a bug where user selection was not considered when the scene view is resized causing it to be clipped sometimes for transformed (shifted) items
+- Fixed a bug where reloading an item failed to preserve the world from model transform
 - Changed default point size on startup to be 0, when point clouds are inferred they will have a point size of 2
 - Improved the item list UI
   - Improved the colors generated from filenames **** generated from the filenames only to match across machines, old behaviour is available in settings (Shift+h to access)
   - Moved the item index to come just before the filename (makes the item list UI jump around less)
   - Swapped the visiblity checkbox with the Remove/Clear buttons
-- Fixed a bug where user selection did not correctly account for transformed (shifted) items
 
 # Version: v0.0.6, 17 May 2021
 

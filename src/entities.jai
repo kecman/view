@@ -85,22 +85,6 @@ deinit :: (base : *Entity)
     free(base.fully_pathed_filename);
 }
 
-get_mesh :: (base : *Entity) -> *Mesh {
-    if #complete base.type == {
-        case .UNKNOWN;
-            // do nothing
-
-        case .POLYLINE_SOUP2; #through;
-        case .POLYLINE_SOUP3; #through;
-        case .POLYGON_SOUP;   #through;
-        case .MESH;
-
-            return *base.mesh;
-    }
-
-    return null;
-}
-
 entity_filename_with_generation_index :: (using entity : Entity) -> string {
     text : string;
 
@@ -240,18 +224,15 @@ find_closest_vertex_on_visible_entities :: () -> Closest_Vertex_On_Entity {
     dist2 := FLOAT32_INFINITY;
     for entity, entity_index : app.entities {
         if entity.display_info.visible {
-            mesh := get_mesh(entity);
-            if mesh {
-                if mesh.positions.count <= app.user_selection_max_point_count_for_selectable_entity {
-                    for vertex, vertex_index : mesh.positions {
-                        p := (mesh.world_from_model * make_vector4(vertex, 1.)).xyz;
-                        c, d2, t := distance_point3_ray3(p, ray);
-                        if d2 < dist2 {
-                            dist2 = d2;
-                            result.vertex_position = p;
-                            result.vertex_index = vertex_index;
-                            result.entity_index = entity_index;
-                        }
+            if entity.mesh.positions.count <= app.user_selection_max_point_count_for_selectable_entity {
+                for vertex, vertex_index : entity.mesh.positions {
+                    p := (entity.mesh.world_from_model * make_vector4(vertex, 1.)).xyz;
+                    c, d2, t := distance_point3_ray3(p, ray);
+                    if d2 < dist2 {
+                        dist2 = d2;
+                        result.vertex_position = p;
+                        result.vertex_index = vertex_index;
+                        result.entity_index = entity_index;
                     }
                 }
             }
@@ -267,6 +248,7 @@ replace_entity :: (old : *Entity, old_index : s64, new : *Entity) {
         new.display_info = old.display_info;
         new.generation_index = old.generation_index;
         new.is_selected = old.is_selected;
+        new.mesh.world_from_model = old.mesh.world_from_model;
 
         deinit(old);
 
@@ -277,14 +259,14 @@ replace_entity :: (old : *Entity, old_index : s64, new : *Entity) {
 // Reload the selected entities or the hovered entity if none are selected
 reload_entities :: () {
     count := 0;
-    for app.entities if get_mesh(it) && it.is_selected {
+    for app.entities if it.is_selected {
         entity := load_entity_from_file(it.fully_pathed_filename);
         replace_entity(it, it_index, entity);
         count += 1;
     }
 
     if count == 0 {
-        for app.entities if get_mesh(it) && it.is_hovered {
+        for app.entities if it.is_hovered {
             entity := load_entity_from_file(it.fully_pathed_filename);
             replace_entity(it, it_index, entity);
             count += 1;

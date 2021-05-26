@@ -391,16 +391,24 @@ visible_entities_bounding_sphere_fast :: () -> Sphere
     result : Sphere;
     first_entity := true;
 
-    for :visible app.entities {
-        maybe_update_render_info(*it.render_info, *it.mesh);
-        sphere := it.render_info.bounding_sphere;
-        transform(*sphere, it.mesh.world_from_model);
+    Expand_Sphere :: (mesh : *Mesh, info : *Render_Info) #expand {
+        maybe_update_render_info(info, mesh);
+        sphere := info.bounding_sphere;
+        transform(*sphere, mesh.world_from_model);
         if first_entity {
-            result = sphere;
-            first_entity = false;
+            `result = sphere;
+            `first_entity = false;
         } else {
-            expand(*result, sphere);
+            expand(*`result, sphere);
         }
+    }
+
+    for :visible app.entities {
+        Expand_Sphere(*it.mesh, *it.render_info);
+    }
+
+    if app.user_selection.display_info.visible {
+        Expand_Sphere(*app.user_selection.mesh, *app.user_selection.render_info);
     }
 
     return result;
@@ -411,15 +419,21 @@ visible_entities_bounding_sphere_accurate :: () -> Sphere
 {
     // Compute the bounding sphere the points in the scene
     points_vs : [..]Point3;
-    for :visible app.entities {
-        mesh := get_mesh(it);
-        if mesh {
-            for * mesh.positions {
-                p := (mesh.world_from_model * make_vector4(<<it, 1.)).xyz;
-                array_add(*points_vs, p);
-            }
+    for :visible entity : app.entities {
+        for * entity.mesh.positions {
+            p := (entity.mesh.world_from_model * make_vector4(<<it, 1.)).xyz;
+            array_add(*points_vs, p);
         }
     }
+
+    if app.user_selection.display_info.visible {
+        mesh := *app.user_selection.mesh;
+        for * mesh.positions {
+            p := (mesh.world_from_model * make_vector4(<<it, 1.)).xyz;
+            array_add(*points_vs, p);
+        }
+    }
+
     result := bounding_sphere_ritter(points_vs);
 
     return result;
