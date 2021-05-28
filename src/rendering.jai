@@ -43,21 +43,21 @@ Display_Info :: struct {
 
     flash_wave_dt : float = 0.;
 
+    point_size : s32 = 0;
+    vertex_label_style : Vertex_Label_Style;
+
     wireframe_visible := false;
-    wireframe_color := Vector4.{1., 1., 1., 1.}; // RGBA // nocommit use
+    wireframe_color := Vector4.{0., 0., 0., 1.}; // RGBA // nocommit use
+    line_width : s32 = 1; // @Cleanup wireframe_width?
 
     surface_visible := true; // Separate to opacity so we can toggle transparent normals nocommit use
     surface_color : Vector4 = .{1., 1., 1., 1.}; // RGBA
+
     display_mode := Display_Mode.BLINN_PHONG;
 
     normals_visible := false; // Separate to opacity so we can toggle transparent normals
     normals_color : Vector4 = .{0., 0., .8, 1.}; // RGBA
     normals_length : float = 1.;
-
-    point_size : s32 = 0; // 0, 2, 4, 6
-    line_width : s32 = 1; // 1, 1, 2, 3
-
-    vertex_label_style : Vertex_Label_Style;
 }
 
 maybe_update_render_info :: (info : *Render_Info, mesh : *Mesh) {
@@ -162,7 +162,17 @@ render_normals :: (mesh : *Mesh, using render_info : *Render_Info, using display
     glDrawArrays(GL_POINTS, 0, xx mesh.positions.count);
 }
 
-render_mesh :: (mesh : *Mesh, using render_info : *Render_Info, using display_info : Display_Info, flash_dt : float = 0) {
+Polygon_Mode :: enum {
+    LINE;
+    FILL;
+}
+
+render_mesh :: (mesh : *Mesh, using render_info : *Render_Info, using display_info : Display_Info, mode : Polygon_Mode = .FILL, flash_dt : float = 0) {
+
+    if #complete mode == {
+        case .FILL; if !surface_visible return;
+        case .LINE; if !wireframe_visible return;
+    }
 
     if render_info.is_dirty {
         maybe_update_render_info(render_info, mesh);
@@ -200,8 +210,10 @@ render_mesh :: (mesh : *Mesh, using render_info : *Render_Info, using display_in
 
     {
         loc := glGetUniformLocation(app.mesh_program, "color");
-        // nocommit use wireframe color here, too
-        glUniform4f(loc, surface_color.x, surface_color.y, surface_color.z, surface_color.w);
+        if #complete mode == {
+            case .FILL; glUniform4f(loc, surface_color.x, surface_color.y, surface_color.z, surface_color.w);
+            case .LINE; glUniform4f(loc, wireframe_color.x, wireframe_color.y, wireframe_color.z, wireframe_color.w);
+        }
     }
 
     {
@@ -244,10 +256,9 @@ render_mesh :: (mesh : *Mesh, using render_info : *Render_Info, using display_in
     glGetIntegerv(GL_POLYGON_MODE, xx last_polygon_mode.data);
     defer glPolygonMode(GL_FRONT_AND_BACK, last_polygon_mode[0]);
 
-    if wireframe_visible {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    } else {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    if #complete mode == {
+        case .LINE; glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        case .FILL; glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
 
     glEnable(GL_BLEND);

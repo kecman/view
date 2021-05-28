@@ -222,8 +222,8 @@ show_scene_ui :: ()
                     if set.vertex_label_style_is_set.label_color   vertex_label_style.label_color   = other.vertex_label_style.label_color;
 
                     if set.wireframe_visible     wireframe_visible = other.wireframe_visible;
-                    // if set.wireframe_color       wireframe_color = other.wireframe_color; // nocommit
-                    // if set.surface_visible       surface_visible = other.surface_visible; // nocommit
+                    if set.wireframe_color       wireframe_color = other.wireframe_color;
+                    if set.surface_visible       surface_visible = other.surface_visible;
                     if set.surface_color         surface_color = other.surface_color;
                     if set.surface_color_reset   surface_color = color_from_path(it.fully_pathed_filename);
                     if set.surface_color_opacity surface_color.w = other.surface_color.w;
@@ -487,6 +487,7 @@ Display_Info_Is_Set :: struct {
     // flash_wave_dt : bool;
     wireframe_visible : bool;
     wireframe_color : bool;
+    surface_visible : bool;
     surface_color : bool;
     display_mode : bool;
     normals_visible : bool;
@@ -533,9 +534,8 @@ display_info_ui :: (display_info : *Display_Info) -> Display_Info_Is_Set {
         ImGui.SameLine();
         ImGui.Text("Wireframe Visible|Color");
 
-        // nocommit
-        // set.visible = ImGui.Checkbox(imgui_label("##surface_visible", display_info), *display_info.visible);
-        // ImGui.SameLine();
+        set.surface_visible = ImGui.Checkbox(imgui_label("##surface_visible", display_info), *display_info.surface_visible);
+        ImGui.SameLine();
         set.surface_color = ImGui.ColorEdit4(imgui_label("##surface_color", display_info), *display_info.surface_color.component, ImGui.ColorEditFlags.NoInputs);
         ImGui.SameLine();
         ImGui.Text("Surface   Visible|Color");
