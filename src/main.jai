@@ -361,8 +361,8 @@ main :: () {
             }
         }
 
-        is_visible_opaque ::      (e : *Entity) -> bool { return e.is_visible && !e.is_hovered && get_opacity(<<e) == 1.; }
-        is_visible_transparent :: (e : *Entity) -> bool { return e.is_visible && !e.is_hovered && get_opacity(<<e) != 1.; }
+        is_visible_opaque ::      (e : *Entity) -> bool { return e.is_visible && !e.is_hovered && e.display_info.surface_color.w == 1.; }
+        is_visible_transparent :: (e : *Entity) -> bool { return e.is_visible && !e.is_hovered && e.display_info.surface_color.w != 1.; }
         is_visible_hovered ::     (e : *Entity) -> bool { return e.is_visible &&  e.is_hovered; }
 
         visible_opaque ::      #bake_arguments entities_iterator(should_visit = is_visible_opaque);
@@ -467,7 +467,7 @@ main :: () {
 
                     if use_result_for_rendering_cursor_text {
                         text := tprint("#%,%: %", closest.entity_index, closest.vertex_index, closest.vertex_position);
-                        debug_text_at_cursor(text, app.user_selection_cursor_text_scale, app.user_selection.display_info.color);
+                        debug_text_at_cursor(text, app.user_selection_cursor_text_scale, app.user_selection.display_info.surface_color);
                     }
                 }
             }

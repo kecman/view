@@ -45,7 +45,7 @@ app : struct {
     // Set the defaults for the user selection display
     user_selection.is_visible = false;
     user_selection.display_info.point_size = 6;
-    user_selection.display_info.color = .{1, 0, .8, 1}; // Used for the dynamic label text too
+    user_selection.display_info.surface_color = .{1, 0, .8, 1}; // Used for the dynamic label text too
     user_selection.display_info.vertex_label_style.show_position = true;
     user_selection.display_info.vertex_label_style.label_color = .{0, 0, 0, 1};
 

@@ -73,13 +73,13 @@ show_scene_ui :: ()
         if it.display_info.display_mode == .NORMALS {
             ImGui.TextDisabled("NR.");
         } else {
-            ImGui.ColorEdit4(imgui_label("##color", it), *it.display_info.color.component, ImGui.ColorEditFlags.NoInputs);
+            ImGui.ColorEdit4(imgui_label("##color", it), *it.display_info.surface_color.component, ImGui.ColorEditFlags.NoInputs);
         }
         if ImGui.IsItemClicked(1) {
             cycle_display_mode(*it.display_info.display_mode);
         } else if ImGui.IsItemClicked(2) {
             if it.display_info.display_mode != .NORMALS {
-                it.display_info.color = color_from_path(it.fully_pathed_filename);
+                it.display_info.surface_color = color_from_path(it.fully_pathed_filename);
             }
         }
 
@@ -180,7 +180,7 @@ show_scene_ui :: ()
                 ImGui.Separator();
 
                 set := display_info_ui(*it.display_info);
-                if set.color_reset it.display_info.color = color_from_path(it.fully_pathed_filename);
+                if set.surface_color_reset it.display_info.surface_color = color_from_path(it.fully_pathed_filename);
 
                 ImGui.Separator();
                 shift := make_vector3(it.mesh.world_from_model._14, it.mesh.world_from_model._24, it.mesh.world_from_model._34);
@@ -221,17 +221,18 @@ show_scene_ui :: ()
                     if set.vertex_label_style_is_set.label_scale   vertex_label_style.label_scale   = other.vertex_label_style.label_scale;
                     if set.vertex_label_style_is_set.label_color   vertex_label_style.label_color   = other.vertex_label_style.label_color;
 
-                    // if set.is_visible        is_visible = other.is_visible; // nocommit
-                    if set.wireframe_visible wireframe_visible = other.wireframe_visible;
-                    if set.color             color = other.color;
-                    if set.color_reset       color = color_from_path(it.fully_pathed_filename);
-                    if set.color_opacity     color.w = other.color.w;
-                    if set.display_mode      display_mode = other.display_mode;
-                    if set.normals_visible   normals_visible = other.normals_visible;
-                    if set.normals_color     normals_color = other.normals_color;
-                    if set.normals_length    normals_length = other.normals_length;
-                    if set.point_size        point_size = other.point_size;
-                    if set.line_width        line_width = other.line_width;
+                    if set.wireframe_visible     wireframe_visible = other.wireframe_visible;
+                    // if set.wireframe_color       wireframe_color = other.wireframe_color; // nocommit
+                    // if set.surface_visible       surface_visible = other.surface_visible; // nocommit
+                    if set.surface_color         surface_color = other.surface_color;
+                    if set.surface_color_reset   surface_color = color_from_path(it.fully_pathed_filename);
+                    if set.surface_color_opacity surface_color.w = other.surface_color.w;
+                    if set.display_mode          display_mode = other.display_mode;
+                    if set.normals_visible       normals_visible = other.normals_visible;
+                    if set.normals_color         normals_color = other.normals_color;
+                    if set.normals_length        normals_length = other.normals_length;
+                    if set.point_size            point_size = other.point_size;
+                    if set.line_width            line_width = other.line_width;
                 }
             }
         }
@@ -253,7 +254,7 @@ show_scene_ui :: ()
         Show_Tooltip("User Selection Visible");
         any_visibility_toggled = any_visibility_toggled || visibility_toggled;
         ImGui.SameLine();
-        ImGui.ColorEdit4(imgui_label("##color", it), *it.display_info.color.component, ImGui.ColorEditFlags.NoInputs);
+        ImGui.ColorEdit4(imgui_label("##color", it), *it.display_info.surface_color.component, ImGui.ColorEditFlags.NoInputs);
 
         ImGui.SameLine();
         ImGui.Text("User selection");
@@ -485,8 +486,8 @@ Display_Info_Is_Set :: struct {
     // visible_sweep_hovered : bool;
     // flash_wave_dt : bool;
     wireframe_visible : bool;
-    // wireframe_color : bool;
-    color : bool;
+    wireframe_color : bool;
+    surface_color : bool;
     display_mode : bool;
     normals_visible : bool;
     normals_color : bool;
@@ -496,8 +497,8 @@ Display_Info_Is_Set :: struct {
 
     vertex_label_style_is_set : Vertex_Label_Style_Is_Set;
 
-    color_reset : bool; // Not a member of Display_Info
-    color_opacity : bool; // Not a member of Display_Info
+    surface_color_reset : bool; // Not a member of Display_Info
+    surface_color_opacity : bool; // Not a member of Display_Info
 }
 
 display_info_ui :: (display_info : *Display_Info) -> Display_Info_Is_Set {
@@ -509,7 +510,7 @@ display_info_ui :: (display_info : *Display_Info) -> Display_Info_Is_Set {
     ImGui.PopItemWidth();
     ImGui.SameLine();
     ImGui.PushItemWidth(70);
-    set.color_opacity = ImGui.DragFloat(imgui_label("##Opacity", display_info), *display_info.color.w, v_speed=.005, v_min=0., v_max=1.);
+    set.surface_color_opacity = ImGui.DragFloat(imgui_label("##Opacity", display_info), *display_info.surface_color.w, v_speed=.005, v_min=0., v_max=1.);
     ImGui.PopItemWidth();
     Show_Tooltip("Opacity");
 
@@ -528,20 +529,18 @@ display_info_ui :: (display_info : *Display_Info) -> Display_Info_Is_Set {
 
         set.wireframe_visible = ImGui.Checkbox(imgui_label("##wireframe_visible", display_info), *display_info.wireframe_visible);
         ImGui.SameLine();
-        // @FIXME @Incomplete wireframe_color
-        // nocommit
-        set.color = ImGui.ColorEdit4(imgui_label("##wireframe_color", display_info), *display_info.color.component, ImGui.ColorEditFlags.NoInputs);
+        set.wireframe_color = ImGui.ColorEdit4(imgui_label("##wireframe_color", display_info), *display_info.wireframe_color.component, ImGui.ColorEditFlags.NoInputs);
         ImGui.SameLine();
         ImGui.Text("Wireframe Visible|Color");
 
         // nocommit
         // set.visible = ImGui.Checkbox(imgui_label("##surface_visible", display_info), *display_info.visible);
         // ImGui.SameLine();
-        set.color = ImGui.ColorEdit4(imgui_label("##surface_color", display_info), *display_info.color.component, ImGui.ColorEditFlags.NoInputs);
+        set.surface_color = ImGui.ColorEdit4(imgui_label("##surface_color", display_info), *display_info.surface_color.component, ImGui.ColorEditFlags.NoInputs);
         ImGui.SameLine();
         ImGui.Text("Surface   Visible|Color");
         ImGui.SameLine();
-        set.color_reset = ImGui.Button(imgui_label("Color by filename##surface_color_reset", display_info), size=*V2_ZERO);
+        set.surface_color_reset = ImGui.Button(imgui_label("Color by filename##surface_color_reset", display_info), size=*V2_ZERO);
 
         ImGui.PushItemWidth(120);
         set.point_size = ImGui.InputInt("Point size", *display_info.point_size);

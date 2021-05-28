@@ -199,17 +199,17 @@ reset_camera :: () { init_camera(); }
 cycle_opacity :: () {
     count := 0;
     for app.entities if it.is_selected {
-        if      it.display_info.color.w == 1.  it.display_info.color.w = .5;
-        else if it.display_info.color.w == .5  it.display_info.color.w = .2;
-        else    it.display_info.color.w =  1.;
+        if      it.display_info.surface_color.w == 1.  it.display_info.surface_color.w = .5;
+        else if it.display_info.surface_color.w == .5  it.display_info.surface_color.w = .2;
+        else    it.display_info.surface_color.w =  1.;
         count += 1;
     }
 
     if count == 0 {
         for app.entities if it.is_hovered {
-            if      it.display_info.color.w == 1.  it.display_info.color.w = .5;
-            else if it.display_info.color.w == .5  it.display_info.color.w = .2;
-            else    it.display_info.color.w =  1.;
+            if      it.display_info.surface_color.w == 1.  it.display_info.surface_color.w = .5;
+            else if it.display_info.surface_color.w == .5  it.display_info.surface_color.w = .2;
+            else    it.display_info.surface_color.w =  1.;
         }
     }
 }

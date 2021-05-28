@@ -44,7 +44,10 @@ Display_Info :: struct {
     flash_wave_dt : float = 0.;
 
     wireframe_visible := false;
-    color : Vector4 = .{1., 1., 1., 1.}; // RGBA
+    wireframe_color := Vector4.{1., 1., 1., 1.}; // RGBA // nocommit use
+
+    surface_visible := true; // Separate to opacity so we can toggle transparent normals nocommit use
+    surface_color : Vector4 = .{1., 1., 1., 1.}; // RGBA
     display_mode := Display_Mode.BLINN_PHONG;
 
     normals_visible := false; // Separate to opacity so we can toggle transparent normals
@@ -197,7 +200,8 @@ render_mesh :: (mesh : *Mesh, using render_info : *Render_Info, using display_in
 
     {
         loc := glGetUniformLocation(app.mesh_program, "color");
-        glUniform4f(loc, color.x, color.y, color.z, color.w);
+        // nocommit use wireframe color here, too
+        glUniform4f(loc, surface_color.x, surface_color.y, surface_color.z, surface_color.w);
     }
 
     {
@@ -381,7 +385,7 @@ debug_vector :: (length : float, vector_world : Vector3, color : Vector4) {
     // @Cleanup: struct literals do not currently support non-constant values
     display_info : Display_Info;
     display_info.wireframe_visible = true;
-    display_info.color = color;
+    display_info.surface_color = color;
     display_info.point_size = 0;
     display_info.line_width = 1;
 

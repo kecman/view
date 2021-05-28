@@ -115,18 +115,6 @@ entity_fully_pathed_filename_with_generation_index :: (using entity : Entity) ->
     return text;
 }
 
-get_opacity :: (entity : Entity) -> float {
-    return entity.display_info.color.w;
-}
-
-set_opacity :: (entity : *Entity, opacity : float) {
-    set_opacity(*entity.display_info, opacity);
-}
-
-set_opacity :: (info : *Display_Info, opacity : float) {
-    info.color.w = clamp(opacity, 0., 1.);
-}
-
 color_from_path :: (path : string) -> Vector4 {
     to_hash : string;
     if app.settings.color_from_path_behaviour == {
@@ -165,7 +153,7 @@ load_entity_from_file :: (filename : string) -> *Entity {
         `entity.mesh = mesh;
         `entity.fully_pathed_filename = copy_string(filename);
         `entity.loaded_filetime = get_current_file_time();
-        `entity.display_info.color = color_from_path(filename);
+        `entity.display_info.surface_color = color_from_path(filename);
 
         log("Inferred entity type '%'", `entity.type);
     }
