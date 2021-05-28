@@ -1,7 +1,7 @@
 ***** Fix camera orbit positioning zoom level when
 ***** Don't screentone backfaces when wireframe mode (or transparency?) is on
 
-# Version: v0.0.7, Unreleased
+# Version: v0.1.0, Unreleased
 
 - Added a more joyful background shader enabled by default [ty [@LoganBarnes](https://github.com/LoganBarnes)]
   - Changed the default label color so it works well on both both white and grey backgrounds
@@ -16,7 +16,7 @@
   - Changed the binding for reloading items (F5) to follow this idiom
   - ***** Changed the bindings for cycling point size (p) to follow this idiom
   - ***** Changed the bindings for cycling line width (l) to follow this idiom
-  - ***** Changed the binding to popup the item context menu (RMB) to follow this idiom, also added more options to this context menu
+  - ***** Changed the binding to popup the item context menu (RMB) to follow this idiom, also added many more options to this context menu
 - Added a binding to select/deselect all items (Ctrl+a)
 - Added a binding to toggle/complement the current item selection (Alt+a)
 - Changed binding to set orbit position in user selection mode from Ctrl+MMB to Ctrl+RMB

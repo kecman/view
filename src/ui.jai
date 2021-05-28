@@ -22,34 +22,6 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
     inspect("User Settings", *app.settings);
     clamp_user_settings();
 
-    if ImGui.TreeNode("%", "Label Settings") {
-        defer ImGui.TreePop();
-        ImGui.Unindent(ImGui.GetTreeNodeToLabelSpacing());
-        defer ImGui.Indent(ImGui.GetTreeNodeToLabelSpacing());
-
-        ImGui.Checkbox("Index labels", *vertex_label_style.show_index);
-        ImGui.SameLine();
-        ImGui.Checkbox("Position labels", *vertex_label_style.show_position);
-        trailing_width : s32 = xx vertex_label_style.format_float.trailing_width;
-        ImGui.InputInt("Float decimals", *trailing_width);
-        vertex_label_style.format_float.trailing_width = clamp(trailing_width, 0, 12);
-        Show_Tooltip("Number of digits following the decimal point");
-        combo_box("Float format", *vertex_label_style.format_float.mode, type_info(FormatFloat.Mode));
-        ImGui.DragFloat("Label scale", *vertex_label_style.label_scale, .005, .2, 1., display_format="%.3f");
-        ImGui.ColorEdit4("Label color", *vertex_label_style.label_color.component, ImGui.ColorEditFlags.NoInputs);
-
-        the_label_limit : s32 = xx label_limit;
-        ImGui.InputInt("Label limit", *the_label_limit);
-        label_limit = the_label_limit;
-        if label_limit > 2000 {
-            color := ImVec4.{1., .4, .4, 1.};
-            ImGui.TextColored(*color, "%s", "Warning: label limit > 2000 may be slow");
-        }
-
-        // @Speed Only need to do this if something changed
-        update_entities_using_default_vertex_label_style();
-    }
-
     if current_window_width != INITIAL_WINDOW_WIDTH && current_window_height != INITIAL_WINDOW_HEIGHT {
         if ImGui.Button("Reset Window", size=*V2_ZERO) {
             SDL_SetWindowSize(window, app.INITIAL_WINDOW_WIDTH, app.INITIAL_WINDOW_HEIGHT);
@@ -73,13 +45,7 @@ show_scene_ui :: ()
     ImGui.Begin("Main Panel", flags = ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar);
     defer ImGui.End();
 
-    imgui_label :: (label : string, ptr : *void) -> *u8 {
-        Push_Temporary();
-        return to_c_string(concatenate(label, tprint("##%", ptr)));
-    }
-
     any_visibility_toggled := false;
-
 
     entity_to_remove := -1;
     for entities {
@@ -101,6 +67,8 @@ show_scene_ui :: ()
         }
         if ImGui.IsItemClicked(1) {
             cycle_display_mode(*it.display_info.display_mode);
+        } else if ImGui.IsItemClicked(2) {
+            it.display_info.color = color_from_filename(it.fully_pathed_filename);
         }
 
         // Entity index used to refer to geometry in console or annotate the text following ther cursor when adding to the user selection
@@ -164,7 +132,7 @@ show_scene_ui :: ()
                 loaded_time_text := filetime_to_readable_date(it.loaded_filetime);
                 ImGui.Text("% %", "Loaded at", loaded_time_text);
                 ImGui.SameLine();
-                if it.fully_pathed_filename.count && ImGui.SmallButton(imgui_label("Reload", it)) {
+                if it.fully_pathed_filename.count && ImGui.Button(imgui_label("Reload", it), size=*V2_ZERO) {
                     entity := load_entity_from_file(it.fully_pathed_filename);
                     replace_entity(it, it_index, entity);
                 }
@@ -193,37 +161,14 @@ show_scene_ui :: ()
 
                 maybe_update_render_info(*it.render_info, *it.mesh);
                 aabb := it.render_info.bounding_aabb;
-                ImGui.Text(to_c_string(tprint("AABB [%, %, %], [%, %, %]",
+                ImGui.Text(to_c_string(tprint("Model space AABB [%, %, %]x[%, %, %]",
                                               aabb.min_point.x, aabb.min_point.y, aabb.min_point.z,
                                               aabb.max_point.x, aabb.max_point.y, aabb.max_point.z)));
 
                 ImGui.Separator();
 
-                ImGui.PushItemWidth(120);
-                combo_box("", *it.display_info.display_mode, type_info(type_of(it.display_info.display_mode)));
-                ImGui.PopItemWidth();
-                ImGui.SameLine();
-                ImGui.PushItemWidth(70);
-                ImGui.DragFloat(imgui_label("##Opacity", it), *it.display_info.color.w, v_speed=.005, v_min=0., v_max=1.);
-                ImGui.PopItemWidth();
-                Show_Tooltip("Opacity");
-
-                // @Cleanup Does this UI really need to change based on type?
-                if it.type == .MESH || it.type == .POLYGON_SOUP {
-                    ImGui.Checkbox(imgui_label("Wireframe   ", it), *it.display_info.wireframe);
-
-                    ImGui.Checkbox(imgui_label("##normals_visible", it), *it.display_info.normals_visible);
-                    ImGui.SameLine();
-                    ImGui.ColorEdit4(imgui_label("##normals_color", it), *it.display_info.normals_color.component, ImGui.ColorEditFlags.NoInputs);
-                    ImGui.SameLine();
-                    ImGui.PushItemWidth(70);
-                    ImGui.DragFloat(imgui_label("##normals_length", it), *it.display_info.normals_length, .05);
-                    ImGui.PopItemWidth();
-                    ImGui.SameLine();
-                    ImGui.Text("Normals Visible|Color|Length");
-
-                    // @Incomplete: Add AABB visiblity and color
-                }
+                set := display_info_ui(*it.display_info);
+                if set.color_reset it.display_info.color = color_from_filename(it.fully_pathed_filename);
 
                 ImGui.Separator();
                 shift := make_vector3(it.mesh.world_from_model._14, it.mesh.world_from_model._24, it.mesh.world_from_model._34);
@@ -250,6 +195,31 @@ show_scene_ui :: ()
                         it.is_selected = false;
                     }
                     ImGui.CloseCurrentPopup();
+                }
+
+                set := display_info_ui(*app.selection_display_info);
+
+                for app.entities if it.is_selected {
+                    other := *app.selection_display_info;
+                    using it.display_info;
+
+                    if set.vertex_label_style_is_set.show_position vertex_label_style.show_position = other.vertex_label_style.show_position;
+                    if set.vertex_label_style_is_set.show_index    vertex_label_style.show_index    = other.vertex_label_style.show_index;
+                    if set.vertex_label_style_is_set.format_float  vertex_label_style.format_float  = other.vertex_label_style.format_float;
+                    if set.vertex_label_style_is_set.label_scale   vertex_label_style.label_scale   = other.vertex_label_style.label_scale;
+                    if set.vertex_label_style_is_set.label_color   vertex_label_style.label_color   = other.vertex_label_style.label_color;
+
+                    if set.visible         visible = other.visible;
+                    if set.wireframe       wireframe = other.wireframe;
+                    if set.color           color = other.color;
+                    if set.color_reset     color = color_from_filename(it.fully_pathed_filename);
+                    if set.color_opacity   color.w = other.color.w;
+                    if set.display_mode    display_mode = other.display_mode;
+                    if set.normals_visible normals_visible = other.normals_visible;
+                    if set.normals_color   normals_color = other.normals_color;
+                    if set.normals_length  normals_length = other.normals_length;
+                    if set.point_size      point_size = other.point_size;
+                    if set.line_width      line_width = other.line_width;
                 }
             }
         }
@@ -312,9 +282,9 @@ show_scene_ui :: ()
             ImGui.Checkbox("Position labels", *vertex_label_style.show_position);
             ImGui.SameLine();
             ImGui.ColorEdit4("Label color", *vertex_label_style.label_color.component, ImGui.ColorEditFlags.NoInputs);
-            point_size : s32 = xx vertex_label_style.point_size;
-            ImGui.InputInt("Point size", *point_size, 2);
-            vertex_label_style.point_size = xx clamp(point_size, 2, 6);
+            point_size_s32 : s32 = xx it.display_info.point_size;
+            ImGui.InputInt("Point size", *point_size_s32, 2);
+            it.display_info.point_size = xx clamp(point_size_s32, 2, 6);
 
             trailing_width : s32 = xx vertex_label_style.format_float.trailing_width;
             ImGui.InputInt("Float decimals", *trailing_width);
@@ -434,8 +404,7 @@ show_camera_controls :: () {
     // @Incomplete add button to reset look position
 }
 
-show_help_ui :: ()
-{
+show_help_ui :: () {
     if !app.show_help_ui return;
 
     window_pos := make_vector2(ImGui.GetIO().DisplaySize.x - WINDOW_BORDER_UI_OFFSET.x, WINDOW_BORDER_UI_OFFSET.y);
@@ -487,8 +456,117 @@ show_help_ui :: ()
 
 #scope_file
 
+// @Volatile keep this in sync with Vertex_Label_Style
+Vertex_Label_Style_Is_Set :: struct {
+    show_position : bool;
+    show_index : bool;
+    format_float : bool;
+    label_scale : bool;
+    label_color : bool;
+}
+
+// @Volatile keep this in sync with Display_Info
+Display_Info_Is_Set :: struct {
+    visible : bool;
+    // visible_sweep_hovered : bool;
+    // flash_wave_dt : bool;
+    wireframe : bool;
+    color : bool;
+    display_mode : bool;
+    normals_visible : bool;
+    normals_color : bool;
+    normals_length : bool;
+    point_size : bool;
+    line_width : bool;
+
+    vertex_label_style_is_set : Vertex_Label_Style_Is_Set;
+
+    color_reset : bool; // Not a member of Display_Info
+    color_opacity : bool; // Not a member of Display_Info
+}
+
+display_info_ui :: (display_info : *Display_Info) -> Display_Info_Is_Set {
+
+    set : Display_Info_Is_Set;
+
+    ImGui.PushItemWidth(120);
+    set.display_mode = combo_box("", *display_info.display_mode, type_info(type_of(display_info.display_mode)));
+    ImGui.PopItemWidth();
+    ImGui.SameLine();
+    ImGui.PushItemWidth(70);
+    set.color_opacity = ImGui.DragFloat(imgui_label("##Opacity", display_info), *display_info.color.w, v_speed=.005, v_min=0., v_max=1.);
+    ImGui.PopItemWidth();
+    Show_Tooltip("Opacity");
+
+    // @Cleanup The following block is only really needed for .MESH and .POLYGON_SOUP types
+    // @Incomplete Add AABB visiblity and color
+    {
+        set.normals_visible = ImGui.Checkbox(imgui_label("##normals_visible", display_info), *display_info.normals_visible);
+        ImGui.SameLine();
+        set.normals_color = ImGui.ColorEdit4(imgui_label("##normals_color", display_info), *display_info.normals_color.component, ImGui.ColorEditFlags.NoInputs);
+        ImGui.SameLine();
+        ImGui.Text("Normals   Visible|Color|Length:");
+        ImGui.SameLine();
+        ImGui.PushItemWidth(70);
+        set.normals_length = ImGui.DragFloat(imgui_label("##normals_length", display_info), *display_info.normals_length, .05);
+        ImGui.PopItemWidth();
+
+        set.wireframe = ImGui.Checkbox(imgui_label("##wireframe_visible", display_info), *display_info.wireframe);
+        ImGui.SameLine();
+        // @FIXME @Incomplete wireframe_color
+        set.color = ImGui.ColorEdit4(imgui_label("##wireframe_color", display_info), *display_info.color.component, ImGui.ColorEditFlags.NoInputs);
+        ImGui.SameLine();
+        ImGui.Text("Wireframe Visible|Color");
+
+        set.visible = ImGui.Checkbox(imgui_label("##surface_visible", display_info), *display_info.visible);
+        ImGui.SameLine();
+        set.color = ImGui.ColorEdit4(imgui_label("##surface_color", display_info), *display_info.color.component, ImGui.ColorEditFlags.NoInputs);
+        ImGui.SameLine();
+        ImGui.Text("Surface   Visible|Color");
+        ImGui.SameLine();
+        set.color_reset = ImGui.Button(imgui_label("Color by filename##surface_color_reset", display_info), size=*V2_ZERO);
+    }
+
+    if ImGui.TreeNode("%", "Label Settings") {
+        defer ImGui.TreePop();
+        using display_info;
+
+        // ImGui.Unindent(ImGui.GetTreeNodeToLabelSpacing());
+        // defer ImGui.Indent(ImGui.GetTreeNodeToLabelSpacing());
+
+        set.vertex_label_style_is_set.show_index = ImGui.Checkbox("Index labels", *vertex_label_style.show_index);
+        ImGui.SameLine();
+        set.vertex_label_style_is_set.show_position = ImGui.Checkbox("Position labels", *vertex_label_style.show_position);
+
+        trailing_width : s32 = xx vertex_label_style.format_float.trailing_width;
+        set.vertex_label_style_is_set.format_float |= ImGui.InputInt("Float decimals", *trailing_width);
+        vertex_label_style.format_float.trailing_width = clamp(trailing_width, 0, 12);
+        Show_Tooltip("Number of digits following the decimal point");
+
+        set.vertex_label_style_is_set.format_float = combo_box("Float format", *vertex_label_style.format_float.mode, type_info(FormatFloat.Mode));
+        set.vertex_label_style_is_set.label_scale  = ImGui.DragFloat("Label scale", *vertex_label_style.label_scale, .005, .2, 1., display_format="%.3f");
+        set.vertex_label_style_is_set.label_color  = ImGui.ColorEdit4("Label color", *vertex_label_style.label_color.component, ImGui.ColorEditFlags.NoInputs);
+
+        label_limit_s32 : s32 = xx app.label_limit;
+        ImGui.InputInt("Label limit", *label_limit_s32);
+        app.label_limit = label_limit_s32;
+        if app.label_limit > 2000 {
+            color := ImVec4.{1., .4, .4, 1.};
+            ImGui.TextColored(*color, "%s", "Warning: label limit > 2000 may be slow");
+        }
+    }
+
+    return set;
+}
+
+imgui_label :: (label : string, ptr : *void) -> *u8 {
+    Push_Temporary();
+    return to_c_string(concatenate(label, tprint("##%", ptr)));
+}
+
 // Combo box to select display mode enum value
-combo_box :: (label : string, data: *void, info_enum: *Type_Info_Enum) {
+combo_box :: (label : string, data: *void, info_enum: *Type_Info_Enum) -> bool {
+    changed := false;
     value := get_enum_value(data, info_enum);
     value_name := "";
     for info_enum.names {
@@ -499,17 +577,18 @@ combo_box :: (label : string, data: *void, info_enum: *Type_Info_Enum) {
             is_selected := value == info_enum.values[it_index];
             if ImGui.Selectable(temp_c_string(it), is_selected, size=*V2_ZERO) {
                 set_enum_value(data, info_enum, info_enum.values[it_index]);
+                changed = true;
             }
             if is_selected ImGui.SetItemDefaultFocus();
         }
 
         ImGui.EndCombo();
     }
+    return changed;
 }
 
 // Toggle visibility if the checkbox was pressed or if we swept over it with the LMB down
-checkbox_press_or_sweep_to_toggle :: (state : *bool, hovered : *bool, label : *u8) -> bool
-{
+checkbox_press_or_sweep_to_toggle :: (state : *bool, hovered : *bool, label : *u8) -> bool {
 
     state_copy := <<state;
     checkbox_pressed := ImGui.Checkbox(label, *state_copy);

@@ -1,3 +1,4 @@
+// @Volatile keep this in sync with Vertex_Label_Style_Is_Set
 Vertex_Label_Style :: struct {
     show_position := false;
     show_index := false;
@@ -11,14 +12,6 @@ Vertex_Label_Style :: struct {
 
     point_size : int = 0; // 0, 2, 4, 6
     line_width : int = 1; // 1, 1, 2, 3
-}
-
-update_entities_using_default_vertex_label_style :: () {
-    for app.entities {
-        if it.using_default_vertex_label_style {
-            it.display_info.vertex_label_style = app.vertex_label_style;
-        }
-    }
 }
 
 Display_Mode :: enum {
@@ -47,6 +40,8 @@ Render_Info :: struct {
 }
 
 // Things that should be preserved when the geometry changes
+// @Volatile keep this in sync with Display_Info_Is_Set
+// @TODO add separate color for edges, and clarify `color` is for the surface. Perhaps use the name color1, color2, or use #place to get aliases
 Display_Info :: struct {
     visible := true; // Separate to opacity so we can toggle transparent meshes
     visible_sweep_hovered := false;
@@ -60,6 +55,9 @@ Display_Info :: struct {
     normals_visible := false; // Separate to opacity so we can toggle transparent normals
     normals_color : Vector4 = .{0., 0., .8, 1.}; // RGBA
     normals_length : float = 1.;
+
+    point_size : int = 0; // 0, 2, 4, 6
+    line_width : int = 1; // 1, 1, 2, 3
 
     vertex_label_style : Vertex_Label_Style;
 }
@@ -209,7 +207,7 @@ render_mesh :: (mesh : *Mesh, using render_info : *Render_Info, using display_in
 
     {
         loc := glGetUniformLocation(app.mesh_program, "point_size");
-        glUniform1f(loc, xx vertex_label_style.point_size);
+        glUniform1f(loc, xx point_size);
     }
 
     {
@@ -241,7 +239,7 @@ render_mesh :: (mesh : *Mesh, using render_info : *Render_Info, using display_in
     glGetFloatv(GL_LINE_WIDTH, xx *last_line_width);
     defer glLineWidth(last_line_width);
 
-    glLineWidth(xx vertex_label_style.line_width); // 1, 2, 3... See also glEnable(GL_LINE_SMOOTH);
+    glLineWidth(xx line_width); // 1, 2, 3... See also glEnable(GL_LINE_SMOOTH);
 
     last_polygon_mode: [2]GLuint;
     glGetIntegerv(GL_POLYGON_MODE, xx last_polygon_mode.data);
@@ -389,7 +387,8 @@ debug_vector :: (length : float, vector_world : Vector3, color : Vector4) {
     display_info : Display_Info;
     display_info.wireframe = true;
     display_info.color = color;
-    display_info.vertex_label_style = .{point_size=0, line_width=1};
+    display_info.point_size = 0;
+    display_info.line_width = 1;
 
     render_info : Render_Info;
     render_mesh(*debug_mesh, *render_info, display_info);

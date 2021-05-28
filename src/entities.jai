@@ -124,6 +124,20 @@ set_opacity :: (info : *Display_Info, opacity : float) {
     info.color.w = clamp(opacity, 0., 1.);
 }
 
+color_from_filename :: (filename : string) -> Vector4 {
+    n := get_hash(filename);
+    m := get_hash(n);
+
+    h := (cast(float)(n % 257) / 256);
+    s := 1.;
+    v := (cast(float)(m % 257) / 256) * .3 + .7;
+
+    r, g, b : float;
+    ImGui.ColorConvertHSVtoRGB(h, s, v, *r, *g, *b);
+
+    return make_vector4(r, g, b, 1.);
+}
+
 load_entity_from_file :: (filename : string) -> *Entity {
     // @Incomplete: support polygon types using wkt format and improve reporting here
     log("Loading file '%'... ", filename);
@@ -189,7 +203,7 @@ load_entity_from_file :: (filename : string) -> *Entity {
 
             entity := New(Mesh_Entity);
             Common_Init();
-            entity.display_info.vertex_label_style.point_size = 2;
+            entity.display_info.point_size = 2;
             return entity;
 
         case .UNKNOWN;

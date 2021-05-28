@@ -1,9 +1,10 @@
 ## Next Release
 
-- [Rendering] Render normals using geometry shader, use n to toggle normals on/off
-- [Rendering] Render aabbs using geometry shader, show it when the box extents are hovered in the UI
-- [Rendering] Render plane using geometry shader and implement mesh clipping
+        // @FIXME @Incomplete wireframe_color
+        // @FIXME @Incomplete add point size and line width to the display info UI
+
 - [UI/UX] Per-item mesh properties
+- [Rendering] Render plane using geometry shader and implement mesh clipping
 - [UI/UX] Make Ctrl+Scroll do the scroll that doesn't zoom into where the cursor is pointing, this is handy when you set the camera orbit and want to zoom in
 
 - [Rendering] Add surface with edges option
@@ -18,6 +19,8 @@
 
 ## Backlog
 
+- [Rendering] Render aabbs using geometry shader, show it when the box extents are hovered in the UI
+- [UI/UX] Add normals to user selection
 - [UI/UX] Add a hotloading mode to files (Hotloader module not implemented on linux)
 - [UI/UX] Implement simple undo for file loading, would be handy to be able to undo file clobbering...
 - [Rendering] Do a better job transparency

@@ -35,16 +35,18 @@ app : struct {
     show_help_ui := false;
     show_console_ui := false;
 
+    selection_display_info : Display_Info; // UI will edit this value and apply it to all selected entities
+
     user_selection : Mesh_Entity;
     user_selection_cursor_text_shown := false;
     user_selection_cursor_text_scale := .4;
     user_selection_max_point_count_for_selectable_entity := 10_000;
 
-    // Set the default vertex label style for the user selection mesh
+    // Set the defaults for the user selection display
+    user_selection.display_info.point_size = 6;
     user_selection.display_info.visible = false;
     user_selection.display_info.color = .{1, 0, .8, 1}; // Used for the dynamic label text too
     user_selection.display_info.vertex_label_style.show_position = true;
-    user_selection.display_info.vertex_label_style.point_size = 6;
     user_selection.display_info.vertex_label_style.label_color = .{0, 0, 0, 1};
 
     camera : Camera;
