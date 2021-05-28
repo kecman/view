@@ -26,9 +26,11 @@
 - Fixed a bug where reloading an item failed to preserve the world from model transform
 - Changed default point size on startup to be 0, when point clouds are inferred they will have a point size of 2
 - Various UI improvements and cleanups
-  - Improved the colors generated from filenames **** generated from the filenames only to match across machines, old behaviour is available in settings (Shift+h to access)
+  - Improved the colors generated from filenames
+  - Changed color generation to use filename and extension by default so colors match across machines. The old behaviour which used the full path is available in settings (press Shift+h to access)
   - Moved the item index to come just before the filename (makes the item list UI jump around less)
   - Swapped the visiblity checkbox with the Remove/Clear buttons
+  - Fixed some wording in the help menu
 
 # Version: v0.0.6, 17 May 2021
 

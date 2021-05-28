@@ -73,7 +73,7 @@ show_scene_ui :: ()
             cycle_display_mode(*it.display_info.display_mode);
         } else if ImGui.IsItemClicked(2) {
             if it.display_info.display_mode != .NORMALS {
-                it.display_info.color = color_from_filename(it.fully_pathed_filename);
+                it.display_info.color = color_from_path(it.fully_pathed_filename);
             }
         }
 
@@ -174,7 +174,7 @@ show_scene_ui :: ()
                 ImGui.Separator();
 
                 set := display_info_ui(*it.display_info);
-                if set.color_reset it.display_info.color = color_from_filename(it.fully_pathed_filename);
+                if set.color_reset it.display_info.color = color_from_path(it.fully_pathed_filename);
 
                 ImGui.Separator();
                 shift := make_vector3(it.mesh.world_from_model._14, it.mesh.world_from_model._24, it.mesh.world_from_model._34);
@@ -218,7 +218,7 @@ show_scene_ui :: ()
                     if set.visible         visible = other.visible;
                     if set.wireframe       wireframe = other.wireframe;
                     if set.color           color = other.color;
-                    if set.color_reset     color = color_from_filename(it.fully_pathed_filename);
+                    if set.color_reset     color = color_from_path(it.fully_pathed_filename);
                     if set.color_opacity   color.w = other.color.w;
                     if set.display_mode    display_mode = other.display_mode;
                     if set.normals_visible normals_visible = other.normals_visible;

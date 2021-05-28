@@ -124,8 +124,17 @@ set_opacity :: (info : *Display_Info, opacity : float) {
     info.color.w = clamp(opacity, 0., 1.);
 }
 
-color_from_filename :: (filename : string) -> Vector4 {
-    n := get_hash(filename);
+color_from_path :: (path : string) -> Vector4 {
+    to_hash : string;
+    if app.settings.color_from_path_behaviour == {
+        case .FILENAME_ONLY;
+            parsed := parse_path(path);
+            to_hash = parsed.words[parsed.words.count - 1];
+        case .FULLY_PATHED_FILENAME;
+            to_hash = path;
+    }
+
+    n := get_hash(to_hash);
     m := get_hash(n);
 
     h := (cast(float)(n % 257) / 256);
@@ -153,20 +162,7 @@ load_entity_from_file :: (filename : string) -> *Entity {
         `entity.mesh = mesh;
         `entity.fully_pathed_filename = copy_string(filename);
         `entity.loaded_filetime = get_current_file_time();
-
-        n := get_hash(`entity.fully_pathed_filename);
-        m := get_hash(n);
-
-        h := (cast(float)(n % 257) / 256);
-        s := 1.;
-        v := (cast(float)(m % 257) / 256) * .3 + .7;
-
-        r, g, b : float;
-        ImGui.ColorConvertHSVtoRGB(h, s, v, *r, *g, *b);
-
-        `entity.display_info.color.x = r;
-        `entity.display_info.color.y = g;
-        `entity.display_info.color.z = b;
+        `entity.display_info.color = color_from_path(filename);
 
         log("Inferred entity type '%'", `entity.type);
     }

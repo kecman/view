@@ -14,6 +14,12 @@ User_Settings :: struct {
     camera_zoom_max_limited_by_scene_bounding_sphere := true;
 
     duplicate_file_behaviour := Duplicate_File_Behaviour.APPEND;
+    color_from_path_behaviour := Color_From_Path_Behaviour.FILENAME_ONLY;
+}
+
+Color_From_Path_Behaviour :: enum u8 #specified {
+    FILENAME_ONLY :: 0;
+    FULLY_PATHED_FILENAME :: 1;
 }
 
 Duplicate_File_Behaviour :: enum u8 #specified {
