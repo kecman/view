@@ -66,8 +66,17 @@ show_scene_ui :: ()
 
         // Toggle visibility and set color
         ImGui.SameLine();
+        was_visible := it.is_visible;
         visibility_toggled := checkbox_press_or_sweep_to_toggle(*it.is_visible, *it.is_visible_sweep_hovered, imgui_label("##Visible", it));
         Show_Tooltip("Visible");
+
+        if !was_visible && visibility_toggled {
+            // Make sure we see something when turning on visibility
+            if !it.display_info.surface_visible && !it.display_info.wireframe_visible {
+                it.display_info.surface_visible = true;
+            }
+        }
+
         any_visibility_toggled = any_visibility_toggled || visibility_toggled;
         ImGui.SameLine();
         if it.display_info.display_mode == .NORMALS {

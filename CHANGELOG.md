@@ -1,6 +1,3 @@
-***** Fix camera orbit positioning zoom level when
-***** Don't screentone backfaces when wireframe mode (or transparency?) is on
-
 # Version: v0.1.0, Unreleased
 
 - Added a more joyful background shader enabled by default [ty [@LoganBarnes](https://github.com/LoganBarnes)]

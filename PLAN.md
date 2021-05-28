@@ -1,24 +1,20 @@
 ## Next Release
 
-        // @FIXME @Incomplete wireframe_color
-        // @FIXME @Incomplete add point size and line width to the display info UI
+- [UI/UX] Put wireframe width on same line as visibility and color
 
-- [UI/UX] Per-item mesh properties
-- [Rendering] Render plane using geometry shader and implement mesh clipping
+- [UI/UX,Bug] Fix camera orbit positioning zoom level when
 - [UI/UX] Make Ctrl+Scroll do the scroll that doesn't zoom into where the cursor is pointing, this is handy when you set the camera orbit and want to zoom in
-
-- [Rendering] Add surface with edges option
-- [UI/UX] Hash the filename only by default to reproduce colours across machines, add a combo box to switch that
+- [Rendering] Render plane using geometry shader and implement mesh clipping
 - [UI/UX] Support loading wkt file format to load Polygons in a reasonable way
 - [UI/UX] Mode line (bar along bottom) showing hovered mesh stats
 - [UI/UX] Fix camera panning
 - [UI/UX] Implement wild cards for file loading
-- [UI/UX] Implement gradient background
 - [UI/UX] Reload files only if they change, and adjust the fade color if the geometry is unchanged
 - [UI/UX] Implement an infinite grid, maybe http://asliceofrendering.com/scene%20helper/2020/01/05/InfiniteGrid/
 
 ## Backlog
 
+- [Rendering,Bug] Don't screentone backfaces when wireframe mode (or transparency?) is on
 - [Rendering] Render aabbs using geometry shader, show it when the box extents are hovered in the UI
 - [UI/UX] Add normals to user selection
 - [UI/UX] Add a hotloading mode to files (Hotloader module not implemented on linux)
