@@ -7,16 +7,16 @@
   - Changed the default label color so it works well on both both white and grey backgrounds
   - Future work will hotload this shader and the provide inputs expected by Shadertoy
   - The boring solid color option is still available in settings (press Shift+h to access)
-- Added a screentone effect when rendering a backfacing triangle (press RMB item name to access)
+- Added a screentone effect when rendering a backfacing triangle (press RMB on item name to access)
 - Added normal rendering with options to set color and length in the item context menu
   - Normal rendering also works for oriented point clouds loaded from an obj file containing v, vn and p codes
-- Added a new UI idiom in which bindings will affect the currently hovered unselected item, all selected items (Ctrl+LMB selects a item)
+- Added a new UI idiom in which bindings will affect the currently hovered unselected item or all selected items (Ctrl+LMB selects a item)
   - Added a binding to cycle normals visibility (n) using this idiom
   - Added a binding to cycle opacity 20%/50%/100% (o) using this idiom
   - Changed the binding for reloading items (F5) to follow this idiom
-  - ***** Changed the bindings for cycling point size (p) to follow this idiom
-  - ***** Changed the bindings for cycling line width (l) to follow this idiom
-  - ***** Changed the binding to popup the item context menu (RMB) to follow this idiom, also added many more options to this context menu
+  - Changed the binding for cycling point size (p) to follow this idiom
+  - Changed the binding for cycling line width (l) to follow this idiom
+  - Changed the binding to popup the item context menu (RMB) to follow this idiom and added many more options to this menu
 - Added a binding to select/deselect all items (Ctrl+a)
 - Added a binding to toggle/complement the current item selection (Alt+a)
 - Changed binding to set orbit position in user selection mode from Ctrl+MMB to Ctrl+RMB
@@ -25,7 +25,7 @@
 - Fixed a bug where user selection was not considered when the scene view is resized causing it to be clipped sometimes for transformed (shifted) items
 - Fixed a bug where reloading an item failed to preserve the world from model transform
 - Changed default point size on startup to be 0, when point clouds are inferred they will have a point size of 2
-- Improved the item list UI
+- Various UI improvements and cleanups
   - Improved the colors generated from filenames **** generated from the filenames only to match across machines, old behaviour is available in settings (Shift+h to access)
   - Moved the item index to come just before the filename (makes the item list UI jump around less)
   - Swapped the visiblity checkbox with the Remove/Clear buttons
