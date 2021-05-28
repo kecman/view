@@ -68,7 +68,9 @@ show_scene_ui :: ()
         if ImGui.IsItemClicked(1) {
             cycle_display_mode(*it.display_info.display_mode);
         } else if ImGui.IsItemClicked(2) {
-            it.display_info.color = color_from_filename(it.fully_pathed_filename);
+            if it.display_info.display_mode != .NORMALS {
+                it.display_info.color = color_from_filename(it.fully_pathed_filename);
+            }
         }
 
         // Entity index used to refer to geometry in console or annotate the text following ther cursor when adding to the user selection
