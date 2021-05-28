@@ -191,10 +191,11 @@ make_axes_triad :: (axis_length : float) -> Axes_Triad
     z_axis.mesh = to_Mesh(par_shapes_triad.z_axis);
     origin.mesh = to_Mesh(par_shapes_triad.origin);
 
-    x_axis.display_info = .{visible=true, color=.{1, 0, 0, 1}, display_mode=.BLINN_PHONG, point_size=0, line_width=1};
-    y_axis.display_info = .{visible=true, color=.{0, 1, 0, 1}, display_mode=.BLINN_PHONG, point_size=0, line_width=1};
-    z_axis.display_info = .{visible=true, color=.{0, 0, 1, 1}, display_mode=.BLINN_PHONG, point_size=0, line_width=1};
-    origin.display_info = .{visible=true, color=.{1, 1, 1, 1}, display_mode=.BLINN_PHONG, point_size=0, line_width=1};
+    // nocommit add surface visible here
+    x_axis.display_info = .{color=.{1, 0, 0, 1}, display_mode=.BLINN_PHONG, point_size=0, line_width=1};
+    y_axis.display_info = .{color=.{0, 1, 0, 1}, display_mode=.BLINN_PHONG, point_size=0, line_width=1};
+    z_axis.display_info = .{color=.{0, 0, 1, 1}, display_mode=.BLINN_PHONG, point_size=0, line_width=1};
+    origin.display_info = .{color=.{1, 1, 1, 1}, display_mode=.BLINN_PHONG, point_size=0, line_width=1};
 
     return result;
 }

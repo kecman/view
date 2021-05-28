@@ -8,13 +8,16 @@ Entity :: struct {
     }
     type : Entity_Type = .UNKNOWN;
 
+    is_visible := true;
+    is_visible_sweep_hovered := false;
+    is_selected := false;
+    is_hovered := false;
+
     render_info : Render_Info;
     display_info : Display_Info;
     mesh : Mesh;
 
     using_default_vertex_label_style : bool = true;
-    is_selected := false;
-    is_hovered := false;
     fully_pathed_filename : string;
     loaded_filetime : u64;
     generation_index : int; // entities with the same fully pathed_filename will increment this
@@ -233,7 +236,7 @@ find_closest_vertex_on_visible_entities :: () -> Closest_Vertex_On_Entity {
 
     dist2 := FLOAT32_INFINITY;
     for entity, entity_index : app.entities {
-        if entity.display_info.visible {
+        if entity.is_visible {
             if entity.mesh.positions.count <= app.user_selection_max_point_count_for_selectable_entity {
                 for vertex, vertex_index : entity.mesh.positions {
                     p := (entity.mesh.world_from_model * make_vector4(vertex, 1.)).xyz;

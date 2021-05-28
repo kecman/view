@@ -43,8 +43,8 @@ app : struct {
     user_selection_max_point_count_for_selectable_entity := 10_000;
 
     // Set the defaults for the user selection display
+    user_selection.is_visible = false;
     user_selection.display_info.point_size = 6;
-    user_selection.display_info.visible = false;
     user_selection.display_info.color = .{1, 0, .8, 1}; // Used for the dynamic label text too
     user_selection.display_info.vertex_label_style.show_position = true;
     user_selection.display_info.vertex_label_style.label_color = .{0, 0, 0, 1};
@@ -85,7 +85,7 @@ entities_iterator :: (entities : *[..]*Entity, body : Code, flags : For_Flags, s
     }
 }
 
-visible :: #bake_arguments entities_iterator(should_visit = (e)=>(e.display_info.visible));
+visible :: #bake_arguments entities_iterator(should_visit = (e)=>(e.is_visible));
 
 #import "Basic";
 #import "File";

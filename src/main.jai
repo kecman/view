@@ -361,9 +361,9 @@ main :: () {
             }
         }
 
-        is_visible_opaque ::      (e : *Entity) -> bool { return e.display_info.visible && !e.is_hovered && get_opacity(<<e) == 1.; }
-        is_visible_transparent :: (e : *Entity) -> bool { return e.display_info.visible && !e.is_hovered && get_opacity(<<e) != 1.; }
-        is_visible_hovered ::     (e : *Entity) -> bool { return e.display_info.visible &&  e.is_hovered; }
+        is_visible_opaque ::      (e : *Entity) -> bool { return e.is_visible && !e.is_hovered && get_opacity(<<e) == 1.; }
+        is_visible_transparent :: (e : *Entity) -> bool { return e.is_visible && !e.is_hovered && get_opacity(<<e) != 1.; }
+        is_visible_hovered ::     (e : *Entity) -> bool { return e.is_visible &&  e.is_hovered; }
 
         visible_opaque ::      #bake_arguments entities_iterator(should_visit = is_visible_opaque);
         visible_transparent :: #bake_arguments entities_iterator(should_visit = is_visible_transparent);
@@ -372,7 +372,7 @@ main :: () {
         for :visible_opaque      app.entities Render_Entity(it);
         for :visible_transparent app.entities Render_Entity(it);
 
-        if app.user_selection.display_info.visible {
+        if app.user_selection.is_visible {
             if app.user_selection.is_hovered {
                 glClear(GL_DEPTH_BUFFER_BIT);
             }
@@ -426,7 +426,7 @@ main :: () {
         //           CLOSEST_VERTEX; // Must be a vertex of the entity
         //       }
         // @TODO Hide the cursor and display a line from the cursor to the point
-        if app.user_selection.display_info.visible && !io().WantCaptureMouse && ImGui.IsMousePosValid(*io().MousePos) {
+        if app.user_selection.is_visible && !io().WantCaptureMouse && ImGui.IsMousePosValid(*io().MousePos) {
             use_result_for_adding_to_selection := ImGui.IsMouseClicked(0) && io().KeyCtrl;
             use_result_for_repositioning_camera := ImGui.IsMouseClicked(1) && io().KeyCtrl;
             use_result_for_rendering_cursor_text := app.user_selection_cursor_text_shown;

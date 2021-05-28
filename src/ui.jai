@@ -66,7 +66,7 @@ show_scene_ui :: ()
 
         // Toggle visibility and set color
         ImGui.SameLine();
-        visibility_toggled := checkbox_press_or_sweep_to_toggle(*it.display_info.visible, *it.display_info.visible_sweep_hovered, imgui_label("##Visible", it));
+        visibility_toggled := checkbox_press_or_sweep_to_toggle(*it.is_visible, *it.is_visible_sweep_hovered, imgui_label("##Visible", it));
         Show_Tooltip("Visible");
         any_visibility_toggled = any_visibility_toggled || visibility_toggled;
         ImGui.SameLine();
@@ -84,7 +84,7 @@ show_scene_ui :: ()
         }
 
         // Entity index used to refer to geometry in console or annotate the text following ther cursor when adding to the user selection
-        if app.show_console_ui || app.user_selection.display_info.visible {
+        if app.show_console_ui || app.user_selection.is_visible {
             ImGui.SameLine();
             label := to_c_string(tprint("#%", it_index));
             if it.mesh.positions.count <= app.user_selection_max_point_count_for_selectable_entity {
@@ -221,7 +221,7 @@ show_scene_ui :: ()
                     if set.vertex_label_style_is_set.label_scale   vertex_label_style.label_scale   = other.vertex_label_style.label_scale;
                     if set.vertex_label_style_is_set.label_color   vertex_label_style.label_color   = other.vertex_label_style.label_color;
 
-                    if set.visible           visible = other.visible;
+                    // if set.is_visible        is_visible = other.is_visible; // nocommit
                     if set.wireframe_visible wireframe_visible = other.wireframe_visible;
                     if set.color             color = other.color;
                     if set.color_reset       color = color_from_path(it.fully_pathed_filename);
@@ -249,7 +249,7 @@ show_scene_ui :: ()
 
         // Toggle visibility checkbox
         ImGui.SameLine();
-        visibility_toggled := checkbox_press_or_sweep_to_toggle(*it.display_info.visible, *it.display_info.visible_sweep_hovered, imgui_label("##Visible", it));
+        visibility_toggled := checkbox_press_or_sweep_to_toggle(*it.is_visible, *it.is_visible_sweep_hovered, imgui_label("##Visible", it));
         Show_Tooltip("User Selection Visible");
         any_visibility_toggled = any_visibility_toggled || visibility_toggled;
         ImGui.SameLine();
@@ -481,10 +481,11 @@ Vertex_Label_Style_Is_Set :: struct {
 
 // @Volatile keep this in sync with Display_Info
 Display_Info_Is_Set :: struct {
-    visible : bool;
+    is_visible : bool;
     // visible_sweep_hovered : bool;
     // flash_wave_dt : bool;
     wireframe_visible : bool;
+    // wireframe_color : bool;
     color : bool;
     display_mode : bool;
     normals_visible : bool;
@@ -528,12 +529,14 @@ display_info_ui :: (display_info : *Display_Info) -> Display_Info_Is_Set {
         set.wireframe_visible = ImGui.Checkbox(imgui_label("##wireframe_visible", display_info), *display_info.wireframe_visible);
         ImGui.SameLine();
         // @FIXME @Incomplete wireframe_color
+        // nocommit
         set.color = ImGui.ColorEdit4(imgui_label("##wireframe_color", display_info), *display_info.color.component, ImGui.ColorEditFlags.NoInputs);
         ImGui.SameLine();
         ImGui.Text("Wireframe Visible|Color");
 
-        set.visible = ImGui.Checkbox(imgui_label("##surface_visible", display_info), *display_info.visible);
-        ImGui.SameLine();
+        // nocommit
+        // set.visible = ImGui.Checkbox(imgui_label("##surface_visible", display_info), *display_info.visible);
+        // ImGui.SameLine();
         set.color = ImGui.ColorEdit4(imgui_label("##surface_color", display_info), *display_info.color.component, ImGui.ColorEditFlags.NoInputs);
         ImGui.SameLine();
         ImGui.Text("Surface   Visible|Color");

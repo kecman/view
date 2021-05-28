@@ -253,7 +253,7 @@ fit_on_screen :: (accurate : bool = false) {
 // Adjust the camera position and viewing volume to fit the entity while preserving the camera look direction
 fit_on_screen :: (entity : *Entity, accurate : bool = false)
 {
-    if !entity.display_info.visible {
+    if !entity.is_visible {
         return;
     }
 
@@ -407,7 +407,7 @@ visible_entities_bounding_sphere_fast :: () -> Sphere
         Expand_Sphere(*it.mesh, *it.render_info);
     }
 
-    if app.user_selection.display_info.visible {
+    if app.user_selection.is_visible {
         Expand_Sphere(*app.user_selection.mesh, *app.user_selection.render_info);
     }
 
@@ -426,7 +426,7 @@ visible_entities_bounding_sphere_accurate :: () -> Sphere
         }
     }
 
-    if app.user_selection.display_info.visible {
+    if app.user_selection.is_visible {
         mesh := *app.user_selection.mesh;
         for * mesh.positions {
             p := (mesh.world_from_model * make_vector4(<<it, 1.)).xyz;

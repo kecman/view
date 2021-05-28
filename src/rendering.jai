@@ -40,8 +40,6 @@ Render_Info :: struct {
 // @Volatile keep this in sync with Display_Info_Is_Set
 // @TODO add separate color for edges, and clarify `color` is for the surface. Perhaps use the name color1, color2, or use #place to get aliases
 Display_Info :: struct {
-    visible := true; // Separate to opacity so we can toggle transparent meshes
-    visible_sweep_hovered := false;
 
     flash_wave_dt : float = 0.;
 
