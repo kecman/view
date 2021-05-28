@@ -53,8 +53,8 @@ Display_Info :: struct {
     normals_color : Vector4 = .{0., 0., .8, 1.}; // RGBA
     normals_length : float = 1.;
 
-    point_size : int = 0; // 0, 2, 4, 6
-    line_width : int = 1; // 1, 1, 2, 3
+    point_size : s32 = 0; // 0, 2, 4, 6
+    line_width : s32 = 1; // 1, 1, 2, 3
 
     vertex_label_style : Vertex_Label_Style;
 }

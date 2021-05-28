@@ -54,7 +54,7 @@ app : struct {
     entities : [..]*Entity;
 
     vertex_label_style : Vertex_Label_Style;
-    label_limit := 2000;
+    label_limit : s32 = 2000;
 
     keymap : Keymap;
     keymap_keydown : Keymap;

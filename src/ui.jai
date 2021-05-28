@@ -13,13 +13,19 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
     defer if entities.count ImGui.Separator();
 
     // @TODO Default this to open
-    if ImGui.TreeNode("%", "Viewport Settings") {
+    if ImGui.TreeNode("%", "General Settings") {
         defer ImGui.TreePop();
         combo_box("Background", *app.background_style, type_info(Background_Style));
         if app.background_style == .SOLID_COLOR {
             ImGui.ColorEdit4("Background Color", *background_solid_color.component, ImGui.ColorEditFlags.NoInputs);
         }
         ImGui.Checkbox("World Axes", *world_axes.visible);
+
+        ImGui.InputInt("Label limit", *app.label_limit);
+        if app.label_limit > 2000 {
+            color := ImVec4.{1., .4, .4, 1.};
+            ImGui.TextColored(*color, "%s", "Warning: label limit > 2000 may be slow");
+        }
     }
 
     // :UserConfig add a button to overwrite the user settings file with new defaults here?
@@ -288,16 +294,14 @@ show_scene_ui :: ()
             ImGui.Checkbox("Position labels", *vertex_label_style.show_position);
             ImGui.SameLine();
             ImGui.ColorEdit4("Label color", *vertex_label_style.label_color.component, ImGui.ColorEditFlags.NoInputs);
-            point_size_s32 : s32 = xx it.display_info.point_size;
-            ImGui.InputInt("Point size", *point_size_s32, 2);
-            it.display_info.point_size = xx clamp(point_size_s32, 2, 6);
+            ImGui.InputInt("Point size", *it.display_info.point_size);
+            it.display_info.point_size = clamp(it.display_info.point_size, 2, 10);
 
             trailing_width : s32 = xx vertex_label_style.format_float.trailing_width;
             ImGui.InputInt("Float decimals", *trailing_width);
-
-
             vertex_label_style.format_float.trailing_width = clamp(trailing_width, 0, 12);
             Show_Tooltip("Number of digits following the decimal point");
+
             combo_box("Float format", *vertex_label_style.format_float.mode, type_info(FormatFloat.Mode));
             ImGui.DragFloat("Label scale", *vertex_label_style.label_scale, .005, .2, 1., display_format="%.3f");
 
@@ -535,6 +539,13 @@ display_info_ui :: (display_info : *Display_Info) -> Display_Info_Is_Set {
         ImGui.Text("Surface   Visible|Color");
         ImGui.SameLine();
         set.color_reset = ImGui.Button(imgui_label("Color by filename##surface_color_reset", display_info), size=*V2_ZERO);
+
+        ImGui.PushItemWidth(120);
+        set.point_size = ImGui.InputInt("Point size", *display_info.point_size);
+        display_info.point_size = clamp(display_info.point_size, 2, 10);
+        set.line_width = ImGui.InputInt("Line width", *display_info.line_width);
+        display_info.line_width = clamp(display_info.line_width, 1, 10);
+        ImGui.PopItemWidth();
     }
 
     if ImGui.TreeNode("%", "Label Settings") {
@@ -556,14 +567,6 @@ display_info_ui :: (display_info : *Display_Info) -> Display_Info_Is_Set {
         set.vertex_label_style_is_set.format_float = combo_box("Float format", *vertex_label_style.format_float.mode, type_info(FormatFloat.Mode));
         set.vertex_label_style_is_set.label_scale  = ImGui.DragFloat("Label scale", *vertex_label_style.label_scale, .005, .2, 1., display_format="%.3f");
         set.vertex_label_style_is_set.label_color  = ImGui.ColorEdit4("Label color", *vertex_label_style.label_color.component, ImGui.ColorEditFlags.NoInputs);
-
-        label_limit_s32 : s32 = xx app.label_limit;
-        ImGui.InputInt("Label limit", *label_limit_s32);
-        app.label_limit = label_limit_s32;
-        if app.label_limit > 2000 {
-            color := ImVec4.{1., .4, .4, 1.};
-            ImGui.TextColored(*color, "%s", "Warning: label limit > 2000 may be slow");
-        }
     }
 
     return set;
