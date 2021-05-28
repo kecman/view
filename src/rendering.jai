@@ -45,7 +45,7 @@ Display_Info :: struct {
 
     flash_wave_dt : float = 0.;
 
-    wireframe := false;
+    wireframe_visible := false;
     color : Vector4 = .{1., 1., 1., 1.}; // RGBA
     display_mode := Display_Mode.BLINN_PHONG;
 
@@ -242,7 +242,7 @@ render_mesh :: (mesh : *Mesh, using render_info : *Render_Info, using display_in
     glGetIntegerv(GL_POLYGON_MODE, xx last_polygon_mode.data);
     defer glPolygonMode(GL_FRONT_AND_BACK, last_polygon_mode[0]);
 
-    if wireframe {
+    if wireframe_visible {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     } else {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -382,7 +382,7 @@ debug_vector :: (length : float, vector_world : Vector3, color : Vector4) {
 
     // @Cleanup: struct literals do not currently support non-constant values
     display_info : Display_Info;
-    display_info.wireframe = true;
+    display_info.wireframe_visible = true;
     display_info.color = color;
     display_info.point_size = 0;
     display_info.line_width = 1;

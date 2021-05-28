@@ -221,17 +221,17 @@ show_scene_ui :: ()
                     if set.vertex_label_style_is_set.label_scale   vertex_label_style.label_scale   = other.vertex_label_style.label_scale;
                     if set.vertex_label_style_is_set.label_color   vertex_label_style.label_color   = other.vertex_label_style.label_color;
 
-                    if set.visible         visible = other.visible;
-                    if set.wireframe       wireframe = other.wireframe;
-                    if set.color           color = other.color;
-                    if set.color_reset     color = color_from_path(it.fully_pathed_filename);
-                    if set.color_opacity   color.w = other.color.w;
-                    if set.display_mode    display_mode = other.display_mode;
-                    if set.normals_visible normals_visible = other.normals_visible;
-                    if set.normals_color   normals_color = other.normals_color;
-                    if set.normals_length  normals_length = other.normals_length;
-                    if set.point_size      point_size = other.point_size;
-                    if set.line_width      line_width = other.line_width;
+                    if set.visible           visible = other.visible;
+                    if set.wireframe_visible wireframe_visible = other.wireframe_visible;
+                    if set.color             color = other.color;
+                    if set.color_reset       color = color_from_path(it.fully_pathed_filename);
+                    if set.color_opacity     color.w = other.color.w;
+                    if set.display_mode      display_mode = other.display_mode;
+                    if set.normals_visible   normals_visible = other.normals_visible;
+                    if set.normals_color     normals_color = other.normals_color;
+                    if set.normals_length    normals_length = other.normals_length;
+                    if set.point_size        point_size = other.point_size;
+                    if set.line_width        line_width = other.line_width;
                 }
             }
         }
@@ -484,7 +484,7 @@ Display_Info_Is_Set :: struct {
     visible : bool;
     // visible_sweep_hovered : bool;
     // flash_wave_dt : bool;
-    wireframe : bool;
+    wireframe_visible : bool;
     color : bool;
     display_mode : bool;
     normals_visible : bool;
@@ -525,7 +525,7 @@ display_info_ui :: (display_info : *Display_Info) -> Display_Info_Is_Set {
         set.normals_length = ImGui.DragFloat(imgui_label("##normals_length", display_info), *display_info.normals_length, .05);
         ImGui.PopItemWidth();
 
-        set.wireframe = ImGui.Checkbox(imgui_label("##wireframe_visible", display_info), *display_info.wireframe);
+        set.wireframe_visible = ImGui.Checkbox(imgui_label("##wireframe_visible", display_info), *display_info.wireframe_visible);
         ImGui.SameLine();
         // @FIXME @Incomplete wireframe_color
         set.color = ImGui.ColorEdit4(imgui_label("##wireframe_color", display_info), *display_info.color.component, ImGui.ColorEditFlags.NoInputs);
