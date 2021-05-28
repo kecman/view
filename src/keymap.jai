@@ -170,25 +170,25 @@ clear_labels :: () {
 cycle_point_size :: () {
     count := 0;
     for app.entities if it.is_selected {
-        using it.display_info.vertex_label_style;
+        using it.display_info;
         if      point_size == 0 point_size = 2;
         else if point_size == 2 point_size = 4;
-        else    point_size = 0;
+        else                    point_size = 0;
         count += 1;
     }
 
     if count == 0 for app.entities if it.is_hovered {
-        using it.display_info.vertex_label_style;
+        using it.display_info;
         if      point_size == 0 point_size = 2;
         else if point_size == 2 point_size = 4;
-        else    point_size = 0;
+        else                    point_size = 0;
     }
 }
 
 cycle_line_width :: () {
     count := 0;
     for app.entities if it.is_selected {
-        using it.display_info.vertex_label_style;
+        using it.display_info;
         if      line_width == 1 line_width = 2;
         else if line_width == 2 line_width = 3;
         else    line_width = 1;
@@ -196,7 +196,7 @@ cycle_line_width :: () {
     }
 
     if count == 0 for app.entities if it.is_hovered {
-        using it.display_info.vertex_label_style;
+        using it.display_info;
         if      line_width == 1 line_width = 2;
         else if line_width == 2 line_width = 3;
         else    line_width = 1;

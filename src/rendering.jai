@@ -9,9 +9,6 @@ Vertex_Label_Style :: struct {
 
     label_scale := .3;
     label_color : Vector4 = .{0., 0., .75, 1.}; // Blue, works well on both grey and white backgrounds
-
-    point_size : int = 0; // 0, 2, 4, 6
-    line_width : int = 1; // 1, 1, 2, 3
 }
 
 Display_Mode :: enum {
