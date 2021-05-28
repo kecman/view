@@ -73,16 +73,16 @@ init_keymap :: ()
     add_key(*app.keymap, close_application, "close application", xx #char "q", .{shift_pressed=true, control_pressed=true});
     add_key(*app.keymap, call_fit_on_screen, "fit on screen", xx #char "r");
     add_key(*app.keymap, reset_camera, "reset camera", xx #char "r", .{shift_pressed=true});
-    add_key(*app.keymap, reload_entities, "reload hovered or selected item(s)", xx Special_Key_Code.F5);
     add_key(*app.keymap, select_or_deselect_all, "Select/deselect all items", xx #char "a", .{control_pressed=true});
     add_key(*app.keymap, toggle_current_selection, "Toggle/complement current item selection", xx #char "a", .{alt_pressed=true});
 
-    add_key(*app.keymap, cycle_opacity, "cycle opacity 20%%/50%%/100%% for hovered/selected item(s)", xx #char "o");
-    add_key(*app.keymap, cycle_normals_visibility, "cycle normals visibility for hovered/selected item(s)", xx #char "n");
-    add_key(*app.keymap, cycle_line_width, "cycle line width", xx #char "l");
-    add_key(*app.keymap, cycle_point_size, "cycle point size", xx #char "p");
-    add_key(*app.keymap, cycle_point_index_labels, "cycle point index labels", xx #char "p", .{shift_pressed=true});
-    add_key(*app.keymap, cycle_point_position_labels, "cycle point position labels", xx #char "p", .{alt_pressed=true});
+    add_key(*app.keymap, reload_entities, "reload hovered/selected items", xx Special_Key_Code.F5);
+    add_key(*app.keymap, cycle_opacity, "cycle opacity 20%%/50%%/100%% for hovered/selected items", xx #char "o");
+    add_key(*app.keymap, cycle_normals_visibility, "cycle normals visibility for hovered/selected items", xx #char "n");
+    add_key(*app.keymap, cycle_line_width, "cycle line width for hovered/selected items", xx #char "l");
+    add_key(*app.keymap, cycle_point_size, "cycle point size for hovered/selected items", xx #char "p");
+    add_key(*app.keymap, cycle_point_index_labels, "cycle point index labels for hovered/selected items", xx #char "p", .{shift_pressed=true});
+    add_key(*app.keymap, cycle_point_position_labels, "cycle point position labels for hovered/selected items", xx #char "p", .{alt_pressed=true});
     add_key(*app.keymap, clear_labels, "clear labels", xx #char "x");
 
     add_key(*app.keymap, rotate_look_direction_15_cw,  "rotate  15 deg about selected rotation axis",  xx #char "]");

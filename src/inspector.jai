@@ -50,8 +50,8 @@ inspect :: (name: *u8, data: *void, info:*Type_Info) {
             info_struct := cast(*Type_Info_Struct) info;
             if ImGui.TreeNode("%", to_string(name)) {
                 defer ImGui.TreePop();
-                ImGui.Unindent(ImGui.GetTreeNodeToLabelSpacing());
-                defer ImGui.Indent(ImGui.GetTreeNodeToLabelSpacing());
+                // ImGui.Unindent(ImGui.GetTreeNodeToLabelSpacing());
+                // defer ImGui.Indent(ImGui.GetTreeNodeToLabelSpacing());
 
                 for member : info_struct.members {
                     inspect(temp_c_string(member.name), data + member.offset_in_bytes, member.type);

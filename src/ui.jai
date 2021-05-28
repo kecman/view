@@ -12,11 +12,15 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
     defer ImGui.End();
     defer if entities.count ImGui.Separator();
 
-    combo_box("Background", *app.background_style, type_info(Background_Style));
-    if app.background_style == .SOLID_COLOR {
-        ImGui.ColorEdit4("Background Color", *background_solid_color.component, ImGui.ColorEditFlags.NoInputs);
+    // @TODO Default this to open
+    if ImGui.TreeNode("%", "Viewport Settings") {
+        defer ImGui.TreePop();
+        combo_box("Background", *app.background_style, type_info(Background_Style));
+        if app.background_style == .SOLID_COLOR {
+            ImGui.ColorEdit4("Background Color", *background_solid_color.component, ImGui.ColorEditFlags.NoInputs);
+        }
+        ImGui.Checkbox("World Axes", *world_axes.visible);
     }
-    ImGui.Checkbox("World Axes", *world_axes.visible);
 
     // :UserConfig add a button to overwrite the user settings file with new defaults here?
     inspect("User Settings", *app.settings);
@@ -416,11 +420,15 @@ show_help_ui :: () {
     ImGui.Begin("##show_help_ui", flags = ImGui.WindowFlags.NoTitleBar | .AlwaysAutoResize | .NoMove /*| .NoNav*/);
     defer ImGui.End();
 
-    ImGui.Text("Use MMB to pan the camera");
-    ImGui.Text("Use RMB to rotate the camera (Alt to slow down, Shift to change axis)");
-    ImGui.Text("Use scroll to zoom the camera (Alt to slow down, Shift to speed up)");
-    ImGui.Text("Click a filename with LMB to focus an item");
-    ImGui.Text("Click a filename with RMB to access a per-item context menu");
+    ImGui.Text("Use MMB in the viewport to pan the camera");
+    ImGui.Text("Use RMB in the viewport to rotate the camera (Alt to slow down, Shift to change axis)");
+    ImGui.Text("Use scroll in the view port to zoom the camera (Alt to slow down, Shift to speed up)");
+    ImGui.Text("Use LMB on an item list filename to focus an item");
+    ImGui.Text("Use RMB on an item list filename to access a per-item context menu");
+    ImGui.Text("Use RMB on an item list color to cycle shading styles");
+    ImGui.Text("Use MMB on an item list color to reset the color from the filename");
+    ImGui.Text("\n");
+    ImGui.Text("Note: The item list is in the top left (visible if there's at least one item loaded)");
     ImGui.NewLine();
 
     ImGui.Separator();
