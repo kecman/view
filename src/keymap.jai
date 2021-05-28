@@ -125,59 +125,50 @@ rotate_look_direction_15_ccw   :: () { rotate_look_direction(camera_rotation_axi
 rotate_look_direction_45_cw    :: () { rotate_look_direction(camera_rotation_axis(), -45); }
 rotate_look_direction_45_ccw   :: () { rotate_look_direction(camera_rotation_axis(),  45); }
 
-cycle_point_index_labels :: () {
+Selected_Or_Hovered :: (entities : *[..]*Entity, body : Code, flags : For_Flags) #expand {
+    #assert(flags == 0); // No options are supported
+
+    `it_index : int;
+    `it : *Entity;
+
     count := 0;
-    for app.entities if it.is_selected {
-        using it.display_info.vertex_label_style;
-        show_index = !show_index;
+    for entity, entity_index : <<entities if entity.is_selected {
+        it_index = entity_index;
+        it = entity;
+        #insert (remove=#assert(false), break=break entity) body;
         count += 1;
     }
 
-    if count == 0 for app.entities if it.is_hovered {
+    if count == 0 for entity, entity_index : <<entities if entity.is_hovered {
+        it_index = entity_index;
+        it = entity;
+        #insert (remove=#assert(false), break=break entity) body;
+    }
+}
+
+cycle_point_index_labels :: () {
+    for :Selected_Or_Hovered app.entities {
         using it.display_info.vertex_label_style;
         show_index = !show_index;
     }
 }
 
 cycle_point_position_labels :: () {
-    count := 0;
-    for app.entities if it.is_selected {
-        using it.display_info.vertex_label_style;
-        show_position = !show_position;
-        count += 1;
-    }
-
-    if count == 0 for app.entities if it.is_hovered {
+    for :Selected_Or_Hovered app.entities {
         using it.display_info.vertex_label_style;
         show_position = !show_position;
     }
 }
 
 clear_labels :: () {
-    count := 0;
-    for app.entities if it.is_selected {
-        using it.display_info.vertex_label_style;
-        show_index, show_position = false, false;
-        count += 1;
-    }
-
-    if count == 0 for app.entities if it.is_hovered {
+    for :Selected_Or_Hovered app.entities {
         using it.display_info.vertex_label_style;
         show_index, show_position = false, false;
     }
 }
 
 cycle_point_size :: () {
-    count := 0;
-    for app.entities if it.is_selected {
-        using it.display_info;
-        if      point_size == 0 point_size = 2;
-        else if point_size == 2 point_size = 4;
-        else                    point_size = 0;
-        count += 1;
-    }
-
-    if count == 0 for app.entities if it.is_hovered {
+    for :Selected_Or_Hovered app.entities {
         using it.display_info;
         if      point_size == 0 point_size = 2;
         else if point_size == 2 point_size = 4;
@@ -186,16 +177,7 @@ cycle_point_size :: () {
 }
 
 cycle_line_width :: () {
-    count := 0;
-    for app.entities if it.is_selected {
-        using it.display_info;
-        if      line_width == 1 line_width = 2;
-        else if line_width == 2 line_width = 3;
-        else    line_width = 1;
-        count += 1;
-    }
-
-    if count == 0 for app.entities if it.is_hovered {
+    for :Selected_Or_Hovered app.entities {
         using it.display_info;
         if      line_width == 1 line_width = 2;
         else if line_width == 2 line_width = 3;
