@@ -79,7 +79,7 @@ init_keymap :: ()
     add_key(*app.keymap, reload_entities, "reload hovered/selected items", xx Special_Key_Code.F5);
     add_key(*app.keymap, cycle_opacity, "cycle opacity 20%%/50%%/100%% for hovered/selected items", xx #char "o");
     add_key(*app.keymap, cycle_normals_visibility, "cycle normals visibility for hovered/selected items", xx #char "n");
-    add_key(*app.keymap, cycle_line_width, "cycle line width for hovered/selected items", xx #char "l");
+    add_key(*app.keymap, cycle_wireframe_width, "cycle wireframe line width for hovered/selected items", xx #char "l");
     add_key(*app.keymap, cycle_point_size, "cycle point size for hovered/selected items", xx #char "p");
     add_key(*app.keymap, cycle_point_index_labels, "cycle point index labels for hovered/selected items", xx #char "p", .{shift_pressed=true});
     add_key(*app.keymap, cycle_point_position_labels, "cycle point position labels for hovered/selected items", xx #char "p", .{alt_pressed=true});
@@ -176,12 +176,19 @@ cycle_point_size :: () {
     }
 }
 
-cycle_line_width :: () {
+cycle_wireframe_width :: () {
     for :Selected_Or_Hovered app.entities {
         using it.display_info;
-        if      line_width == 1 line_width = 2;
-        else if line_width == 2 line_width = 3;
-        else    line_width = 1;
+        if !wireframe_visible {
+            wireframe_visible = true;
+            wireframe_width = 1;
+        } else if wireframe_width == 1 {
+            wireframe_width += 1;
+        } else if wireframe_width == 2 {
+            wireframe_width += 1;
+        } else {
+            wireframe_visible = false;
+        }
     }
 }
 

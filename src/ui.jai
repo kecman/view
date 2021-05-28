@@ -45,8 +45,7 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
     }
 }
 
-show_scene_ui :: ()
-{
+show_item_list_ui :: () {
     using app;
 
     if !entities.count return;
@@ -232,6 +231,7 @@ show_scene_ui :: ()
 
                     if set.wireframe_visible     wireframe_visible = other.wireframe_visible;
                     if set.wireframe_color       wireframe_color = other.wireframe_color;
+                    if set.wireframe_width       wireframe_width = other.wireframe_width;
                     if set.surface_visible       surface_visible = other.surface_visible;
                     if set.surface_color         surface_color = other.surface_color;
                     if set.surface_color_reset   surface_color = color_from_path(it.fully_pathed_filename);
@@ -241,7 +241,6 @@ show_scene_ui :: ()
                     if set.normals_color         normals_color = other.normals_color;
                     if set.normals_length        normals_length = other.normals_length;
                     if set.point_size            point_size = other.point_size;
-                    if set.line_width            line_width = other.line_width;
                 }
             }
         }
@@ -491,19 +490,20 @@ Vertex_Label_Style_Is_Set :: struct {
 
 // @Volatile keep this in sync with Display_Info
 Display_Info_Is_Set :: struct {
-    is_visible : bool;
-    // visible_sweep_hovered : bool;
-    // flash_wave_dt : bool;
     wireframe_visible : bool;
     wireframe_color : bool;
+    wireframe_width : bool;
+
     surface_visible : bool;
     surface_color : bool;
+
     display_mode : bool;
+
     normals_visible : bool;
     normals_color : bool;
     normals_length : bool;
+
     point_size : bool;
-    line_width : bool;
 
     vertex_label_style_is_set : Vertex_Label_Style_Is_Set;
 
@@ -541,7 +541,12 @@ display_info_ui :: (display_info : *Display_Info) -> Display_Info_Is_Set {
         ImGui.SameLine();
         set.wireframe_color = ImGui.ColorEdit4(imgui_label("##wireframe_color", display_info), *display_info.wireframe_color.component, ImGui.ColorEditFlags.NoInputs);
         ImGui.SameLine();
-        ImGui.Text("Wireframe Visible|Color");
+        ImGui.Text("Wireframe Visible|Color|Width: ");
+        ImGui.SameLine();
+        ImGui.PushItemWidth(70);
+        set.wireframe_width = ImGui.InputInt("##Line width", *display_info.wireframe_width);//ImGui.DragInt(imgui_label("##wireframe_width", display_info), *display_info.wireframe_width, 0, 4);
+        display_info.wireframe_width = clamp(display_info.wireframe_width, 1, 10);
+        ImGui.PopItemWidth();
 
         set.surface_visible = ImGui.Checkbox(imgui_label("##surface_visible", display_info), *display_info.surface_visible);
         ImGui.SameLine();
@@ -554,8 +559,6 @@ display_info_ui :: (display_info : *Display_Info) -> Display_Info_Is_Set {
         ImGui.PushItemWidth(120);
         set.point_size = ImGui.InputInt("Point size", *display_info.point_size);
         display_info.point_size = clamp(display_info.point_size, 2, 10);
-        set.line_width = ImGui.InputInt("Line width", *display_info.line_width);
-        display_info.line_width = clamp(display_info.line_width, 1, 10);
         ImGui.PopItemWidth();
     }
 

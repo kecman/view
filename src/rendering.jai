@@ -47,10 +47,10 @@ Display_Info :: struct {
     vertex_label_style : Vertex_Label_Style;
 
     wireframe_visible := false;
-    wireframe_color := Vector4.{0., 0., 0., 1.}; // RGBA // nocommit use
-    line_width : s32 = 1; // @Cleanup wireframe_width?
+    wireframe_color := Vector4.{0., 0., 0., 1.}; // RGBA
+    wireframe_width : s32 = 0;
 
-    surface_visible := true; // Separate to opacity so we can toggle transparent normals nocommit use
+    surface_visible := true; // Separate to opacity so we can toggle transparent normals
     surface_color : Vector4 = .{1., 1., 1., 1.}; // RGBA
 
     display_mode := Display_Mode.BLINN_PHONG;
@@ -199,7 +199,10 @@ render_mesh :: (mesh : *Mesh, using render_info : *Render_Info, using display_in
 
     {
         loc := glGetUniformLocation(app.mesh_program, "display_mode");
-        glUniform1i(loc, xx display_mode);
+        if #complete mode == {
+            case .FILL; glUniform1i(loc, xx display_mode);
+            case .LINE; glUniform1i(loc, xx Display_Mode.BLINN_PHONG);
+        }
     }
 
     {
@@ -246,11 +249,11 @@ render_mesh :: (mesh : *Mesh, using render_info : *Render_Info, using display_in
     glVertexAttribPointer(ATTRIB_POSITION, 3, GL_FLOAT, false, size_of(Vector3), null);
     glVertexAttribPointer(ATTRIB_NORMAL, 3, GL_FLOAT, false, size_of(Vector3), cast(*void)(NP));
 
+    // @Cleanup only set when mode==.LINE
     last_line_width: float;
     glGetFloatv(GL_LINE_WIDTH, xx *last_line_width);
     defer glLineWidth(last_line_width);
-
-    glLineWidth(xx line_width); // 1, 2, 3... See also glEnable(GL_LINE_SMOOTH);
+    glLineWidth(xx wireframe_width); // See also glEnable(GL_LINE_SMOOTH);
 
     last_polygon_mode: [2]GLuint;
     glGetIntegerv(GL_POLYGON_MODE, xx last_polygon_mode.data);
@@ -396,9 +399,9 @@ debug_vector :: (length : float, vector_world : Vector3, color : Vector4) {
     // @Cleanup: struct literals do not currently support non-constant values
     display_info : Display_Info;
     display_info.wireframe_visible = true;
+    display_info.wireframe_width = 1;
     display_info.surface_color = color;
     display_info.point_size = 0;
-    display_info.line_width = 1;
 
     render_info : Render_Info;
     render_mesh(*debug_mesh, *render_info, display_info);
