@@ -43,21 +43,22 @@ Display_Info :: struct {
 
     flash_wave_dt : float = 0.;
 
-    point_size : s32 = 0;
+    points_visible := false;
+    points_color := Vector4.{.5, .5, .5, 1.}; // RGBA
+    points_size : s32 = 0;
     vertex_label_style : Vertex_Label_Style;
+
+    normals_visible := false; // Separate to opacity so we can toggle transparent normals
+    normals_color := Vector4.{0., 0., .8, 1.}; // RGBA
+    normals_length : float = 1.;
 
     wireframe_visible := false;
     wireframe_color := Vector4.{0., 0., 0., 1.}; // RGBA
     wireframe_width : s32 = 0;
 
     surface_visible := true; // Separate to opacity so we can toggle transparent normals
-    surface_color : Vector4 = .{1., 1., 1., 1.}; // RGBA
-
+    surface_color := Vector4.{1., 1., 1., 1.}; // RGBA
     display_mode := Display_Mode.BLINN_PHONG;
-
-    normals_visible := false; // Separate to opacity so we can toggle transparent normals
-    normals_color : Vector4 = .{0., 0., .8, 1.}; // RGBA
-    normals_length : float = 1.;
 }
 
 maybe_update_render_info :: (info : *Render_Info, mesh : *Mesh) {
@@ -163,6 +164,7 @@ render_normals :: (mesh : *Mesh, using render_info : *Render_Info, using display
 }
 
 Polygon_Mode :: enum {
+    POINT;
     LINE;
     FILL;
 }
@@ -170,6 +172,7 @@ Polygon_Mode :: enum {
 render_mesh :: (mesh : *Mesh, using render_info : *Render_Info, using display_info : Display_Info, mode : Polygon_Mode = .FILL, flash_dt : float = 0) {
 
     if #complete mode == {
+        case .POINT; if !points_visible return;
         case .FILL; if !surface_visible return;
         case .LINE; if !wireframe_visible return;
     }
@@ -200,8 +203,9 @@ render_mesh :: (mesh : *Mesh, using render_info : *Render_Info, using display_in
     {
         loc := glGetUniformLocation(app.mesh_program, "display_mode");
         if #complete mode == {
-            case .FILL; glUniform1i(loc, xx display_mode);
+            case .POINT; #through;
             case .LINE; glUniform1i(loc, xx Display_Mode.BLINN_PHONG);
+            case .FILL; glUniform1i(loc, xx display_mode);
         }
     }
 
@@ -212,16 +216,23 @@ render_mesh :: (mesh : *Mesh, using render_info : *Render_Info, using display_in
     }
 
     {
+        loc := glGetUniformLocation(app.mesh_program, "screentone_backfaces");
+        screentone_backfaces := mode == .FILL;
+        glUniform1ui(loc, xx screentone_backfaces);
+    }
+
+    {
         loc := glGetUniformLocation(app.mesh_program, "color");
         if #complete mode == {
-            case .FILL; glUniform4f(loc, surface_color.x, surface_color.y, surface_color.z, surface_color.w);
-            case .LINE; glUniform4f(loc, wireframe_color.x, wireframe_color.y, wireframe_color.z, wireframe_color.w);
+            case .POINT; glUniform4f(loc, points_color.x, points_color.y, points_color.z, points_color.w);
+            case .LINE;  glUniform4f(loc, wireframe_color.x, wireframe_color.y, wireframe_color.z, wireframe_color.w);
+            case .FILL;  glUniform4f(loc, surface_color.x, surface_color.y, surface_color.z, surface_color.w);
         }
     }
 
     {
         loc := glGetUniformLocation(app.mesh_program, "point_size");
-        glUniform1f(loc, xx point_size);
+        glUniform1f(loc, xx points_size);
     }
 
     {
@@ -259,27 +270,29 @@ render_mesh :: (mesh : *Mesh, using render_info : *Render_Info, using display_in
     glGetIntegerv(GL_POLYGON_MODE, xx last_polygon_mode.data);
     defer glPolygonMode(GL_FRONT_AND_BACK, last_polygon_mode[0]);
 
-    if #complete mode == {
-        case .LINE; glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        case .FILL; glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    }
-
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBlendEquation(GL_FUNC_ADD);
     defer glDisable(GL_BLEND);
 
+    glEnable(GL_PROGRAM_POINT_SIZE);
+
+    if #complete mode == {
+        case .LINE; glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        case .FILL; glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        case .POINT; glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+    }
+
     if #complete mesh.geometry_format == {
-        case .POINTS;
         case .UNKNOWN;
+        case .POINTS;
+            glDrawArrays(GL_POINTS, 0, xx mesh.positions.count);
         case .LINES;
             glDrawElements(GL_LINES, xx mesh.indices.count, GL_UNSIGNED_INT, null);
         case .TRIANGLES;
             glDrawElements(GL_TRIANGLES, xx mesh.indices.count, GL_UNSIGNED_INT, null);
     }
 
-    glEnable(GL_PROGRAM_POINT_SIZE);
-    glDrawArrays(GL_POINTS, 0, xx mesh.positions.count);
 }
 
 render_vertex_labels :: (points : []$T, style : Vertex_Label_Style, label_index_offset : int = 0) {
@@ -401,7 +414,7 @@ debug_vector :: (length : float, vector_world : Vector3, color : Vector4) {
     display_info.wireframe_visible = true;
     display_info.wireframe_width = 1;
     display_info.surface_color = color;
-    display_info.point_size = 0;
+    display_info.points_size = 0;
 
     render_info : Render_Info;
     render_mesh(*debug_mesh, *render_info, display_info);

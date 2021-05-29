@@ -223,11 +223,11 @@ show_item_list_ui :: () {
                     other := *app.selection_display_info;
                     using it.display_info;
 
-                    if set.vertex_label_style_is_set.show_position vertex_label_style.show_position = other.vertex_label_style.show_position;
-                    if set.vertex_label_style_is_set.show_index    vertex_label_style.show_index    = other.vertex_label_style.show_index;
-                    if set.vertex_label_style_is_set.format_float  vertex_label_style.format_float  = other.vertex_label_style.format_float;
-                    if set.vertex_label_style_is_set.label_scale   vertex_label_style.label_scale   = other.vertex_label_style.label_scale;
-                    if set.vertex_label_style_is_set.label_color   vertex_label_style.label_color   = other.vertex_label_style.label_color;
+                    if set.vertex_label_style_update.show_position vertex_label_style.show_position = other.vertex_label_style.show_position;
+                    if set.vertex_label_style_update.show_index    vertex_label_style.show_index    = other.vertex_label_style.show_index;
+                    if set.vertex_label_style_update.format_float  vertex_label_style.format_float  = other.vertex_label_style.format_float;
+                    if set.vertex_label_style_update.label_scale   vertex_label_style.label_scale   = other.vertex_label_style.label_scale;
+                    if set.vertex_label_style_update.label_color   vertex_label_style.label_color   = other.vertex_label_style.label_color;
 
                     if set.wireframe_visible     wireframe_visible = other.wireframe_visible;
                     if set.wireframe_color       wireframe_color = other.wireframe_color;
@@ -240,7 +240,9 @@ show_item_list_ui :: () {
                     if set.normals_visible       normals_visible = other.normals_visible;
                     if set.normals_color         normals_color = other.normals_color;
                     if set.normals_length        normals_length = other.normals_length;
-                    if set.point_size            point_size = other.point_size;
+                    if set.points_visible        points_visible = other.points_visible;
+                    if set.points_color          points_color = other.points_color;
+                    if set.points_size           points_size = other.points_size;
                 }
             }
         }
@@ -303,8 +305,8 @@ show_item_list_ui :: () {
             ImGui.Checkbox("Position labels", *vertex_label_style.show_position);
             ImGui.SameLine();
             ImGui.ColorEdit4("Label color", *vertex_label_style.label_color.component, ImGui.ColorEditFlags.NoInputs);
-            ImGui.InputInt("Point size", *it.display_info.point_size);
-            it.display_info.point_size = clamp(it.display_info.point_size, 2, 10);
+            ImGui.InputInt("Point size", *it.display_info.points_size);
+            it.display_info.points_size = clamp(it.display_info.points_size, 2, 10);
 
             trailing_width : s32 = xx vertex_label_style.format_float.trailing_width;
             ImGui.InputInt("Float decimals", *trailing_width);
@@ -480,7 +482,7 @@ show_help_ui :: () {
 #scope_file
 
 // @Volatile keep this in sync with Vertex_Label_Style
-Vertex_Label_Style_Is_Set :: struct {
+Vertex_Label_Style_Update :: struct {
     show_position : bool;
     show_index : bool;
     format_float : bool;
@@ -489,31 +491,30 @@ Vertex_Label_Style_Is_Set :: struct {
 }
 
 // @Volatile keep this in sync with Display_Info
-Display_Info_Is_Set :: struct {
+Display_Info_Update :: struct {
+    points_visible : bool;
+    points_color : bool;
+    points_size : bool;
+    vertex_label_style_update : Vertex_Label_Style_Update;
+
+    normals_visible : bool;
+    normals_color : bool;
+    normals_length : bool;
+
     wireframe_visible : bool;
     wireframe_color : bool;
     wireframe_width : bool;
 
     surface_visible : bool;
     surface_color : bool;
-
+    surface_color_reset : bool;
+    surface_color_opacity : bool;
     display_mode : bool;
-
-    normals_visible : bool;
-    normals_color : bool;
-    normals_length : bool;
-
-    point_size : bool;
-
-    vertex_label_style_is_set : Vertex_Label_Style_Is_Set;
-
-    surface_color_reset : bool; // Not a member of Display_Info
-    surface_color_opacity : bool; // Not a member of Display_Info
 }
 
-display_info_ui :: (display_info : *Display_Info) -> Display_Info_Is_Set {
+display_info_ui :: (display_info : *Display_Info) -> Display_Info_Update {
 
-    set : Display_Info_Is_Set;
+    set : Display_Info_Update;
 
     ImGui.PushItemWidth(120);
     set.display_mode = combo_box("", *display_info.display_mode, type_info(type_of(display_info.display_mode)));
@@ -527,6 +528,17 @@ display_info_ui :: (display_info : *Display_Info) -> Display_Info_Is_Set {
     // @Cleanup The following block is only really needed for .MESH and .POLYGON_SOUP types
     // @Incomplete Add AABB visiblity and color
     {
+        set.points_visible = ImGui.Checkbox(imgui_label("##points_visible", display_info), *display_info.points_visible);
+        ImGui.SameLine();
+        set.points_color = ImGui.ColorEdit4(imgui_label("##points_color", display_info), *display_info.points_color.component, ImGui.ColorEditFlags.NoInputs);
+        ImGui.SameLine();
+        ImGui.Text("Points    Visible|Color|Size:  ");
+        ImGui.SameLine();
+        ImGui.PushItemWidth(70);
+        set.points_size = ImGui.InputInt("##points_size", *display_info.points_size);
+        display_info.points_size = clamp(display_info.points_size, 2, 10);
+        ImGui.PopItemWidth();
+
         set.normals_visible = ImGui.Checkbox(imgui_label("##normals_visible", display_info), *display_info.normals_visible);
         ImGui.SameLine();
         set.normals_color = ImGui.ColorEdit4(imgui_label("##normals_color", display_info), *display_info.normals_color.component, ImGui.ColorEditFlags.NoInputs);
@@ -544,7 +556,7 @@ display_info_ui :: (display_info : *Display_Info) -> Display_Info_Is_Set {
         ImGui.Text("Wireframe Visible|Color|Width: ");
         ImGui.SameLine();
         ImGui.PushItemWidth(70);
-        set.wireframe_width = ImGui.InputInt("##Line width", *display_info.wireframe_width);//ImGui.DragInt(imgui_label("##wireframe_width", display_info), *display_info.wireframe_width, 0, 4);
+        set.wireframe_width = ImGui.InputInt("##wireframe_width", *display_info.wireframe_width);
         display_info.wireframe_width = clamp(display_info.wireframe_width, 1, 10);
         ImGui.PopItemWidth();
 
@@ -555,11 +567,6 @@ display_info_ui :: (display_info : *Display_Info) -> Display_Info_Is_Set {
         ImGui.Text("Surface   Visible|Color");
         ImGui.SameLine();
         set.surface_color_reset = ImGui.Button(imgui_label("Color by filename##surface_color_reset", display_info), size=*V2_ZERO);
-
-        ImGui.PushItemWidth(120);
-        set.point_size = ImGui.InputInt("Point size", *display_info.point_size);
-        display_info.point_size = clamp(display_info.point_size, 2, 10);
-        ImGui.PopItemWidth();
     }
 
     if ImGui.TreeNode("%", "Label Settings") {
@@ -569,18 +576,18 @@ display_info_ui :: (display_info : *Display_Info) -> Display_Info_Is_Set {
         // ImGui.Unindent(ImGui.GetTreeNodeToLabelSpacing());
         // defer ImGui.Indent(ImGui.GetTreeNodeToLabelSpacing());
 
-        set.vertex_label_style_is_set.show_index = ImGui.Checkbox("Index labels", *vertex_label_style.show_index);
+        set.vertex_label_style_update.show_index = ImGui.Checkbox("Index labels", *vertex_label_style.show_index);
         ImGui.SameLine();
-        set.vertex_label_style_is_set.show_position = ImGui.Checkbox("Position labels", *vertex_label_style.show_position);
+        set.vertex_label_style_update.show_position = ImGui.Checkbox("Position labels", *vertex_label_style.show_position);
 
         trailing_width : s32 = xx vertex_label_style.format_float.trailing_width;
-        set.vertex_label_style_is_set.format_float |= ImGui.InputInt("Float decimals", *trailing_width);
+        set.vertex_label_style_update.format_float |= ImGui.InputInt("Float decimals", *trailing_width);
         vertex_label_style.format_float.trailing_width = clamp(trailing_width, 0, 12);
         Show_Tooltip("Number of digits following the decimal point");
 
-        set.vertex_label_style_is_set.format_float = combo_box("Float format", *vertex_label_style.format_float.mode, type_info(FormatFloat.Mode));
-        set.vertex_label_style_is_set.label_scale  = ImGui.DragFloat("Label scale", *vertex_label_style.label_scale, .005, .2, 1., display_format="%.3f");
-        set.vertex_label_style_is_set.label_color  = ImGui.ColorEdit4("Label color", *vertex_label_style.label_color.component, ImGui.ColorEditFlags.NoInputs);
+        set.vertex_label_style_update.format_float = combo_box("Float format", *vertex_label_style.format_float.mode, type_info(FormatFloat.Mode));
+        set.vertex_label_style_update.label_scale  = ImGui.DragFloat("Label scale", *vertex_label_style.label_scale, .005, .2, 1., display_format="%.3f");
+        set.vertex_label_style_update.label_color  = ImGui.ColorEdit4("Label color", *vertex_label_style.label_color.component, ImGui.ColorEditFlags.NoInputs);
     }
 
     return set;

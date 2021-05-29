@@ -8,13 +8,12 @@ uniform float wave; // time varying value in range [-1,1]
 uniform Camera camera;
 uniform int display_mode = 0;
 uniform vec4 color; // rgba
+uniform bool screentone_backfaces = true;
 
 in vec3 vertex_normal_ws;
 in vec3 fragment_position_ws;
 
 out vec4 out_color;
-
-const bool SCREENTONE_BACKFACES = true;
 
 struct Point_Light {
     vec3  position;
@@ -112,7 +111,7 @@ void main() {
     }
 
     // TODO: modify the input color instead so we get lighting on the screentone pixels too
-    if (SCREENTONE_BACKFACES && !gl_FrontFacing) {
+    if (screentone_backfaces && !gl_FrontFacing) {
         if (int(gl_FragCoord.x) % 3 == 0 && int(gl_FragCoord.y) % 3 == 0) {
             out_color = vec4(.3, .3, .3, .0);
         }

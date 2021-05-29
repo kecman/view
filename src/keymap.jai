@@ -85,12 +85,12 @@ init_keymap :: ()
     add_key(*app.keymap, cycle_point_position_labels, "cycle point position labels for hovered/selected items", xx #char "p", .{alt_pressed=true});
     add_key(*app.keymap, clear_labels, "clear labels", xx #char "x");
 
-    add_key(*app.keymap, rotate_look_direction_15_cw,  "rotate  15 deg about selected rotation axis",  xx #char "]");
+    add_key(*app.keymap, rotate_look_direction_15_cw,  "rotate  15 deg about selected rotation axis", xx #char "]");
     add_key(*app.keymap, rotate_look_direction_15_ccw, "rotate -15 deg about selected rotation axis", xx #char "[");
-    add_key(*app.keymap, rotate_look_direction_45_cw,  "rotate  45 deg about selected rotation axis",  xx #char "]", .{shift_pressed=true});
+    add_key(*app.keymap, rotate_look_direction_45_cw,  "rotate  45 deg about selected rotation axis", xx #char "]", .{shift_pressed=true});
     add_key(*app.keymap, rotate_look_direction_45_ccw, "rotate -45 deg about selected rotation axis", xx #char "[", .{shift_pressed=true});
-    add_key(*app.keymap, rotate_look_direction_5_cw,   "rotate  5  deg about selected rotation axis",   xx #char "]", .{alt_pressed=true});
-    add_key(*app.keymap, rotate_look_direction_5_ccw,  "rotate -5  deg about selected rotation axis",  xx #char "[", .{alt_pressed=true});
+    add_key(*app.keymap, rotate_look_direction_5_cw,   "rotate  5  deg about selected rotation axis", xx #char "]", .{alt_pressed=true});
+    add_key(*app.keymap, rotate_look_direction_5_ccw,  "rotate -5  deg about selected rotation axis", xx #char "[", .{alt_pressed=true});
     // add_key(*app.keymap, debug_junk, "debug_junk", xx #char " ");
 
     add_key :: (keymap : *Keymap, proc : () -> (), name : string, key_code : u32, modifier_flags : Modifier_Flags = .{}) {
@@ -170,9 +170,9 @@ clear_labels :: () {
 cycle_point_size :: () {
     for :Selected_Or_Hovered app.entities {
         using it.display_info;
-        if      point_size == 0 point_size = 2;
-        else if point_size == 2 point_size = 4;
-        else                    point_size = 0;
+        if      points_size == 0 points_size = 2;
+        else if points_size == 2 points_size = 4;
+        else                     points_size = 0;
     }
 }
 

@@ -190,7 +190,7 @@ load_entity_from_file :: (filename : string) -> *Entity {
 
             entity := New(Mesh_Entity);
             Common_Init();
-            entity.display_info.point_size = 2;
+            entity.display_info.points_size = 2;
             return entity;
 
         case .UNKNOWN;

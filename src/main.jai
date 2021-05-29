@@ -352,6 +352,7 @@ main :: () {
                     mesh := cast(*Mesh_Entity) entity;
                     render_mesh(*mesh.mesh, *entity.render_info, entity.display_info);
                     render_mesh(*mesh.mesh, *entity.render_info, entity.display_info, mode=.LINE);
+                    render_mesh(*mesh.mesh, *entity.render_info, entity.display_info, mode=.POINT);
                     render_normals(*mesh.mesh, *entity.render_info, entity.display_info);
                     // @Cleanup so the transform is also available for text rendering
                     Reserve_Labels(mesh.mesh.positions.count);
