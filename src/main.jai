@@ -339,7 +339,6 @@ main :: () {
 
                     soup := cast(*Polygon_Soup_Entity) entity;
                     render_mesh_points(*soup.mesh, *entity.render_info, entity.display_info);
-                    render_mesh_lines(*soup.mesh, *entity.render_info, entity.display_info);
                     render_mesh_triangles(*soup.mesh, *entity.render_info, entity.display_info);
                     for polygon : soup.shape.polygons {
                         Reserve_Labels(point_count(polygon));
