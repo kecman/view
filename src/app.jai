@@ -89,6 +89,28 @@ entities_iterator :: (entities : *[..]*Entity, body : Code, flags : For_Flags, s
 
 visible :: #bake_arguments entities_iterator(should_visit = (e)=>(e.is_visible));
 
+// @Cleanup remove, it's unused and not very helpful
+Selected_Or_Hovered :: (entities : *[..]*Entity, body : Code, flags : For_Flags) #expand {
+    #assert(flags == 0); // No options are supported
+
+    `it_index : int;
+    `it : *Entity;
+
+    count := 0;
+    for entity, entity_index : <<entities if entity.is_selected {
+        it_index = entity_index;
+        it = entity;
+        #insert (remove=#assert(false), break=break entity) body;
+        count += 1;
+    }
+
+    if count == 0 for entity, entity_index : <<entities if entity.is_hovered {
+        it_index = entity_index;
+        it = entity;
+        #insert (remove=#assert(false), break=break entity) body;
+    }
+}
+
 #import "Basic";
 #import "File";
 #import "File_Utilities";

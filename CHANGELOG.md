@@ -5,10 +5,10 @@
   - Future work will hotload this shader and the provide inputs expected by Shadertoy
   - The boring solid color option is still available in settings (press Shift+h to access)
 - Added a screentone effect when rendering a backfacing triangle (press RMB on item name to access)
-- Added option to independently toggle visibility and colors of mesh points, wireframes and surfaces
+- Added option to independently toggle visibility and colors of mesh points, lines and triangles
 - Added normal rendering with options to set color and length in the item context menu
   - Normal rendering also works for oriented point clouds loaded from an obj file containing v, vn and p codes
-- Added a new UI idiom in which bindings will affect the currently hovered unselected item or all selected items (Ctrl+LMB selects a item)
+- Added a new UI idiom in which bindings will affect all selected items (Ctrl+LMB selects a item)
   - Added a binding to cycle normals visibility (n) using this idiom
   - Added a binding to cycle opacity 20%/50%/100% (o) using this idiom
   - Changed the binding for reloading items (F5) to follow this idiom

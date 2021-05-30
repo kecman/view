@@ -125,31 +125,10 @@ rotate_look_direction_15_ccw   :: () { rotate_look_direction(camera_rotation_axi
 rotate_look_direction_45_cw    :: () { rotate_look_direction(camera_rotation_axis(), -45); }
 rotate_look_direction_45_ccw   :: () { rotate_look_direction(camera_rotation_axis(),  45); }
 
-Selected_Or_Hovered :: (entities : *[..]*Entity, body : Code, flags : For_Flags) #expand {
-    #assert(flags == 0); // No options are supported
-
-    `it_index : int;
-    `it : *Entity;
-
-    count := 0;
-    for entity, entity_index : <<entities if entity.is_selected {
-        it_index = entity_index;
-        it = entity;
-        #insert (remove=#assert(false), break=break entity) body;
-        count += 1;
-    }
-
-    if count == 0 for entity, entity_index : <<entities if entity.is_hovered {
-        it_index = entity_index;
-        it = entity;
-        #insert (remove=#assert(false), break=break entity) body;
-    }
-}
-
 cycle_point_index_labels :: () {
     app_style := *app.selection_display_info.vertex_label_style;
     app_style.show_index = !app_style.show_index;
-    for :Selected_Or_Hovered app.entities {
+    for app.entities if it.is_selected {
         it.display_info.vertex_label_style.show_index = app_style.show_index;
     }
 }
@@ -157,13 +136,13 @@ cycle_point_index_labels :: () {
 cycle_point_position_labels :: () {
     app_style := *app.selection_display_info.vertex_label_style;
     app_style.show_position = !app_style.show_position;
-    for :Selected_Or_Hovered app.entities {
+    for app.entities if it.is_selected {
         it.display_info.vertex_label_style.show_position = app_style.show_position;
     }
 }
 
 clear_labels :: () {
-    for :Selected_Or_Hovered app.entities {
+    for app.entities if it.is_selected {
         using it.display_info.vertex_label_style;
         show_index, show_position = false, false;
     }
@@ -183,7 +162,7 @@ cycle_point_size :: () {
         }
     }
 
-    for :Selected_Or_Hovered app.entities {
+    for app.entities if it.is_selected {
         it.display_info.points_visible = app_info.points_visible;
         it.display_info.points_size    = app_info.points_size;
     }
@@ -205,7 +184,7 @@ cycle_wireframe_width :: () {
         }
     }
 
-    for :Selected_Or_Hovered app.entities {
+    for app.entities if it.is_selected {
         it.display_info.wireframe_visible = app_info.wireframe_visible;
         it.display_info.wireframe_width   = app_info.wireframe_width;
     }
@@ -223,33 +202,15 @@ reset_camera :: () { init_camera(); }
 // debug_junk :: () { c:= app.camera; printv(#code c); }
 
 cycle_opacity :: () {
-    count := 0;
     for app.entities if it.is_selected {
         if      it.display_info.surface_color.w == 1.  it.display_info.surface_color.w = .5;
         else if it.display_info.surface_color.w == .5  it.display_info.surface_color.w = .2;
         else    it.display_info.surface_color.w =  1.;
-        count += 1;
-    }
-
-    if count == 0 {
-        for app.entities if it.is_hovered {
-            if      it.display_info.surface_color.w == 1.  it.display_info.surface_color.w = .5;
-            else if it.display_info.surface_color.w == .5  it.display_info.surface_color.w = .2;
-            else    it.display_info.surface_color.w =  1.;
-        }
     }
 }
 
 cycle_normals_visibility :: () {
-    count := 0;
     for app.entities if it.is_selected {
         it.display_info.normals_visible = !it.display_info.normals_visible;
-        count += 1;
-    }
-
-    if count == 0 {
-        for app.entities if it.is_hovered {
-            it.display_info.normals_visible = !it.display_info.normals_visible;
-        }
     }
 }

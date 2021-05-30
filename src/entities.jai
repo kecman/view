@@ -279,21 +279,10 @@ replace_entity :: (old : *Entity, old_index : s64, new : *Entity) {
     }
 }
 
-// Reload the selected entities or the hovered entity if none are selected
 reload_entities :: () {
-    count := 0;
     for app.entities if it.is_selected {
         entity := load_entity_from_file(it.fully_pathed_filename);
         replace_entity(it, it_index, entity);
-        count += 1;
-    }
-
-    if count == 0 {
-        for app.entities if it.is_hovered {
-            entity := load_entity_from_file(it.fully_pathed_filename);
-            replace_entity(it, it_index, entity);
-            count += 1;
-        }
     }
 }
 
