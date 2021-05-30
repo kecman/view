@@ -105,7 +105,7 @@ void main() {
             // }
 
             vec4 color_gamma_corrected = vec4(pow(ambient_color + color_linear.xyz, vec3(1 / gamma)), 1);
-            out_color = mix(color_gamma_corrected, vec4(1.f), wave * .5f + .5f);
+            out_color = mix(color_gamma_corrected, vec4(.8,.8,.8,1), wave * .5f + .5f);
 
         } break;
     }

@@ -1,4 +1,3 @@
-// @Volatile keep this in sync with Vertex_Label_Style_Is_Set
 Vertex_Label_Style :: struct {
     show_position := false;
     show_index := false;
@@ -37,8 +36,6 @@ Render_Info :: struct {
 }
 
 // Things that should be preserved when the geometry changes
-// @Volatile keep this in sync with Display_Info_Update
-// @TODO add separate color for edges, and clarify `color` is for the surface. Perhaps use the name color1, color2, or use #place to get aliases
 Display_Info :: struct {
 
     flash_wave_dt : float = 0.;
@@ -48,7 +45,7 @@ Display_Info :: struct {
     points_size : s32 = 0;
     vertex_label_style : Vertex_Label_Style;
 
-    normals_visible := false; // Separate to opacity so we can toggle transparent normals
+    normals_visible := false;
     normals_color := Vector4.{0., 0., .8, 1.}; // RGBA
     normals_length : float = 1.;
 
@@ -56,7 +53,7 @@ Display_Info :: struct {
     wireframe_color := Vector4.{0., 0., 0., 1.}; // RGBA
     wireframe_width : s32 = 0;
 
-    surface_visible := true; // Separate to opacity so we can toggle transparent normals
+    surface_visible := true;
     surface_color := Vector4.{1., 1., 1., 1.}; // RGBA
     display_mode := Display_Mode.BLINN_PHONG;
 }

@@ -392,7 +392,7 @@ show_camera_controls :: () {
     }
     ImGui.NextColumn();
 
-    // @Volatile: button text should be kept in sync with keymap!
+    // @Volatile button text should be kept in sync with keymap!
     right_label, left_label, amount := "<< ", " >>", 15.;
     if app.modifier_flags.shift_pressed {
         right_label, left_label, amount = "<<<", ">>>", 45.;
@@ -490,7 +490,6 @@ show_help_ui :: () {
 
 #scope_file
 
-// @Volatile keep this in sync with Vertex_Label_Style
 Vertex_Label_Style_Update :: struct {
     show_position : bool;
     show_index : bool;
@@ -499,7 +498,6 @@ Vertex_Label_Style_Update :: struct {
     label_color : bool;
 }
 
-// @Volatile keep this in sync with Display_Info
 Display_Info_Update :: struct {
     points_visible : bool;
     points_color : bool;
