@@ -268,9 +268,10 @@ find_closest_vertex_on_visible_entities :: () -> Closest_Vertex_On_Entity {
 replace_entity :: (old : *Entity, old_index : s64, new : *Entity) {
     if new {
         // Maintain the following information after the entity reload
-        new.display_info = old.display_info;
-        new.generation_index = old.generation_index;
-        new.is_selected = old.is_selected;
+        new.is_visible            = old.is_visible;
+        new.is_selected           = old.is_selected;
+        new.display_info          = old.display_info;
+        new.generation_index      = old.generation_index;
         new.mesh.world_from_model = old.mesh.world_from_model;
 
         deinit(old);
