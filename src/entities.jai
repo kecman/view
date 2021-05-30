@@ -1,11 +1,12 @@
+Entity_Type :: enum {
+    UNKNOWN;
+    POLYLINE_SOUP2;
+    POLYLINE_SOUP3;
+    POLYGON_SOUP;
+    MESH;
+}
+
 Entity :: struct {
-    Entity_Type :: enum {
-        UNKNOWN;
-        POLYLINE_SOUP2;
-        POLYLINE_SOUP3;
-        POLYGON_SOUP;
-        MESH;
-    }
     type : Entity_Type = .UNKNOWN;
 
     is_visible := true;
@@ -116,6 +117,10 @@ entity_fully_pathed_filename_with_generation_index :: (using entity : Entity) ->
 }
 
 color_from_path :: (path : string) -> Vector4 {
+    if path.count == 0 {
+        return .{1., 1., 1., 1.};
+    }
+
     to_hash : string;
     if app.settings.color_from_path_behaviour == {
         case .FILENAME_ONLY;
@@ -153,7 +158,6 @@ load_entity_from_file :: (filename : string) -> *Entity {
         `entity.mesh = mesh;
         `entity.fully_pathed_filename = copy_string(filename);
         `entity.loaded_filetime = get_current_file_time();
-        `entity.display_info.surface_color = color_from_path(filename);
 
         log("Inferred entity type '%'", `entity.type);
     }
@@ -163,34 +167,52 @@ load_entity_from_file :: (filename : string) -> *Entity {
 
             bbox := bounding_box(mesh);
             if diagonal(bbox).z == 0 {
-                shape, ok := to_Polyline_Soup2(mesh);
-                assert(ok);
 
                 entity := New(Polyline_Soup2_Entity);
+                shape, ok := to_Polyline_Soup2(mesh);
+                assert(ok);
                 entity.shape = shape;
+
                 Common_Init();
+                entity.display_info.wireframe_visible = true;
+                entity.display_info.wireframe_width = 1;
+                entity.display_info.wireframe_color = color_from_path(filename);
+
                 return entity;
             } else {
-                shape, ok := to_Polyline_Soup3(mesh);
-                assert(ok);
 
                 entity := New(Polyline_Soup3_Entity);
+                shape, ok := to_Polyline_Soup3(mesh);
+                assert(ok);
                 entity.shape = shape;
+
                 Common_Init();
+                entity.display_info.wireframe_visible = true;
+                entity.display_info.wireframe_width = 1;
+                entity.display_info.wireframe_color = color_from_path(filename);
+
                 return entity;
             }
 
         case .TRIANGLES;
 
             entity := New(Mesh_Entity);
+
             Common_Init();
+            entity.display_info.surface_visible = true;
+            entity.display_info.surface_color = color_from_path(filename);
+
             return entity;
 
         case .POINTS;
 
             entity := New(Mesh_Entity);
+
             Common_Init();
+            entity.display_info.points_visible = true;
             entity.display_info.points_size = 2;
+            entity.display_info.points_color = color_from_path(filename);
+
             return entity;
 
         case .UNKNOWN;

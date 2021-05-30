@@ -147,16 +147,18 @@ Selected_Or_Hovered :: (entities : *[..]*Entity, body : Code, flags : For_Flags)
 }
 
 cycle_point_index_labels :: () {
+    app_style := *app.selection_display_info.vertex_label_style;
+    app_style.show_index = !app_style.show_index;
     for :Selected_Or_Hovered app.entities {
-        using it.display_info.vertex_label_style;
-        show_index = !show_index;
+        it.display_info.vertex_label_style.show_index = app_style.show_index;
     }
 }
 
 cycle_point_position_labels :: () {
+    app_style := *app.selection_display_info.vertex_label_style;
+    app_style.show_position = !app_style.show_position;
     for :Selected_Or_Hovered app.entities {
-        using it.display_info.vertex_label_style;
-        show_position = !show_position;
+        it.display_info.vertex_label_style.show_position = app_style.show_position;
     }
 }
 
@@ -168,17 +170,29 @@ clear_labels :: () {
 }
 
 cycle_point_size :: () {
+    app_info := *app.selection_display_info;
+    {
+        using app_info;
+        if !points_visible {
+            points_visible = true;
+            points_size = 2;
+        } else if points_size == 2 {
+            points_size += 2;
+        } else {
+            points_visible = false;
+        }
+    }
+
     for :Selected_Or_Hovered app.entities {
-        using it.display_info;
-        if      points_size == 0 points_size = 2;
-        else if points_size == 2 points_size = 4;
-        else                     points_size = 0;
+        it.display_info.points_visible = app_info.points_visible;
+        it.display_info.points_size    = app_info.points_size;
     }
 }
 
 cycle_wireframe_width :: () {
-    for :Selected_Or_Hovered app.entities {
-        using it.display_info;
+    app_info := *app.selection_display_info;
+    {
+        using app_info;
         if !wireframe_visible {
             wireframe_visible = true;
             wireframe_width = 1;
@@ -189,6 +203,11 @@ cycle_wireframe_width :: () {
         } else {
             wireframe_visible = false;
         }
+    }
+
+    for :Selected_Or_Hovered app.entities {
+        it.display_info.wireframe_visible = app_info.wireframe_visible;
+        it.display_info.wireframe_width   = app_info.wireframe_width;
     }
 }
 

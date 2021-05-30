@@ -81,7 +81,10 @@ show_item_list_ui :: () {
         if it.display_info.display_mode == .NORMALS {
             ImGui.TextDisabled("NR.");
         } else {
-            ImGui.ColorEdit4(imgui_label("##color", it), *it.display_info.surface_color.component, ImGui.ColorEditFlags.NoInputs);
+            color := get_primary_color(it);
+            if color {
+                ImGui.ColorEdit4(imgui_label("##color", it), *color.component, ImGui.ColorEditFlags.NoInputs);
+            }
         }
         if ImGui.IsItemClicked(1) {
             cycle_display_mode(*it.display_info.display_mode);
@@ -187,8 +190,11 @@ show_item_list_ui :: () {
 
                 ImGui.Separator();
 
-                set := display_info_ui(*it.display_info);
-                if set.surface_color_reset it.display_info.surface_color = color_from_path(it.fully_pathed_filename);
+                normals_ui :=  it.type == .MESH;
+                lines_ui   := (it.type == .MESH && it.mesh.geometry_format != .POINTS) || it.type == .POLYLINE_SOUP2 || it.type == .POLYLINE_SOUP3;
+                faces_ui   := (it.type == .MESH && it.mesh.geometry_format == .TRIANGLES) || it.type == .POLYGON_SOUP;
+                set := display_info_ui(*it.display_info, normals_ui=normals_ui, lines_ui=lines_ui, faces_ui=faces_ui);
+                if set.color_reset it.display_info.surface_color = color_from_path(it.fully_pathed_filename);
 
                 ImGui.Separator();
                 shift := make_vector3(it.mesh.world_from_model._14, it.mesh.world_from_model._24, it.mesh.world_from_model._34);
@@ -229,20 +235,23 @@ show_item_list_ui :: () {
                     if set.vertex_label_style_update.label_scale   vertex_label_style.label_scale   = other.vertex_label_style.label_scale;
                     if set.vertex_label_style_update.label_color   vertex_label_style.label_color   = other.vertex_label_style.label_color;
 
-                    if set.wireframe_visible     wireframe_visible = other.wireframe_visible;
-                    if set.wireframe_color       wireframe_color = other.wireframe_color;
-                    if set.wireframe_width       wireframe_width = other.wireframe_width;
-                    if set.surface_visible       surface_visible = other.surface_visible;
-                    if set.surface_color         surface_color = other.surface_color;
-                    if set.surface_color_reset   surface_color = color_from_path(it.fully_pathed_filename);
-                    if set.surface_color_opacity surface_color.w = other.surface_color.w;
-                    if set.display_mode          display_mode = other.display_mode;
-                    if set.normals_visible       normals_visible = other.normals_visible;
-                    if set.normals_color         normals_color = other.normals_color;
-                    if set.normals_length        normals_length = other.normals_length;
-                    if set.points_visible        points_visible = other.points_visible;
-                    if set.points_color          points_color = other.points_color;
-                    if set.points_size           points_size = other.points_size;
+                    if set.wireframe_visible wireframe_visible = other.wireframe_visible;
+                    if set.wireframe_color   wireframe_color   = other.wireframe_color;
+                    if set.wireframe_width   wireframe_width   = other.wireframe_width;
+                    if set.surface_visible   surface_visible   = other.surface_visible;
+                    if set.surface_color     surface_color     = other.surface_color;
+                    if set.display_mode      display_mode      = other.display_mode;
+                    if set.normals_visible   normals_visible   = other.normals_visible;
+                    if set.normals_color     normals_color     = other.normals_color;
+                    if set.normals_length    normals_length    = other.normals_length;
+                    if set.points_visible    points_visible    = other.points_visible;
+                    if set.points_color      points_color      = other.points_color;
+                    if set.points_size       points_size       = other.points_size;
+
+                    if set.color_reset {
+                        color  := get_primary_color(it);
+                        <<color = color_from_path(it.fully_pathed_filename);
+                    }
                 }
             }
         }
@@ -264,7 +273,7 @@ show_item_list_ui :: () {
         Show_Tooltip("User Selection Visible");
         any_visibility_toggled = any_visibility_toggled || visibility_toggled;
         ImGui.SameLine();
-        ImGui.ColorEdit4(imgui_label("##color", it), *it.display_info.surface_color.component, ImGui.ColorEditFlags.NoInputs);
+        ImGui.ColorEdit4(imgui_label("##color", it), *it.display_info.points_color.component, ImGui.ColorEditFlags.NoInputs);
 
         ImGui.SameLine();
         ImGui.Text("User selection");
@@ -507,38 +516,32 @@ Display_Info_Update :: struct {
 
     surface_visible : bool;
     surface_color : bool;
-    surface_color_reset : bool;
-    surface_color_opacity : bool;
+
+    color_reset : bool;
     display_mode : bool;
 }
 
-display_info_ui :: (display_info : *Display_Info) -> Display_Info_Update {
+display_info_ui :: (display_info : *Display_Info, normals_ui : bool = true, lines_ui : bool = true, faces_ui : bool = true) -> Display_Info_Update {
 
     set : Display_Info_Update;
 
+    // FIXME FIXME: opacity should control wireframe??
     ImGui.PushItemWidth(120);
     set.display_mode = combo_box("", *display_info.display_mode, type_info(type_of(display_info.display_mode)));
     ImGui.PopItemWidth();
+
+    set.points_visible = ImGui.Checkbox(imgui_label("##points_visible", display_info), *display_info.points_visible);
+    ImGui.SameLine();
+    set.points_color = ImGui.ColorEdit4(imgui_label("##points_color", display_info), *display_info.points_color.component, ImGui.ColorEditFlags.NoInputs);
+    ImGui.SameLine();
+    ImGui.Text("Points    Visible|Color|Size:  ");
     ImGui.SameLine();
     ImGui.PushItemWidth(70);
-    set.surface_color_opacity = ImGui.DragFloat(imgui_label("##Opacity", display_info), *display_info.surface_color.w, v_speed=.005, v_min=0., v_max=1.);
+    set.points_size = ImGui.InputInt("##points_size", *display_info.points_size);
+    display_info.points_size = clamp(display_info.points_size, 1, 10);
     ImGui.PopItemWidth();
-    Show_Tooltip("Opacity");
 
-    // @Cleanup The following block is only really needed for .MESH and .POLYGON_SOUP types
-    // @Incomplete Add AABB visiblity and color
-    {
-        set.points_visible = ImGui.Checkbox(imgui_label("##points_visible", display_info), *display_info.points_visible);
-        ImGui.SameLine();
-        set.points_color = ImGui.ColorEdit4(imgui_label("##points_color", display_info), *display_info.points_color.component, ImGui.ColorEditFlags.NoInputs);
-        ImGui.SameLine();
-        ImGui.Text("Points    Visible|Color|Size:  ");
-        ImGui.SameLine();
-        ImGui.PushItemWidth(70);
-        set.points_size = ImGui.InputInt("##points_size", *display_info.points_size);
-        display_info.points_size = clamp(display_info.points_size, 2, 10);
-        ImGui.PopItemWidth();
-
+    if normals_ui {
         set.normals_visible = ImGui.Checkbox(imgui_label("##normals_visible", display_info), *display_info.normals_visible);
         ImGui.SameLine();
         set.normals_color = ImGui.ColorEdit4(imgui_label("##normals_color", display_info), *display_info.normals_color.component, ImGui.ColorEditFlags.NoInputs);
@@ -548,26 +551,31 @@ display_info_ui :: (display_info : *Display_Info) -> Display_Info_Update {
         ImGui.PushItemWidth(70);
         set.normals_length = ImGui.DragFloat(imgui_label("##normals_length", display_info), *display_info.normals_length, .05);
         ImGui.PopItemWidth();
+    }
 
+    if lines_ui {
         set.wireframe_visible = ImGui.Checkbox(imgui_label("##wireframe_visible", display_info), *display_info.wireframe_visible);
         ImGui.SameLine();
         set.wireframe_color = ImGui.ColorEdit4(imgui_label("##wireframe_color", display_info), *display_info.wireframe_color.component, ImGui.ColorEditFlags.NoInputs);
         ImGui.SameLine();
-        ImGui.Text("Wireframe Visible|Color|Width: ");
+        ImGui.Text("Lines     Visible|Color|Width: ");
         ImGui.SameLine();
         ImGui.PushItemWidth(70);
         set.wireframe_width = ImGui.InputInt("##wireframe_width", *display_info.wireframe_width);
         display_info.wireframe_width = clamp(display_info.wireframe_width, 1, 10);
         ImGui.PopItemWidth();
+    }
 
+    if faces_ui {
         set.surface_visible = ImGui.Checkbox(imgui_label("##surface_visible", display_info), *display_info.surface_visible);
         ImGui.SameLine();
         set.surface_color = ImGui.ColorEdit4(imgui_label("##surface_color", display_info), *display_info.surface_color.component, ImGui.ColorEditFlags.NoInputs);
         ImGui.SameLine();
-        ImGui.Text("Surface   Visible|Color");
-        ImGui.SameLine();
-        set.surface_color_reset = ImGui.Button(imgui_label("Color by filename##surface_color_reset", display_info), size=*V2_ZERO);
+        ImGui.Text("Triangles Visible|Color");
     }
+
+    set.color_reset = ImGui.Button(imgui_label("Reset Color##color_reset", display_info), size=*V2_ZERO);
+    Show_Tooltip("Deduce primary color from file path");
 
     if ImGui.TreeNode("%", "Label Settings") {
         defer ImGui.TreePop();
@@ -655,4 +663,21 @@ Show_Tooltip :: (description : string) #expand {
         // ImGui.PopTextWrapPos();
         ImGui.EndTooltip();
     }
+}
+
+get_primary_color :: (using entity : *Entity) -> *Vector4 {
+    if #complete type == {
+        case .UNKNOWN;
+        case .POLYLINE_SOUP2; return *display_info.wireframe_color;
+        case .POLYLINE_SOUP3; return *display_info.wireframe_color;
+        case .POLYGON_SOUP;   return *display_info.surface_color;
+        case .MESH;
+            if #complete mesh.geometry_format == {
+                case .UNKNOWN;
+                case .POINTS;    return *display_info.points_color;
+                case .LINES;     return *display_info.wireframe_color;
+                case .TRIANGLES; return *display_info.surface_color;
+            }
+    }
+    return null;
 }
