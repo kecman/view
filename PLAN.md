@@ -1,7 +1,5 @@
 ## Next Release
 
-- [UI/UX] Put wireframe width on same line as visibility and color
-
 - [UI/UX,Bug] Fix camera orbit positioning zoom level when
 - [UI/UX] Make Ctrl+Scroll do the scroll that doesn't zoom into where the cursor is pointing, this is handy when you set the camera orbit and want to zoom in
 - [Rendering] Render plane using geometry shader and implement mesh clipping
@@ -14,6 +12,7 @@
 
 ## Backlog
 
+- [UI/UX] Use folding trees in help menu, default to unfolded
 - [Rendering,Bug] Don't screentone backfaces when wireframe mode (or transparency?) is on
 - [Rendering] Render aabbs using geometry shader, show it when the box extents are hovered in the UI
 - [UI/UX] Add normals to user selection

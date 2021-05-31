@@ -67,7 +67,7 @@ show_item_list_ui :: () {
         ImGui.SameLine();
         was_visible := it.is_visible;
         visibility_toggled := checkbox_press_or_sweep_to_toggle(*it.is_visible, *it.is_visible_sweep_hovered, imgui_label("##Visible", it));
-        Show_Tooltip("Visible");
+        // Show_Tooltip("Visible");
 
         if !was_visible && visibility_toggled {
             // Make sure we see something when turning on visibility
@@ -90,7 +90,8 @@ show_item_list_ui :: () {
             cycle_display_mode(*it.display_info.display_mode);
         } else if ImGui.IsItemClicked(2) {
             if it.display_info.display_mode != .NORMALS {
-                it.display_info.surface_color = color_from_path(it.fully_pathed_filename);
+                color := get_primary_color(it);
+                <<color = color_from_path(it.fully_pathed_filename);
             }
         }
 
@@ -111,9 +112,8 @@ show_item_list_ui :: () {
         // Write filename
         ImGui.SameLine();
         if it.fully_pathed_filename.count {
-            text := entity_filename_with_generation_index(<<it);
+            text := entity_filename(<<it, with_short_filename=true, with_generation_index=true, with_loaded_time=false);
 
-            loaded_time_text := filetime_to_readable_date(it.loaded_filetime);
             delta_time := get_current_file_time() - it.loaded_filetime;
             FADE_TIME_SECS := 1;
             color := Vector4.{1, 1, 1, 1};
@@ -130,7 +130,6 @@ show_item_list_ui :: () {
         } else {
             ImGui.Selectable("---", *it.is_selected, size=*V2_ZERO);
         }
-        Show_Tooltip("RMB: Show item/selection context menu\nLMB: Focus item\nCtrl+LMB: Select item");
         if ImGui.IsItemClicked() {
             if !io().KeyCtrl fit_on_screen(it);
         }
@@ -147,20 +146,35 @@ show_item_list_ui :: () {
 
             if !it.is_selected {
                 if it.fully_pathed_filename.count {
-
-                    text := entity_fully_pathed_filename_with_generation_index(<<it);
-                    ImGui.Text(text);
+                    if ImGui.Button(imgui_label("Reload", it), size=*V2_ZERO) {
+                        entity := load_entity_from_file(it.fully_pathed_filename);
+                        replace_entity(it, it_index, entity);
+                    }
+                    ImGui.SameLine();
+                    text := entity_filename(<<it, with_generation_index=true, with_short_filename=false, with_loaded_time=true);
+                    ImGui.Text(cast(string)"%", text);
                 }
 
-                loaded_time_text := filetime_to_readable_date(it.loaded_filetime);
-                ImGui.Text("% %", "Loaded at", loaded_time_text);
-                ImGui.SameLine();
-                if it.fully_pathed_filename.count && ImGui.Button(imgui_label("Reload", it), size=*V2_ZERO) {
-                    entity := load_entity_from_file(it.fully_pathed_filename);
-                    replace_entity(it, it_index, entity);
-                }
+                ImGui.Separator();
 
-                if it.type == {
+                normals_ui :=  it.type == .MESH;
+                lines_ui   := (it.type == .MESH && it.mesh.geometry_format != .POINTS) || it.type == .POLYLINE_SOUP2 || it.type == .POLYLINE_SOUP3;
+                faces_ui   := (it.type == .MESH && it.mesh.geometry_format == .TRIANGLES) || it.type == .POLYGON_SOUP;
+                set := display_info_ui(*it.display_info, normals_ui=normals_ui, lines_ui=lines_ui, faces_ui=faces_ui);
+                if set.color_reset it.display_info.surface_color = color_from_path(it.fully_pathed_filename);
+
+                ImGui.Separator();
+
+                shift := make_vector3(it.mesh.world_from_model._14, it.mesh.world_from_model._24, it.mesh.world_from_model._34);
+                // ImGui.PushItemWidth(-1);
+                ImGui.DragFloat3(imgui_label("Shift", it), *shift.component, .05);
+                // ImGui.PopItemWidth();
+                it.mesh.world_from_model._14, it.mesh.world_from_model._24, it.mesh.world_from_model._34 = shift.x, shift.y, shift.z;
+
+                ImGui.Separator();
+
+                if #complete it.type == {
+                    case .UNKNOWN;
                     case .POLYLINE_SOUP2;
 
                         using soup := cast(*Polyline_Soup2_Entity)it;
@@ -179,40 +193,39 @@ show_item_list_ui :: () {
                     case .MESH;
 
                         mesh := cast(*Mesh_Entity)it;
-                        ImGui.Text(to_c_string(tprint("#points, #triangles = %, %", mesh.mesh.positions.count, mesh.mesh.indices.count / 3)));
+                        if #complete mesh.mesh.geometry_format == {
+                            case .UNKNOWN;
+                            case .POINTS;
+                                ImGui.Text(to_c_string(tprint("#points = %", mesh.mesh.positions.count)));
+                            case .LINES;
+                                ImGui.Text(to_c_string(tprint("#points, #lines = %, %", mesh.mesh.positions.count, mesh.mesh.indices.count / 2)));
+                            case .TRIANGLES;
+                                ImGui.Text(to_c_string(tprint("#points, #triangles = %, %", mesh.mesh.positions.count, mesh.mesh.indices.count / 3)));
+                        }
                 }
-
                 maybe_update_render_info(*it.render_info, *it.mesh);
                 aabb := it.render_info.bounding_aabb;
-                ImGui.Text(to_c_string(tprint("Model space AABB [%, %, %]x[%, %, %]",
+                ImGui.Text(to_c_string(tprint("Model space AABB = [%, %, %]x[%, %, %]",
                                               aabb.min_point.x, aabb.min_point.y, aabb.min_point.z,
                                               aabb.max_point.x, aabb.max_point.y, aabb.max_point.z)));
 
-                ImGui.Separator();
 
-                normals_ui :=  it.type == .MESH;
-                lines_ui   := (it.type == .MESH && it.mesh.geometry_format != .POINTS) || it.type == .POLYLINE_SOUP2 || it.type == .POLYLINE_SOUP3;
-                faces_ui   := (it.type == .MESH && it.mesh.geometry_format == .TRIANGLES) || it.type == .POLYGON_SOUP;
-                set := display_info_ui(*it.display_info, normals_ui=normals_ui, lines_ui=lines_ui, faces_ui=faces_ui);
-                if set.color_reset it.display_info.surface_color = color_from_path(it.fully_pathed_filename);
-
-                ImGui.Separator();
-                shift := make_vector3(it.mesh.world_from_model._14, it.mesh.world_from_model._24, it.mesh.world_from_model._34);
-                // ImGui.PushItemWidth(-1);
-                ImGui.DragFloat3(imgui_label("Shift", it), *shift.component, .05);
-                // ImGui.PopItemWidth();
-                it.mesh.world_from_model._14, it.mesh.world_from_model._24, it.mesh.world_from_model._34 = shift.x, shift.y, shift.z;
             } else {
                 for app.entities if it.is_selected {
                     if it.fully_pathed_filename.count {
-                        text := entity_fully_pathed_filename_with_generation_index(<<it);
-                        ImGui.Text(text);
+                        if ImGui.Button(imgui_label("Reload", it), size=*V2_ZERO) {
+                            entity := load_entity_from_file(it.fully_pathed_filename);
+                            replace_entity(it, it_index, entity);
+                        }
+                        ImGui.SameLine();
+                        text := entity_filename(<<it, with_generation_index=true, with_short_filename=false, with_loaded_time=true);
+                        ImGui.Text(cast(string)"%", text);
                     }
                 }
 
-                if ImGui.Button("Reload Selected Items", size=*V2_ZERO) {
+                if ImGui.Button("Reload Selection", size=*V2_ZERO) {
                     reload_entities();
-                    ImGui.CloseCurrentPopup();
+                    // ImGui.CloseCurrentPopup();
                 }
 
                 ImGui.SameLine();
@@ -223,6 +236,7 @@ show_item_list_ui :: () {
                     ImGui.CloseCurrentPopup();
                 }
 
+                ImGui.Separator();
                 set := display_info_ui(*app.selection_display_info);
 
                 for app.entities if it.is_selected {
@@ -270,14 +284,14 @@ show_item_list_ui :: () {
         // Toggle visibility checkbox
         ImGui.SameLine();
         visibility_toggled := checkbox_press_or_sweep_to_toggle(*it.is_visible, *it.is_visible_sweep_hovered, imgui_label("##Visible", it));
-        Show_Tooltip("User Selection Visible");
+        Show_Tooltip("Enable selection mode");
         any_visibility_toggled = any_visibility_toggled || visibility_toggled;
         ImGui.SameLine();
         ImGui.ColorEdit4(imgui_label("##color", it), *it.display_info.points_color.component, ImGui.ColorEditFlags.NoInputs);
 
         ImGui.SameLine();
         ImGui.Text("User selection");
-        Show_Tooltip("RMB: Show context menu\nLMB: Focus item\nCtrl+LMB in scene: add/remove closest vertex\nEnable visibility to use");
+        Show_Tooltip("RMB: Show context menu\nLMB: Focus item\nCtrl+LMB in scene: add/remove closest vertex");
         if ImGui.IsItemClicked() {
             fit_on_screen(it);
         }
@@ -392,10 +406,10 @@ show_camera_controls :: () {
     }
     ImGui.NextColumn();
 
-    // @Volatile button text should be kept in sync with keymap!
-    right_label, left_label, amount := "<< ", " >>", 15.;
+    // @Volatile button text in camera control pane should be kept in sync with keymap!
+    right_label, left_label, amount := "<< ", " >>", 5.;
     if app.modifier_flags.shift_pressed {
-        right_label, left_label, amount = "<<<", ">>>", 45.;
+        right_label, left_label, amount = "<<<", ">>>", 15.;
     } else if app.modifier_flags.alt_pressed {
         right_label, left_label, amount = " < ", " > ", 1.;
     }
@@ -444,27 +458,48 @@ show_help_ui :: () {
     ImGui.Begin("##show_help_ui", flags = ImGui.WindowFlags.NoTitleBar | .AlwaysAutoResize | .NoMove /*| .NoNav*/);
     defer ImGui.End();
 
-    ImGui.Text("Use MMB in the viewport to pan the camera");
-    ImGui.Text("Use RMB in the viewport to rotate the camera (Alt to slow down, Shift to change axis)");
-    ImGui.Text("Use scroll in the view port to zoom the camera (Alt to slow down, Shift to speed up)");
-    ImGui.Text("Use LMB on an item list filename to focus an item");
-    ImGui.Text("Use RMB on an item list filename to access a per-item context menu");
-    ImGui.Text("Use RMB on an item list color to cycle shading styles");
-    ImGui.Text("Use MMB on an item list color to reset the color from the filename");
-    ImGui.Text("\n");
-    ImGui.Text("Note: The item list is in the top left (visible if there's at least one item loaded)");
-    ImGui.NewLine();
-
+    ImGui.Text("In the viewport");
     ImGui.Separator();
     ImGui.Columns(2);
     ImGui.SetColumnWidth(-1, 80);
-    ImGui.Text("Binding");
     ImGui.NextColumn();
-    // ImGui.SetColumnWidth(-1, 250);
-    ImGui.Text("Function");
     ImGui.NextColumn();
-    ImGui.Separator();
+    ImGui.Text("MMB"); ImGui.NextColumn();
+    ImGui.Text("pan the camera"); ImGui.NextColumn();
+    ImGui.Text("Scroll"); ImGui.NextColumn();
+    ImGui.Text("zoom the camera"); ImGui.NextColumn();
+    ImGui.Text("RMB"); ImGui.NextColumn();
+    ImGui.Text("rotate the camera"); ImGui.NextColumn();
+    ImGui.Text("S-RMB"); ImGui.NextColumn();
+    ImGui.Text("rotate about selected axis in the camera control pane");
+    ImGui.Columns(1);
+    ImGui.NewLine();
 
+    ImGui.Text("In the item list");
+    ImGui.Separator();
+    ImGui.Columns(2);
+    ImGui.SetColumnWidth(-1, 80);
+    ImGui.NextColumn();
+    ImGui.NextColumn();
+    ImGui.Text("LMB"); ImGui.NextColumn();
+    ImGui.Text("on a filename to focus an item");  ImGui.NextColumn();
+    ImGui.Text("C-LMB"); ImGui.NextColumn();
+    ImGui.Text("on a filename to select an item"); ImGui.NextColumn();
+    ImGui.Text("RMB"); ImGui.NextColumn();
+    ImGui.Text("on a filename to access a item/selection context menu"); ImGui.NextColumn();
+    ImGui.Text("RMB"); ImGui.NextColumn();
+    ImGui.Text("on a color to cycle shading styles"); ImGui.NextColumn();
+    ImGui.Text("MMB"); ImGui.NextColumn();
+    ImGui.Text("on a color to reset it from the filename"); ImGui.NextColumn();
+    ImGui.Columns(1);
+    ImGui.NewLine();
+
+    ImGui.Text("Key bindings");
+    ImGui.Separator();
+    ImGui.Columns(2);
+    ImGui.SetColumnWidth(-1, 80);
+    ImGui.NextColumn();
+    ImGui.NextColumn();
     for app.keymap_keydown.mappings {
         Push_Temporary();
         ImGui.Text(to_c_string(tprint("%", to_string(it))));
@@ -472,7 +507,6 @@ show_help_ui :: () {
         ImGui.Text(to_c_string(tprint("%", app.keymap_keydown.procs[it.proc_info_index].name)));
         ImGui.NextColumn();
     }
-
     for app.keymap.mappings {
         Push_Temporary();
         ImGui.Text(to_c_string(tprint("%", to_string(it))));
@@ -480,10 +514,11 @@ show_help_ui :: () {
         ImGui.Text(to_c_string(tprint("%", app.keymap.procs[it.proc_info_index].name)));
         ImGui.NextColumn();
     }
-
     ImGui.Columns(1);
-    ImGui.NewLine();
-    ImGui.Text("Note: S=Shift, C=Ctrl, M=Alt");
+
+    // ImGui.NewLine();
+    ImGui.Text("                                                                 ");
+    ImGui.Text("Note: S=Shift, C=Ctrl, A=Alt");
 
     // @Incomplete add a message about where the keymap is for editing
 }
@@ -529,6 +564,7 @@ display_info_ui :: (display_info : *Display_Info, normals_ui : bool = true, line
     ImGui.PopItemWidth();
 
     set.points_visible = ImGui.Checkbox(imgui_label("##points_visible", display_info), *display_info.points_visible);
+    // Show_Tooltip("Visible");
     ImGui.SameLine();
     set.points_color = ImGui.ColorEdit4(imgui_label("##points_color", display_info), *display_info.points_color.component, ImGui.ColorEditFlags.NoInputs);
     ImGui.SameLine();
@@ -541,6 +577,7 @@ display_info_ui :: (display_info : *Display_Info, normals_ui : bool = true, line
 
     if normals_ui {
         set.normals_visible = ImGui.Checkbox(imgui_label("##normals_visible", display_info), *display_info.normals_visible);
+        // Show_Tooltip("Visible");
         ImGui.SameLine();
         set.normals_color = ImGui.ColorEdit4(imgui_label("##normals_color", display_info), *display_info.normals_color.component, ImGui.ColorEditFlags.NoInputs);
         ImGui.SameLine();
@@ -553,6 +590,7 @@ display_info_ui :: (display_info : *Display_Info, normals_ui : bool = true, line
 
     if lines_ui {
         set.wireframe_visible = ImGui.Checkbox(imgui_label("##wireframe_visible", display_info), *display_info.wireframe_visible);
+        // Show_Tooltip("Visible");
         ImGui.SameLine();
         set.wireframe_color = ImGui.ColorEdit4(imgui_label("##wireframe_color", display_info), *display_info.wireframe_color.component, ImGui.ColorEditFlags.NoInputs);
         ImGui.SameLine();
@@ -566,14 +604,15 @@ display_info_ui :: (display_info : *Display_Info, normals_ui : bool = true, line
 
     if faces_ui {
         set.surface_visible = ImGui.Checkbox(imgui_label("##surface_visible", display_info), *display_info.surface_visible);
+        // Show_Tooltip("Visible");
         ImGui.SameLine();
         set.surface_color = ImGui.ColorEdit4(imgui_label("##surface_color", display_info), *display_info.surface_color.component, ImGui.ColorEditFlags.NoInputs);
         ImGui.SameLine();
         ImGui.Text("Triangles Visible|Color");
     }
 
-    set.color_reset = ImGui.Button(imgui_label("Reset Color##color_reset", display_info), size=*V2_ZERO);
-    Show_Tooltip("Deduce primary color from file path");
+    set.color_reset = ImGui.Button(imgui_label("Reset Colors##color_reset", display_info), size=*V2_ZERO);
+    Show_Tooltip("Deduce item primary colors from the file path");
 
     if ImGui.TreeNode("%", "Label Settings") {
         defer ImGui.TreePop();
@@ -653,6 +692,7 @@ checkbox_press_or_sweep_to_toggle :: (state : *bool, hovered : *bool, label : *u
     return changed;
 }
 
+// @Incomplete add a delay before popup
 Show_Tooltip :: (description : string) #expand {
     if (ImGui.IsItemHovered()) {
         ImGui.BeginTooltip();

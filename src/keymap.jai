@@ -31,7 +31,7 @@ to_string :: (using mapping : Single_Key_Mapping) -> string
     builder : String_Builder;
     defer free_buffers(*builder);
     if modifier_flags.control_pressed print_to_builder(*builder, "C-");
-    if modifier_flags.alt_pressed     print_to_builder(*builder, "M-");
+    if modifier_flags.alt_pressed     print_to_builder(*builder, "A-");
     if modifier_flags.shift_pressed   print_to_builder(*builder, "S-");
     if key_code >= 32 {
         // upper_case := to_upper(cast(u8) key_code);
@@ -76,21 +76,21 @@ init_keymap :: ()
     add_key(*app.keymap, select_or_deselect_all, "Select/deselect all items", xx #char "a", .{control_pressed=true});
     add_key(*app.keymap, toggle_current_selection, "Toggle/complement current item selection", xx #char "a", .{alt_pressed=true});
 
-    add_key(*app.keymap, reload_entities, "reload hovered/selected items", xx Special_Key_Code.F5);
-    add_key(*app.keymap, cycle_opacity, "cycle opacity 20%%/50%%/100%% for hovered/selected items", xx #char "o");
-    add_key(*app.keymap, cycle_normals_visibility, "cycle normals visibility for hovered/selected items", xx #char "n");
-    add_key(*app.keymap, cycle_wireframe_width, "cycle wireframe line width for hovered/selected items", xx #char "l");
-    add_key(*app.keymap, cycle_point_size, "cycle point size for hovered/selected items", xx #char "p");
-    add_key(*app.keymap, cycle_point_index_labels, "cycle point index labels for hovered/selected items", xx #char "p", .{shift_pressed=true});
-    add_key(*app.keymap, cycle_point_position_labels, "cycle point position labels for hovered/selected items", xx #char "p", .{alt_pressed=true});
+    add_key(*app.keymap, reload_entities, "reload selected items", xx Special_Key_Code.F5);
+    add_key(*app.keymap, cycle_opacity, "cycle opacity 20%%/50%%/100%% for selected items", xx #char "o");
+    add_key(*app.keymap, cycle_normals_visibility, "cycle normals visibility for selected items", xx #char "n");
+    add_key(*app.keymap, cycle_wireframe_width, "cycle wireframe line width for selected items", xx #char "l");
+    add_key(*app.keymap, cycle_point_size, "cycle point size for selected items", xx #char "p");
+    add_key(*app.keymap, cycle_point_index_labels, "cycle point index labels for selected items", xx #char "p", .{shift_pressed=true});
+    add_key(*app.keymap, cycle_point_position_labels, "cycle point position labels for selected items", xx #char "p", .{alt_pressed=true});
     add_key(*app.keymap, clear_labels, "clear labels", xx #char "x");
 
-    add_key(*app.keymap, rotate_look_direction_15_cw,  "rotate  15 deg about selected rotation axis", xx #char "]");
-    add_key(*app.keymap, rotate_look_direction_15_ccw, "rotate -15 deg about selected rotation axis", xx #char "[");
-    add_key(*app.keymap, rotate_look_direction_45_cw,  "rotate  45 deg about selected rotation axis", xx #char "]", .{shift_pressed=true});
-    add_key(*app.keymap, rotate_look_direction_45_ccw, "rotate -45 deg about selected rotation axis", xx #char "[", .{shift_pressed=true});
-    add_key(*app.keymap, rotate_look_direction_5_cw,   "rotate  5  deg about selected rotation axis", xx #char "]", .{alt_pressed=true});
-    add_key(*app.keymap, rotate_look_direction_5_ccw,  "rotate -5  deg about selected rotation axis", xx #char "[", .{alt_pressed=true});
+    // @Volatile button text in camera control pane should be kept in sync with keymap!
+    add_key(*app.keymap, rotate_look_direction_5_cw,   "rotate  15 deg about selected rotation axis", xx #char "]");
+    add_key(*app.keymap, rotate_look_direction_5_ccw,  "rotate -15 deg about selected rotation axis", xx #char "[");
+    add_key(*app.keymap, rotate_look_direction_15_cw,  "rotate  5  deg about selected rotation axis", xx #char "]", .{shift_pressed=true});
+    add_key(*app.keymap, rotate_look_direction_15_ccw, "rotate -5  deg about selected rotation axis", xx #char "[", .{shift_pressed=true});
+
     // add_key(*app.keymap, debug_junk, "debug_junk", xx #char " ");
 
     add_key :: (keymap : *Keymap, proc : () -> (), name : string, key_code : u32, modifier_flags : Modifier_Flags = .{}) {

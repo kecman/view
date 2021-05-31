@@ -89,31 +89,29 @@ deinit :: (base : *Entity)
     free(base.fully_pathed_filename);
 }
 
-entity_filename_with_generation_index :: (using entity : Entity) -> string {
-    text : string;
-
-    name := fully_pathed_filename;
-    path := parse_path(fully_pathed_filename);
-    if path.words.count {
-        name = path.words[path.words.count - 1];
+entity_filename :: (using entity : Entity, with_generation_index : bool, with_short_filename : bool, with_loaded_time : bool) -> string {
+    name_text := fully_pathed_filename;
+    if with_short_filename {
+        Push_Temporary();
+        path := parse_path(fully_pathed_filename);
+        if path.words.count {
+            name_text = path.words[path.words.count - 1];
+        }
     }
 
-    if generation_index == 0 {
-        text = tprint("%", name);
-    } else {
-        text = tprint("% <%>", name, generation_index);
+    index_text := " ";
+    if generation_index != 0 && with_generation_index {
+        index_text = tprint("<%> ", generation_index);
     }
-    return text;
-}
 
-entity_fully_pathed_filename_with_generation_index :: (using entity : Entity) -> string {
-    text : string;
-    if generation_index == 0 {
-        text = tprint("%", fully_pathed_filename);
-    } else {
-        text = tprint("% <%>", fully_pathed_filename, generation_index);
+    time_text := "";
+    time_separator := "";
+    if with_loaded_time {
+        time_text = filetime_to_readable_date(loaded_filetime);
+        time_separator = "@ ";
     }
-    return text;
+
+    return tprint("%1%2%3%4", name_text, index_text, time_separator, time_text);
 }
 
 color_from_path :: (path : string) -> Vector4 {

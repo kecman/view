@@ -1,34 +1,34 @@
 # Version: v0.1.0, Unreleased
 
-- Added a more joyful background shader enabled by default [ty [@LoganBarnes](https://github.com/LoganBarnes)]
+- Rendering improvements
+  - Added a more joyful background shader enabled by default [ty [@LoganBarnes](https://github.com/LoganBarnes)]. Future work will hotload this shader and provide the inputs expected by Shadertoy
+  - Added an option to restore the boring solid color option in settings (press Shift+h to access)
+  - Added a screentone effect when rendering a backfacing triangle
   - Changed the default label color so it works well on both both white and grey backgrounds
-  - Future work will hotload this shader and the provide inputs expected by Shadertoy
-  - The boring solid color option is still available in settings (press Shift+h to access)
-- Added a screentone effect when rendering a backfacing triangle (press RMB on item name to access)
-- Added option to independently toggle visibility and colors of mesh points, lines and triangles
-- Added normal rendering with options to set color and length in the item context menu
-  - Normal rendering also works for oriented point clouds loaded from an obj file containing v, vn and p codes
-- Added a new UI idiom in which bindings will affect all selected items (Ctrl+LMB selects a item)
-  - Added a binding to cycle normals visibility (n) using this idiom
-  - Added a binding to cycle opacity 20%/50%/100% (o) using this idiom
-  - Changed the binding for reloading items (F5) to follow this idiom
-  - Changed the binding for cycling point size (p) to follow this idiom
-  - Changed the binding for cycling line width (l) to follow this idiom
-  - Changed the binding to popup the item context menu (RMB) to follow this idiom and added many more options to this menu
-- Added a binding to select/deselect all items (Ctrl+a)
-- Added a binding to toggle/complement the current item selection (Alt+a)
-- Changed binding to set orbit position in user selection mode from Ctrl+MMB to Ctrl+RMB
-- Changed user selection queries to only compute when the result will be used rather than every frame
-- Fixed a bug where user selection did not correctly account for transformed (shifted) items
-- Fixed a bug where user selection was not considered when the scene view is resized causing it to be clipped sometimes for transformed (shifted) items
-- Fixed a bug where reloading an item failed to preserve the world from model transform
-- Changed default point size on startup to be 0, when point clouds are inferred they will have a point size of 2
-- Various UI improvements and cleanups
-  - Improved the colors generated from filenames
-  - Changed color generation to use filename and extension by default so colors match across machines. The old behaviour which used the full path is available in settings (press Shift+h to access)
+- Improvements to the item list UI
+  - Added a binding to select an item (Ctrl+LMB on the item filename)
+  - Added a binding to select/deselect all items (Ctrl+a)
+  - Added a binding to toggle/complement the current item selection (Alt+a)
+  - Added a binding to cycle normals visibility (n) of the current item selection
+  - Added a binding to cycle opacity 20%/50%/100% (o) of the current item selection
+  - Changed the binding for reloading items (F5) to work on the current item selection
+  - Changed the binding for cycling point size (p) to work on the current item selection
+  - Changed the binding for cycling line width (l) to work on the current item selection
+  - Changed the binding to popup the item context menu (RMB) to edit the current item selection
+  - Improved the colors generated from filenames and made it use filename and extension only so colors match across machines. The old behaviour, using the full path, is available in settings (press Shift+h to access)
   - Moved the item index to come just before the filename (makes the item list UI jump around less)
   - Swapped the visiblity checkbox with the Remove/Clear buttons
-  - Fixed some wording in the help menu
+  - Added a bunch of  improvements to the item(/item selection) context menu
+  - Improved the file reloading UI and the format of the item description
+  - Added many more options to the item/selection context menu
+  - Added many more options to the item/selection context menu e.g., option to set visibility/colors of points/normals/lines/triangles
+- User selection mode fixes and cleanups
+  - Changed binding to set orbit position in user selection mode from Ctrl+MMB to Ctrl+RMB
+  - Changed user selection queries to only compute when the result will be used rather than every frame
+  - Fixed a bug where user selection did not correctly account for transformed (shifted) items
+  - Fixed a bug where user selection was not considered when the scene view is resized causing it to be clipped sometimes for transformed (shifted) items
+  - Fixed a bug where reloading an item failed to preserve the world from model transform
+- Improved presentation of the help menu
 
 # Version: v0.0.6, 17 May 2021
 
