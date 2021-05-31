@@ -4,6 +4,7 @@
   - Added a more joyful background shader enabled by default [ty [@LoganBarnes](https://github.com/LoganBarnes)]. Future work will hotload this shader and provide the inputs expected by Shadertoy
   - Added an option to restore the boring solid color option in settings (press Shift+h to access)
   - Added a screentone effect when rendering a backfacing triangle
+  - Added option to visualize vertex normals, the UI to change the normal length is a handy way of roughly measuring arcs/fillets
   - Changed the default label color so it works well on both both white and grey backgrounds
 - Improvements to the item list UI
   - Added a binding to select an item (Ctrl+LMB on the item filename)
