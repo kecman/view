@@ -1,6 +1,6 @@
 ## Next Release
 
-- [UI/UX,Bug] Fix camera orbit positioning zoom level when
+- [UI/UX,Bug] Fix jump in  zoom level when repositioning the camera orbit
 - [UI/UX] Make Ctrl+Scroll do the scroll that doesn't zoom into where the cursor is pointing, this is handy when you set the camera orbit and want to zoom in
 - [Rendering] Render plane using geometry shader and implement mesh clipping
 - [UI/UX] Support loading wkt file format to load Polygons in a reasonable way
@@ -13,18 +13,13 @@
 ## Backlog
 
 - [UI/UX] Use folding trees in help menu, default to unfolded
-- [Rendering,Bug] Don't screentone backfaces when wireframe mode (or transparency?) is on
 - [Rendering] Render aabbs using geometry shader, show it when the box extents are hovered in the UI
-- [UI/UX] Add normals to user selection
 - [UI/UX] Add a hotloading mode to files (Hotloader module not implemented on linux)
 - [UI/UX] Implement simple undo for file loading, would be handy to be able to undo file clobbering...
 - [Rendering] Do a better job transparency
 - [Rendering] Do something with depth rendering? out_color = vec4(vec3(gl_FragCoord.z), 1.);
 - [UI/UX] Load files in a separate thread and report loading progress in the mode line
 - [UI/UX] Feedback when refreshing a file gives the same result
-- [UI/UX] Display file load time
-- [UI/UX] Implement more options for bulk selection editing
-  - [UI/UX] Add per-item line width/point size options
 - [UI/UX] Define a plane and write the world coordinates of the intersection point by the mouse cursor. Use lmb click drag for measuring
 - [Robustness] Add tests for obj loading
 - [Camera,Bug] Fix erratic rotation when rotating about the selected axes

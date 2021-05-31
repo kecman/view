@@ -1,4 +1,4 @@
-## Version: v0.1.0, Unreleased
+## Version: v0.1.0, 31 May 2021
 
 - Rendering improvements
   - Added a more joyful background shader enabled by default [ty [@LoganBarnes](https://github.com/LoganBarnes)]. Future work will hotload this shader and provide the inputs expected by Shadertoy
