@@ -1,4 +1,4 @@
-# Version: v0.1.0, Unreleased
+## Version: v0.1.0, Unreleased
 
 - Rendering improvements
   - Added a more joyful background shader enabled by default [ty [@LoganBarnes](https://github.com/LoganBarnes)]. Future work will hotload this shader and provide the inputs expected by Shadertoy
@@ -30,7 +30,7 @@
   - Fixed a bug where reloading an item failed to preserve the world from model transform
 - Improved presentation of the help menu
 
-# Version: v0.0.6, 17 May 2021
+## Version: v0.0.6, 17 May 2021
 
 - Added initial version of user selection:
   - User selection is enabled if the "User selection" item is set to visible in the item list
@@ -49,7 +49,7 @@
 - Changed reloading multiple items to preserve the selection, this makes reloading the same selection easier (a common use case)
 - Changed settings to be hidden by default (press Shift+h to toggle them, press h for help)
 
-# Version: v0.0.5, 12 May 2021
+## Version: v0.0.5, 12 May 2021
 
 - Improved the UI by organising settings under collapsing headers
 - Improved the world axes rendering and moved it to the bottom left of the screen
@@ -59,7 +59,7 @@
 - Added an overwrite option for handling dropped files with the same name as an existing item
 - Changed default for option to preserve the camera up direction when snapping to axis aligned look directions from on to off
 
-# Version: v0.0.4, 23 April 2021
+## Version: v0.0.4, 23 April 2021
 
 - Improved the camera implementation to improve the feel of the zoom controls
 - Changed mouse wheel zooming to zoom into/out from the location where the mouse is pointing
@@ -74,7 +74,7 @@
 - Changed the key-binding to close the application to Ctrl+Shift+q, since it was easy to loose work by accidently pressing Esc
 - Most settings/options mentioned above can be changed at runtime in a 'User settings' section (press h for help). Future work will persist user settings across sessions
 
-# Version: v0.0.3, 5 April 2021
+## Version: v0.0.3, 5 April 2021
 
 - Fixed camera rotation not working properly when zoomed in
 - Fixed point numbering for 3D polylines inferred from .obj files
@@ -86,7 +86,7 @@
 - Changed Shift+LMB to rotate about the currently selected camera rotation axis
 - Pressing F11 toggles between fullscreen and windowed modes
 
-# Version: v0.0.2, 28 March 2021
+## Version: v0.0.2, 28 March 2021
 
 - Holding shift while zooming/rotating/panning speeds up that operation, holding alt slows it down
 - Added point cloud .obj file support*
@@ -101,7 +101,7 @@
 
 (*) Note: you won't see anything unless you cycle point size to a non-zero value (press h for help)
 
-# Version: v0.0.1, 21 March 2021
+## Version: v0.0.1, 21 March 2021
 
 - Load simple obj files with v,vn,f,l codes. If only l codes are present a polyline soup entity type is inferred, otherwise a mesh type is inferred
 - Load files by drag and drop or passing filenames as arguments on the command line
