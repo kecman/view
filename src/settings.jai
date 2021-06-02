@@ -5,7 +5,6 @@ User_Settings :: struct {
 
     camera_controls_keep_up_when_setting_look_along := false;
 
-    camera_zoom_scrolling_follows_cursor := true;
     camera_zoom_scrolling_ratio          := .8;
     // camera_zoom_dragging_follows_cursor  := false;
     // camera_zoom_dragging_ratio           := .8;

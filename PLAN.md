@@ -1,7 +1,5 @@
 ## Next Release
 
-- [UI/UX,Bug] Fix jump in  zoom level when repositioning the camera orbit
-- [UI/UX] Make Ctrl+Scroll do the scroll that doesn't zoom into where the cursor is pointing, this is handy when you set the camera orbit and want to zoom in
 - [Rendering] Render plane using geometry shader and implement mesh clipping
 - [UI/UX] Support loading wkt file format to load Polygons in a reasonable way
 - [UI/UX] Mode line (bar along bottom) showing hovered mesh stats

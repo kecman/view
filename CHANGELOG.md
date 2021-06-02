@@ -1,3 +1,9 @@
+## Version: v0.1.1, Unreleased
+
+- Added binding to scroll into the camera look position (Ctrl+Scroll).
+  - Note: This is handy in Selection Mode---place the camera orbit with Ctrl+RMB then zoom into this point with Ctrl+Scroll
+- Fixed jump in zoom level when repositioning the camera orbit
+
 ## Version: v0.1.0, 31 May 2021
 
 - Rendering improvements

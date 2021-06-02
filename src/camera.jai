@@ -211,7 +211,7 @@ update_camera :: (delta_time : float) {
         zoom_factor := 1.;
         if      (io().MouseWheel > 0) zoom_factor *= ratio;
         else if (io().MouseWheel < 0) zoom_factor /= ratio;
-        handle_zoom(zoom_factor, io().MousePos, app.settings.camera_zoom_scrolling_follows_cursor);
+        handle_zoom(zoom_factor, io().MousePos, !io().KeyCtrl);
     }
 
     // print("update_camera: %\n", <<camera);

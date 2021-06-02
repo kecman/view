@@ -441,15 +441,37 @@ main :: () {
                 if closest.entity_index != -1 {
 
                     if use_result_for_repositioning_camera {
-                        increment := closest.vertex_position - app.camera.look_position;
-                        app.camera.eye_position += increment;
-                        app.camera.look_position += increment;
+                        view_from_world := make_look_at_matrix(app.camera);
+                        closest_view := view_from_world * make_vector4(closest.vertex_position, 1.);
 
-                        // @TODO Improve the fit here
-                        sphere : Sphere = ---;
+                        world_from_view := inverse(view_from_world);
+                        eye_displacement := (world_from_view * make_vector4(closest_view.x, closest_view.y, 0., 0.)).xyz;
+
+                        app.camera.look_position = closest.vertex_position;
+                        app.camera.eye_position  += eye_displacement;
+
+                        sphere : Sphere;
                         sphere.center = app.camera.look_position;
-                        sphere.radius = app.camera.scene_bounding_sphere.radius + length(increment);
-                        fit_on_screen(sphere);
+                        sphere.radius = 0;
+
+                        // Compute the bounding sphere the points in the scene
+                        for :visible entity : app.entities {
+                            for * entity.mesh.positions {
+                                p := (entity.mesh.world_from_model * make_vector4(<<it, 1.)).xyz;
+                                sphere.radius = max(sphere.radius, length_squared(app.camera.look_position - p));
+                            }
+                        }
+                        if app.user_selection.is_visible {
+                            mesh := *app.user_selection.mesh;
+                            for * mesh.positions {
+                                p := (mesh.world_from_model * make_vector4(<<it, 1.)).xyz;
+                                sphere.radius = max(sphere.radius, length_squared(app.camera.look_position - p));
+                            }
+                        }
+
+                        sphere.radius = sqrt(sphere.radius);
+                        app.camera.far = sphere.radius * 2;
+                        app.camera.near = -app.camera.far;
                     }
 
                     if use_result_for_adding_to_selection {

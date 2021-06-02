@@ -118,6 +118,7 @@ toggle_show_ui                 :: () { app.show_ui = !app.show_ui; }
 toggle_show_global_settings_ui :: () { app.show_global_settings_ui = !app.show_global_settings_ui; }
 toggle_show_help_ui            :: () { app.show_ui, app.show_help_ui    = true, !app.show_help_ui; }
 toggle_show_console_ui         :: () { app.show_ui, app.show_console_ui = true, !app.show_console_ui; }
+toggle_selection_mode          :: () { app.user_selection.is_visible = !app.user_selection.is_visible; }
 rotate_look_direction_5_cw     :: () { rotate_look_direction(camera_rotation_axis(),  -5); }
 rotate_look_direction_5_ccw    :: () { rotate_look_direction(camera_rotation_axis(),   5); }
 rotate_look_direction_15_cw    :: () { rotate_look_direction(camera_rotation_axis(), -15); }
