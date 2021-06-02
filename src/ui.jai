@@ -640,7 +640,7 @@ display_info_ui :: (display_info : *Display_Info, normals_ui : bool = true, line
 
 imgui_label :: (label : string, ptr : *void) -> *u8 {
     Push_Temporary();
-    return to_c_string(concatenate(label, tprint("##%", ptr)));
+    return to_c_string(join(label, tprint("##%", ptr)));
 }
 
 // Combo box to select display mode enum value

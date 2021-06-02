@@ -25,7 +25,7 @@ init_font :: () {
     }
 
     face : FT_Face;
-    if (FT_New_Face(ft, temp_c_string(concatenate(exe_path, "/data/Inconsolata.otf")), 0, *face)) {
+    if (FT_New_Face(ft, temp_c_string(join(exe_path, "/data/Inconsolata.otf")), 0, *face)) {
         print("Could not load data/Inconsolata.otf\n");
         exit(1); // Hard-exit for now.
     }
