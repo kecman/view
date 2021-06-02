@@ -56,6 +56,12 @@ Display_Info :: struct {
     surface_visible := true;
     surface_color := Vector4.{1., 1., 1., 1.}; // RGBA
     display_mode := Display_Mode.BLINN_PHONG;
+    Clip_Plane :: struct {
+        plane : Vector4; // @Cleanup Hyperplane
+        active : bool;
+    }
+
+    clip_planes : [6]Clip_Plane = .[.{plane=.{ 1,  0,  0,  0}}, .{plane=.{-1,  0,  0,  0}}, .{plane=.{ 0,  1,  0,  0}}, .{plane=.{ 0, -1,  0,  0}}, .{plane=.{ 0,  0,  1,  0}}, .{plane=.{ 0,  0, -1,  0}}];
 }
 
 maybe_update_render_info :: (info : *Render_Info, mesh : *Mesh) {
@@ -242,6 +248,15 @@ Render_Mesh_Common :: (mesh : *Mesh, using render_info : *Render_Info, using dis
     {
         loc := glGetUniformLocation(app.mesh_program, "camera.eye_position");
         glUniform3f(loc, app.camera.eye_position.x, app.camera.eye_position.y, app.camera.eye_position.z);
+    }
+
+    {
+        for 0..5 {
+            // @Cleanup We could use run directive here to get constant strings
+            using clip_planes[it];
+            glUniform1i(glGetUniformLocation(app.mesh_program, to_c_string(tprint("clip_plane_active[%]", it))), xx active);
+            glUniform4f(glGetUniformLocation(app.mesh_program, to_c_string(tprint("clip_plane[%]", it))), plane.x, plane.y, plane.z, plane.w);
+        }
     }
 
     glBindVertexArray(app.mesh_vao);

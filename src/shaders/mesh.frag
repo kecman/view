@@ -10,6 +10,10 @@ uniform int display_mode = 0;
 uniform vec4 color; // rgba
 uniform bool screentone_backfaces = true;
 
+// For clipping
+uniform vec4 clip_plane[6];
+uniform bool clip_plane_active[6];
+
 in vec3 vertex_normal_ws;
 in vec3 fragment_position_ws;
 
@@ -60,6 +64,15 @@ vec3 blinn_phong_brdf(vec3 N, vec3 V, vec3 L, vec3 light_color, float light_powe
 }
 
 void main() {
+    for (int i = 0; i < 6; ++i) {
+        if (clip_plane_active[i]) {
+            float d = dot(clip_plane[i], vec4(fragment_position_ws, 1.));
+            if (d < 0.) {
+                discard;
+            }
+        }
+    }
+
     vec3 N = vertex_normal_ws;
 
     switch (display_mode) {

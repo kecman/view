@@ -266,6 +266,10 @@ show_item_list_ui :: () {
                         color  := get_primary_color(it);
                         <<color = color_from_path(it.fully_pathed_filename);
                     }
+
+                    for i : 0..5 {
+                        if set.clip_planes[i] clip_planes[i] = other.clip_planes[i];
+                    }
                 }
             }
         }
@@ -566,6 +570,8 @@ Display_Info_Update :: struct {
 
     color_reset : bool;
     display_mode : bool;
+
+    clip_planes : [6]bool;
 }
 
 display_info_ui :: (display_info : *Display_Info, normals_ui : bool = true, lines_ui : bool = true, faces_ui : bool = true) -> Display_Info_Update {
@@ -627,6 +633,29 @@ display_info_ui :: (display_info : *Display_Info, normals_ui : bool = true, line
 
     set.color_reset = ImGui.Button(imgui_label("Reset Colors##color_reset", display_info), size=*V2_ZERO);
     Show_Tooltip("Deduce item primary colors from the file path");
+
+    if ImGui.TreeNode("%", "Clipping planes") {
+        defer ImGui.TreePop();
+        using display_info;
+
+        set.clip_planes[0] |= ImGui.Checkbox(imgui_label("##clipping_plane0", display_info), *clip_planes[0].active); ImGui.SameLine();
+        set.clip_planes[0] |= ImGui.DragFloat4("Plane 0", *clip_planes[0].plane.component, .1, 0., 0., display_format="%.3f");
+
+        set.clip_planes[1] |= ImGui.Checkbox(imgui_label("##clipping_plane1", display_info), *clip_planes[1].active); ImGui.SameLine();
+        set.clip_planes[1] |= ImGui.DragFloat4("Plane 1", *clip_planes[1].plane.component, .1, 0., 0., display_format="%.3f");
+
+        set.clip_planes[2] |= ImGui.Checkbox(imgui_label("##clipping_plane2", display_info), *clip_planes[2].active); ImGui.SameLine();
+        set.clip_planes[2] |= ImGui.DragFloat4("Plane 2", *clip_planes[2].plane.component, .1, 0., 0., display_format="%.3f");
+
+        set.clip_planes[3] |= ImGui.Checkbox(imgui_label("##clipping_plane3", display_info), *clip_planes[3].active); ImGui.SameLine();
+        set.clip_planes[3] |= ImGui.DragFloat4("Plane 3", *clip_planes[3].plane.component, .1, 0., 0., display_format="%.3f");
+
+        set.clip_planes[4] |= ImGui.Checkbox(imgui_label("##clipping_plane4", display_info), *clip_planes[4].active); ImGui.SameLine();
+        set.clip_planes[4] |= ImGui.DragFloat4("Plane 4", *clip_planes[4].plane.component, .1, 0., 0., display_format="%.3f");
+
+        set.clip_planes[5] |= ImGui.Checkbox(imgui_label("##clipping_plane5", display_info), *clip_planes[5].active); ImGui.SameLine();
+        set.clip_planes[5] |= ImGui.DragFloat4("Plane 5", *clip_planes[5].plane.component, .1, 0., 0., display_format="%.3f");
+    }
 
     if ImGui.TreeNode("%", "Label Settings") {
         defer ImGui.TreePop();

@@ -1,5 +1,11 @@
 ## Next Release
 
+- Clipping improvements:
+  - Add option to make the clipped geometry render with non-zero opacity
+  - Make normals clip---refactor to use Render_Mesh_Common
+  - Make selection mode ignore clipped vertices
+- Make long lists of items managable in the context menu
+
 - [Rendering] Render plane using geometry shader and implement mesh clipping
 - [UI/UX] Support loading wkt file format to load Polygons in a reasonable way
 - [UI/UX] Mode line (bar along bottom) showing hovered mesh stats
