@@ -4,6 +4,7 @@
 - Added binding to scroll into the camera look position (Ctrl+Scroll).
   - Note: This is handy in Selection Mode---place the camera orbit with Ctrl+RMB then zoom into this point with Ctrl+Scroll
 - Fixed jump in zoom level when repositioning the camera orbit
+- Changed the initial window size from 1280x720 to 1440x900
 
 ## Version: v0.1.0, 31 May 2021
 

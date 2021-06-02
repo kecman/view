@@ -2,8 +2,8 @@
 app : struct {
     window : *SDL_Window = null;
 
-    INITIAL_WINDOW_WIDTH  : s32 : 1280;
-    INITIAL_WINDOW_HEIGHT : s32 : 720;
+    INITIAL_WINDOW_WIDTH  : s32 : 1440;
+    INITIAL_WINDOW_HEIGHT : s32 : 900;
 
     current_window_width := INITIAL_WINDOW_WIDTH;
     current_window_height := INITIAL_WINDOW_HEIGHT;
