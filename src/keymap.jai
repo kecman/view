@@ -65,31 +65,32 @@ init_keymap :: ()
 {
     // @Incomplete that we don't have clashing key mappings
 
-    add_key(*app.keymap_keydown, toggle_show_help_ui, "toggle help",  xx #char "h");
-    add_key(*app.keymap_keydown, toggle_show_global_settings_ui, "toggle settings",  xx #char "h", .{shift_pressed=true});
-    add_key(*app.keymap_keydown, toggle_show_ui, "toggle entire UI",  xx #char "`");
-    add_key(*app.keymap_keydown, toggle_show_console_ui, "toggle console UI",  xx #char "`", .{control_pressed=true});
+    add_key(*app.keymap_keydown, toggle_show_help_ui, "Toggle help UI",  xx #char "h");
+    add_key(*app.keymap_keydown, toggle_show_global_settings_ui, "Toggle settings UI",  xx #char "h", .{shift_pressed=true});
+    add_key(*app.keymap_keydown, toggle_show_ui, "Toggle entire UI",  xx #char "`");
+    add_key(*app.keymap_keydown, toggle_show_console_ui, "Toggle console UI",  xx #char "`", .{control_pressed=true});
+    add_key(*app.keymap_keydown, toggle_selection_mode, "Toggle Selection Mode",  xx #char "m");
 
-    add_key(*app.keymap, close_application, "close application", xx #char "q", .{shift_pressed=true, control_pressed=true});
-    add_key(*app.keymap, call_fit_on_screen, "fit on screen", xx #char "r");
-    add_key(*app.keymap, reset_camera, "reset camera", xx #char "r", .{shift_pressed=true});
+    add_key(*app.keymap, close_application, "Close application", xx #char "q", .{shift_pressed=true, control_pressed=true});
+    add_key(*app.keymap, call_fit_on_screen, "Fit on screen", xx #char "r");
+    add_key(*app.keymap, reset_camera, "Reset camera", xx #char "r", .{shift_pressed=true});
     add_key(*app.keymap, select_or_deselect_all, "Select/deselect all items", xx #char "a", .{control_pressed=true});
     add_key(*app.keymap, toggle_current_selection, "Toggle/complement current item selection", xx #char "a", .{alt_pressed=true});
 
-    add_key(*app.keymap, reload_entities, "reload selected items", xx Special_Key_Code.F5);
-    add_key(*app.keymap, cycle_opacity, "cycle opacity 20%%/50%%/100%% for selected items", xx #char "o");
-    add_key(*app.keymap, cycle_normals_visibility, "cycle normals visibility for selected items", xx #char "n");
-    add_key(*app.keymap, cycle_wireframe_width, "cycle wireframe line width for selected items", xx #char "l");
-    add_key(*app.keymap, cycle_point_size, "cycle point size for selected items", xx #char "p");
-    add_key(*app.keymap, cycle_point_index_labels, "cycle point index labels for selected items", xx #char "p", .{shift_pressed=true});
-    add_key(*app.keymap, cycle_point_position_labels, "cycle point position labels for selected items", xx #char "p", .{alt_pressed=true});
-    add_key(*app.keymap, clear_labels, "clear labels", xx #char "x");
+    add_key(*app.keymap, reload_entities, "Reload selected items", xx Special_Key_Code.F5);
+    add_key(*app.keymap, cycle_opacity, "Cycle opacity 20%%/50%%/100%% for selected items", xx #char "o");
+    add_key(*app.keymap, cycle_normals_visibility, "Cycle normals visibility for selected items", xx #char "n");
+    add_key(*app.keymap, cycle_wireframe_width, "Cycle line width for selected items", xx #char "l");
+    add_key(*app.keymap, cycle_point_size, "Cycle point size for selected items", xx #char "p");
+    add_key(*app.keymap, cycle_point_index_labels, "Cycle point index labels for selected items", xx #char "p", .{shift_pressed=true});
+    add_key(*app.keymap, cycle_point_position_labels, "Cycle point position labels for selected items", xx #char "p", .{alt_pressed=true});
+    add_key(*app.keymap, clear_labels, "Clear labels", xx #char "x");
 
     // @Volatile button text in camera control pane should be kept in sync with keymap!
-    add_key(*app.keymap, rotate_look_direction_5_cw,   "rotate  15 deg about selected rotation axis", xx #char "]");
-    add_key(*app.keymap, rotate_look_direction_5_ccw,  "rotate -15 deg about selected rotation axis", xx #char "[");
-    add_key(*app.keymap, rotate_look_direction_15_cw,  "rotate  5  deg about selected rotation axis", xx #char "]", .{shift_pressed=true});
-    add_key(*app.keymap, rotate_look_direction_15_ccw, "rotate -5  deg about selected rotation axis", xx #char "[", .{shift_pressed=true});
+    add_key(*app.keymap, rotate_look_direction_5_cw,   "Rotate  15 deg about selected rotation axis", xx #char "]");
+    add_key(*app.keymap, rotate_look_direction_5_ccw,  "Rotate -15 deg about selected rotation axis", xx #char "[");
+    add_key(*app.keymap, rotate_look_direction_15_cw,  "Rotate  5  deg about selected rotation axis", xx #char "]", .{shift_pressed=true});
+    add_key(*app.keymap, rotate_look_direction_15_ccw, "Rotate -5  deg about selected rotation axis", xx #char "[", .{shift_pressed=true});
 
     // add_key(*app.keymap, debug_junk, "debug_junk", xx #char " ");
 

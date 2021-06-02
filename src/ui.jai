@@ -284,14 +284,13 @@ show_item_list_ui :: () {
         // Toggle visibility checkbox
         ImGui.SameLine();
         visibility_toggled := checkbox_press_or_sweep_to_toggle(*it.is_visible, *it.is_visible_sweep_hovered, imgui_label("##Visible", it));
-        Show_Tooltip("Enable selection mode");
+        Show_Tooltip("Enable Selection Mode");
         any_visibility_toggled = any_visibility_toggled || visibility_toggled;
         ImGui.SameLine();
         ImGui.ColorEdit4(imgui_label("##color", it), *it.display_info.points_color.component, ImGui.ColorEditFlags.NoInputs);
 
         ImGui.SameLine();
-        ImGui.Text("User selection");
-        Show_Tooltip("RMB: Show context menu\nLMB: Focus item\nCtrl+LMB in scene: add/remove closest vertex");
+        ImGui.Text("Selection");
         if ImGui.IsItemClicked() {
             fit_on_screen(it);
         }
@@ -458,39 +457,54 @@ show_help_ui :: () {
     ImGui.Begin("##show_help_ui", flags = ImGui.WindowFlags.NoTitleBar | .AlwaysAutoResize | .NoMove /*| .NoNav*/);
     defer ImGui.End();
 
-    ImGui.Text("In the viewport");
+    ImGui.Text("In the Viewport");
     ImGui.Separator();
     ImGui.Columns(2);
     ImGui.SetColumnWidth(-1, 80);
     ImGui.NextColumn();
     ImGui.NextColumn();
     ImGui.Text("MMB"); ImGui.NextColumn();
-    ImGui.Text("pan the camera"); ImGui.NextColumn();
+    ImGui.Text("Pan the camera"); ImGui.NextColumn();
     ImGui.Text("Scroll"); ImGui.NextColumn();
-    ImGui.Text("zoom the camera"); ImGui.NextColumn();
+    ImGui.Text("Zoom the camera into the position under the cursor"); ImGui.NextColumn();
+    ImGui.Text("C-Scroll"); ImGui.NextColumn();
+    ImGui.Text("Zoom the camera into the camera look position"); ImGui.NextColumn();
     ImGui.Text("RMB"); ImGui.NextColumn();
-    ImGui.Text("rotate the camera"); ImGui.NextColumn();
+    ImGui.Text("Rotate the camera"); ImGui.NextColumn();
     ImGui.Text("S-RMB"); ImGui.NextColumn();
-    ImGui.Text("rotate about selected axis in the camera control pane");
+    ImGui.Text("Rotate about selected axis in the camera control pane");
     ImGui.Columns(1);
     ImGui.NewLine();
 
-    ImGui.Text("In the item list");
+    ImGui.Text("In the Item List");
     ImGui.Separator();
     ImGui.Columns(2);
     ImGui.SetColumnWidth(-1, 80);
     ImGui.NextColumn();
     ImGui.NextColumn();
     ImGui.Text("LMB"); ImGui.NextColumn();
-    ImGui.Text("on a filename to focus an item");  ImGui.NextColumn();
+    ImGui.Text("(on a filename) Focus an item");  ImGui.NextColumn();
     ImGui.Text("C-LMB"); ImGui.NextColumn();
-    ImGui.Text("on a filename to select an item"); ImGui.NextColumn();
+    ImGui.Text("(on a filename) Select an item"); ImGui.NextColumn();
     ImGui.Text("RMB"); ImGui.NextColumn();
-    ImGui.Text("on a filename to access a item/selection context menu"); ImGui.NextColumn();
+    ImGui.Text("(on a filename) Access item/selection context menu"); ImGui.NextColumn();
     ImGui.Text("RMB"); ImGui.NextColumn();
-    ImGui.Text("on a color to cycle shading styles"); ImGui.NextColumn();
+    ImGui.Text("(on a color) Cycle shading styles"); ImGui.NextColumn();
     ImGui.Text("MMB"); ImGui.NextColumn();
-    ImGui.Text("on a color to reset it from the filename"); ImGui.NextColumn();
+    ImGui.Text("(on a color) Reset color from the filename"); ImGui.NextColumn();
+    ImGui.Columns(1);
+    ImGui.NewLine();
+
+    ImGui.Text("In Selection Mode");
+    ImGui.Separator();
+    ImGui.Columns(2);
+    ImGui.SetColumnWidth(-1, 80);
+    ImGui.NextColumn();
+    ImGui.NextColumn();
+    ImGui.Text("C-LMB"); ImGui.NextColumn();
+    ImGui.Text("Add vertex nearest the cursor to 'Selection' item");  ImGui.NextColumn();
+    ImGui.Text("C-RMB"); ImGui.NextColumn();
+    ImGui.Text("Place camera orbit on vertex nearest the cursor");  ImGui.NextColumn();
     ImGui.Columns(1);
     ImGui.NewLine();
 
