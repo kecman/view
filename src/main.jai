@@ -43,6 +43,14 @@ main :: () {
     gl_version_major, gl_version_minor = gl_get_version();
     print ("OpenGL %.%\n", gl_version_major, gl_version_minor);
 
+    // #assert(OS == .LINUX);
+    // wmInfo: SDL_SysWMinfo ;
+    // SDL_VERSION(*wmInfo.version);
+    // SDL_GetWindowWMInfo(app.window, *wmInfo);
+    // printv(#code wmInfo);// "%\n")io.ImeWindowHandle = wmInfo.info.win.window;
+    // x11_window := wmInfo.info.x11.window;
+    // Simp.simp_init(x11_window, app.current_window_width, app.current_window_height, app.current_window_width, app.current_window_height);
+
     init_camera();
 
     // OGL Options
