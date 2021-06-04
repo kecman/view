@@ -1,3 +1,5 @@
+#load "app.jai";
+
 main :: () {
 
     SDL_Init(SDL_INIT_VIDEO);
@@ -284,100 +286,13 @@ main :: () {
         glEnable(GL_DEPTH_TEST);
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-        if #complete app.background_style == {
-            case .SOLID_COLOR;
-
-                using app.background_solid_color;
-                glClearColor(x, y, z, w);
-
-            case .CUSTOM_SHADER;
-
-                glDisable(GL_DEPTH_TEST);
-                defer glEnable(GL_DEPTH_TEST);
-                glUseProgram(app.background_program);
-                x, y, z : float = xx app.current_window_width, xx app.current_window_height, 1.;
-                glUniform3f(glGetUniformLocation(app.background_program, "iResolution"), x, y, z);
-                glUniform1f(glGetUniformLocation(app.background_program, "iTime"), ImGui.GetTime());
-                glBindVertexArray(app.background_vao);
-                glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-        }
+        render_background();
 
         // Update after clearing viewport so we can debug visualise stuff
         // @Cleanup: use delta_time argument?
         update_camera(1);
 
-        label_limit : int = app.label_limit;
-        Reserve_Labels :: (count : int) #expand { `label_limit -= count; }
-
-        Render_Entity :: (entity : *Entity) #expand {
-            if entity.type == {
-                case .POLYLINE_SOUP2;
-
-                    soup := cast(*Polyline_Soup2_Entity) entity;
-                    render_mesh_points(*soup.mesh, *entity.render_info, entity.display_info);
-                    render_mesh_lines(*soup.mesh, *entity.render_info, entity.display_info);
-                    for polyline : soup.shape.polylines {
-                        Reserve_Labels(polyline.points.count);
-                        if label_limit >= 0 {
-                            render_vertex_labels(polyline.points, entity.display_info.vertex_label_style);
-                        }
-                    }
-
-                case .POLYLINE_SOUP3;
-
-                    soup := cast(*Polyline_Soup3_Entity) entity;
-                    render_mesh_points(*soup.mesh, *entity.render_info, entity.display_info);
-                    render_mesh_lines(*soup.mesh, *entity.render_info, entity.display_info);
-                    for polyline : soup.shape.polylines {
-                        Reserve_Labels(polyline.points.count);
-                        if label_limit >= 0 {
-                            render_vertex_labels(polyline.points, entity.display_info.vertex_label_style);
-                        }
-                    }
-
-                case .POLYGON_SOUP;
-
-                    soup := cast(*Polygon_Soup_Entity) entity;
-                    render_mesh_points(*soup.mesh, *entity.render_info, entity.display_info);
-                    render_mesh_triangles(*soup.mesh, *entity.render_info, entity.display_info);
-                    for polygon : soup.shape.polygons {
-                        Reserve_Labels(point_count(polygon));
-                        if label_limit >= 0 {
-                            render_vertex_labels(polygon.outer_ring.points, entity.display_info.vertex_label_style);
-                            for inner_ring : polygon.inner_rings {
-                                render_vertex_labels(inner_ring.points, entity.display_info.vertex_label_style);
-                            }
-                        }
-                    }
-
-                case .MESH;
-
-                    mesh := cast(*Mesh_Entity) entity;
-                    render_mesh_points(*mesh.mesh, *entity.render_info, entity.display_info);
-                    render_mesh_lines(*mesh.mesh, *entity.render_info, entity.display_info);
-                    render_mesh_triangles(*mesh.mesh, *entity.render_info, entity.display_info);
-                    render_normals(*mesh.mesh, *entity.render_info, entity.display_info);
-                    // @Cleanup so the transform is also available for text rendering
-                    Reserve_Labels(mesh.mesh.positions.count);
-                    if label_limit >= 0 || (entity == *app.user_selection) {
-                        render_vertex_labels(mesh.mesh.positions, entity.display_info.vertex_label_style);
-                    }
-            }
-        }
-
-        is_visible_opaque ::      (e : *Entity) -> bool { return e.is_visible && !e.is_hovered && e.display_info.surface_color.w == 1.; }
-        is_visible_transparent :: (e : *Entity) -> bool { return e.is_visible && !e.is_hovered && e.display_info.surface_color.w != 1.; }
-        is_visible_hovered ::     (e : *Entity) -> bool { return e.is_visible &&  e.is_hovered; }
-
-        visible_opaque ::      #bake_arguments entities_iterator(should_visit = is_visible_opaque);
-        visible_transparent :: #bake_arguments entities_iterator(should_visit = is_visible_transparent);
-        visible_hovered ::     #bake_arguments entities_iterator(should_visit = is_visible_hovered);
-
-        for :visible_opaque      app.entities Render_Entity(it);
-        for :visible_transparent app.entities Render_Entity(it);
-
-        glClear(GL_DEPTH_BUFFER_BIT); // Render the flash hovered item over everything else to make it easy to find
-        for :visible_hovered     app.entities Render_Entity(it);
+        render_entities();
 
         if app.user_selection.is_visible {
             do_selection_mode();
@@ -433,5 +348,3 @@ to_sdl_keycode :: (key_code : u32) -> SDL_Keycode {
     }
     return SDLK_UNKNOWN;
 }
-
-#load "app.jai";

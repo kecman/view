@@ -338,149 +338,97 @@ render_vertex_labels :: (points : []$T, style : Vertex_Label_Style, label_index_
     }
 }
 
-debug_print_active_uniforms :: (program : GLuint) {
+render_entities :: () {
+    label_limit : int = app.label_limit;
+    Reserve_Labels :: (count : int) #expand { `label_limit -= count; }
 
-    max_length: GLint;
-    glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, *max_length);
-    name := alloc_string(max_length);
-    defer free(name);
-    // print("GL_ACTIVE_UNIFORM_MAX_LENGTH = %\n", max_length);
+    Render_Entity :: (entity : *Entity) #expand {
+        if entity.type == {
+            case .POLYLINE_SOUP2;
 
-    count : s32;
-    glGetProgramiv(program, GL_ACTIVE_UNIFORMS, *count);
-    print("[debug %] Program % has % active uniforms:\n", #location(), program, count);
-    for 0..count-1 {
-        size: GLint;
-        type: GLenum;
-        length: GLsizei;
+                soup := cast(*Polyline_Soup2_Entity) entity;
+                render_mesh_points(*soup.mesh, *entity.render_info, entity.display_info);
+                render_mesh_lines(*soup.mesh, *entity.render_info, entity.display_info);
+                for polyline : soup.shape.polylines {
+                    Reserve_Labels(polyline.points.count);
+                    if label_limit >= 0 {
+                        render_vertex_labels(polyline.points, entity.display_info.vertex_label_style);
+                    }
+                }
 
-        glGetActiveUniform(program, cast(GLuint) it, xx max_length, *length, *size, *type, name.data);
-        name.count = xx length;
-        print("Uniform #% Type: 0x% Size: % Name: %\n", it, formatInt(type, base=16), size, name);
-    }
-}
+            case .POLYLINE_SOUP3;
 
-print_errors :: (loc := #caller_location) {
-    DumpGLErrors("context %", #location());
+                soup := cast(*Polyline_Soup3_Entity) entity;
+                render_mesh_points(*soup.mesh, *entity.render_info, entity.display_info);
+                render_mesh_lines(*soup.mesh, *entity.render_info, entity.display_info);
+                for polyline : soup.shape.polylines {
+                    Reserve_Labels(polyline.points.count);
+                    if label_limit >= 0 {
+                        render_vertex_labels(polyline.points, entity.display_info.vertex_label_style);
+                    }
+                }
 
-    {
-        error := glGetError();
-        if (error != GL_NO_ERROR) {
-            print("error:%:%,%: code % (%)\n", loc.fully_pathed_filename, loc.line_number, loc.character_number, error, formatInt(error, base=16));
-            print("stack trace\n");
-            for pack_stack_trace() {
-                print_stack_trace(*it);
-            }
-            exit(-1);
+            case .POLYGON_SOUP;
+
+                soup := cast(*Polygon_Soup_Entity) entity;
+                render_mesh_points(*soup.mesh, *entity.render_info, entity.display_info);
+                render_mesh_triangles(*soup.mesh, *entity.render_info, entity.display_info);
+                for polygon : soup.shape.polygons {
+                    Reserve_Labels(point_count(polygon));
+                    if label_limit >= 0 {
+                        render_vertex_labels(polygon.outer_ring.points, entity.display_info.vertex_label_style);
+                        for inner_ring : polygon.inner_rings {
+                            render_vertex_labels(inner_ring.points, entity.display_info.vertex_label_style);
+                        }
+                    }
+                }
+
+            case .MESH;
+
+                mesh := cast(*Mesh_Entity) entity;
+                render_mesh_points(*mesh.mesh, *entity.render_info, entity.display_info);
+                render_mesh_lines(*mesh.mesh, *entity.render_info, entity.display_info);
+                render_mesh_triangles(*mesh.mesh, *entity.render_info, entity.display_info);
+                render_normals(*mesh.mesh, *entity.render_info, entity.display_info);
+                // @Cleanup so the transform is also available for text rendering
+                Reserve_Labels(mesh.mesh.positions.count);
+                if label_limit >= 0 || (entity == *app.user_selection) {
+                    render_vertex_labels(mesh.mesh.positions, entity.display_info.vertex_label_style);
+                }
         }
     }
+
+    is_visible_opaque ::      (e : *Entity) -> bool { return e.is_visible && !e.is_hovered && e.display_info.surface_color.w == 1.; }
+    is_visible_transparent :: (e : *Entity) -> bool { return e.is_visible && !e.is_hovered && e.display_info.surface_color.w != 1.; }
+    is_visible_hovered ::     (e : *Entity) -> bool { return e.is_visible &&  e.is_hovered; }
+
+    visible_opaque ::      #bake_arguments entities_iterator(should_visit = is_visible_opaque);
+    visible_transparent :: #bake_arguments entities_iterator(should_visit = is_visible_transparent);
+    visible_hovered ::     #bake_arguments entities_iterator(should_visit = is_visible_hovered);
+
+    for :visible_opaque      app.entities Render_Entity(it);
+    for :visible_transparent app.entities Render_Entity(it);
+
+    glClear(GL_DEPTH_BUFFER_BIT); // Render the flash hovered item over everything else to make it easy to find
+    for :visible_hovered     app.entities Render_Entity(it);
 }
 
-debug_callback :: (source: GLenum, type: GLenum, id: GLuint, severity: GLenum, length: GLsizei, message: *u8, userParam: *void) #c_call {
-    pctx := cast(*Context) userParam;
-    ctx := <<pctx;
-    push_context ctx {
-        print("source: %\n", source);
-        print("type: %\n", type);
-        print("id: %\n", id);
-        print("severity: %\n", severity);
-        print("length: %\n", length);
-        print("message: %\n", message);
-        print("userParam: %\n", userParam);
+render_background :: () {
+    if #complete app.background_style == {
+        case .SOLID_COLOR;
+
+            using app.background_solid_color;
+            glClearColor(x, y, z, w);
+
+        case .CUSTOM_SHADER;
+
+            glDisable(GL_DEPTH_TEST);
+            defer glEnable(GL_DEPTH_TEST);
+            glUseProgram(app.background_program);
+            x, y, z : float = xx app.current_window_width, xx app.current_window_height, 1.;
+            glUniform3f(glGetUniformLocation(app.background_program, "iResolution"), x, y, z);
+            glUniform1f(glGetUniformLocation(app.background_program, "iTime"), ImGui.GetTime());
+            glBindVertexArray(app.background_vao);
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }
-}
-
-debug_vector :: (length : float, vector_world : Vector3, color : Vector4) {
-    debug_mesh_ps := make_axis_arrow(length);
-    defer deinit(debug_mesh_ps);
-
-    par_shapes_rotate(debug_mesh_ps, angle(Vector3.{0,0,1}, unit_vector(vector_world)), unit_vector(cross_product(Vector3.{0,0,1}, unit_vector(vector_world))));
-    par_shapes_translate(debug_mesh_ps, app.camera.look_position);
-
-    debug_mesh := to_Mesh(debug_mesh_ps);
-    defer deinit(*debug_mesh);
-
-    // @Cleanup: struct literals do not currently support non-constant values
-    display_info : Display_Info;
-    display_info.wireframe_visible = true;
-    display_info.wireframe_width = 1;
-    display_info.surface_color = color;
-    display_info.points_size = 0;
-
-    render_info : Render_Info;
-    render_mesh_triangles(*debug_mesh, *render_info, display_info);
-}
-
-debug_text_at_cursor :: (text : string, scale := .5, color : Vector4 = .{1, 1, 1, 1}) {
-    glEnable(GL_BLEND);
-    defer glDisable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    text_w := get_text_width_in_pixels(text, 1.0);
-    render_text_quad(app.text_program,
-                     text,
-                     // make_vector2(25.0, WINDOW_HEIGHT - FONT_SIZE * scale),
-                     make_vector2(io().MousePos.x, app.current_window_height - io().MousePos.y),
-                     scale,
-                     color);
-}
-
-get_shader_program :: (shader_vertex : string, shader_fragment : string, shader_geometry : string = "") -> GLuint {
-
-    make_shader_object :: (shader : string, shader_type : GLenum) -> GLuint {
-        shader_object := glCreateShader(shader_type);
-
-        //shader_str := temp_c_string(shader);
-		length : GLint = xx shader.count;
-        glShaderSource(shader_object, 1, *shader.data, *length);
-
-        glCompileShader(shader_object);
-
-        success : GLint;
-        glGetShaderiv(shader_object, GL_COMPILE_STATUS, *success);
-
-        if !success then {
-            log : [512] u8;
-            glGetShaderInfoLog(shader_object, 512, null, log.data);
-            print("[Shader] %\n", to_string(log.data));
-            exit(1); // Hard-exit for now.
-        }
-
-        return shader_object;
-    }
-
-    program := glCreateProgram();
-
-    shader_v := make_shader_object(shader_vertex, GL_VERTEX_SHADER);
-    glAttachShader(program, shader_v);
-
-    shader_g : GLuint;
-    if shader_geometry.count {
-        shader_g = make_shader_object(shader_geometry, GL_GEOMETRY_SHADER);
-        glAttachShader(program, shader_g);
-    }
-
-    shader_f := make_shader_object(shader_fragment, GL_FRAGMENT_SHADER);
-    glAttachShader(program, shader_f);
-
-    glLinkProgram(program);
-
-    success : GLint = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, *success);
-
-    if !success then {
-        BUFFER_SIZE_LOG :: 512;
-        log : [BUFFER_SIZE_LOG] u8;
-        glGetProgramInfoLog(program, BUFFER_SIZE_LOG, null, log.data);
-        print("[Shader] %\n", to_string(log.data));
-        exit(1); // Hard-exit for now.
-    }
-
-    glDeleteShader(shader_v);
-    glDeleteShader(shader_f);
-    if shader_geometry.count {
-        glDeleteShader(shader_g);
-    }
-
-    return program;
 }

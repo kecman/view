@@ -140,6 +140,7 @@ Selected_Or_Hovered :: (entities : *[..]*Entity, body : Code, flags : For_Flags)
 #load "io_obj.jai";
 #load "io_wkt.jai";
 #load "rendering.jai";
+#load "rendering_utils.jai";
 #load "font.jai";
 #load "carpet.jai";
 #load "camera.jai";
