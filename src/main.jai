@@ -121,145 +121,11 @@ main :: () {
     // ImGui.StyleColorsLight();
     ImGui.StyleColorsDark();
 
-    {
-        args := get_command_line_arguments();
-        defer array_free(args);
-        for 1..args.count-1 {
-            found, _ := find_entity_with_max_generation_index(args[it]);
-            if found {
-                if #complete app.settings.duplicate_file_behaviour == {
-                    case .OVERWRITE; #through;
-                    case .IGNORE;
-                        // When loading files from the command line .OVERWRITE and .IGNORE have the same behaviour
-                        log("Skipped file: '%' (already loaded)\n", args[it]);
-                        break;
-                    case .APPEND;
-                        entity := load_entity_from_file(args[it]);
-                        if entity {
-                            entity.generation_index = found.generation_index + 1;
-                            array_add(*app.entities, entity);
-                        }
-                }
-            } else {
-                entity := load_entity_from_file(args[it]);
-                if entity {
-                    array_add(*app.entities, entity);
-                }
-            }
-        }
-        fit_on_screen();
-    }
-
+    load_from_command_line();
 
     // Main loop
     while !app.closing_application {
-        // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
-        // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
-        // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
-        // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
-        event: SDL_Event;
-        while SDL_PollEvent(*event) {
-            ImGui_ImplSdl_ProcessEvent(*event);
-
-            app.modifier_flags.shift_pressed   = xx (SDL_GetModState() & KMOD_SHIFT);
-            app.modifier_flags.control_pressed = xx (SDL_GetModState() & KMOD_CTRL);
-            app.modifier_flags.alt_pressed     = xx (SDL_GetModState() & KMOD_ALT);
-
-            if event.type == {
-                case SDL_QUIT; {
-                    app.closing_application = true;
-                }
-                case SDL_WINDOWEVENT;
-                    if event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED {
-
-                        width_scale  := cast(float) event.window.data1 / app.current_window_width;
-                        height_scale := cast(float) event.window.data2 / app.current_window_height;
-
-                        camera_delta_rl   := (1. -  width_scale) * (app.camera.right - app.camera.left) / 2;
-                        camera_delta_tb   := (1. - height_scale) * (app.camera.top   - app.camera.bottom) / 2;
-                        app.camera.right  -= camera_delta_rl;
-                        app.camera.left   += camera_delta_rl;
-                        app.camera.top    -= camera_delta_tb;
-                        app.camera.bottom += camera_delta_tb;
-
-                        app.current_window_width  = event.window.data1;
-                        app.current_window_height = event.window.data2;
-                    }
-                case SDL_KEYDOWN; {
-                    if io().WantCaptureKeyboard break;
-
-                    // @Cleanup move to keymap file
-                    if  event.key.keysym.sym == SDLK_F11 {
-                        app.fullscreen = !app.fullscreen;
-                        flags : u32 = ifx app.fullscreen then cast(u32) 0 else xx SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP;
-                        ok := SDL_SetWindowFullscreen(app.window, flags); // @Robustness handle error
-                    }
-
-                    for app.keymap_keydown.mappings {
-                        if to_sdl_keycode(it.key_code) == event.key.keysym.sym {
-                            if app.modifier_flags.shift_pressed   == it.modifier_flags.shift_pressed   &&
-                               app.modifier_flags.control_pressed == it.modifier_flags.control_pressed &&
-                               app.modifier_flags.alt_pressed     == it.modifier_flags.alt_pressed {
-                                app.keymap_keydown.procs[it.proc_info_index].proc();
-                                break;
-                            }
-                        }
-                    }
-                }
-                case SDL_KEYUP; {
-                    if io().WantCaptureKeyboard break;
-
-                    for app.keymap.mappings {
-                        if to_sdl_keycode(it.key_code) == event.key.keysym.sym {
-                            if app.modifier_flags.shift_pressed   == it.modifier_flags.shift_pressed   &&
-                               app.modifier_flags.control_pressed == it.modifier_flags.control_pressed &&
-                               app.modifier_flags.alt_pressed     == it.modifier_flags.alt_pressed {
-                                app.keymap.procs[it.proc_info_index].proc();
-                                break;
-                            }
-                        }
-                    }
-                }
-                case SDL_DROPFILE; {
-                    // @Leak @Cleanup event.drop.file should be free'd using SDL_free
-                    dropped := to_string(event.drop.file);
-                    found, found_index := find_entity_with_max_generation_index(dropped);
-                    if found {
-                        if #complete app.settings.duplicate_file_behaviour == {
-                            case .IGNORE;
-
-                                log("Skipped file: '%' (already loaded)\n", dropped);
-
-                            case .OVERWRITE;
-
-                                // Only affects the entity with maximum generation index
-                                entity := load_entity_from_file(dropped);
-                                if entity {
-                                    entity.generation_index = found.generation_index;
-                                    deinit(found);
-                                    app.entities[found_index] = entity;
-                                }
-
-                            case .APPEND;
-                                entity := load_entity_from_file(dropped);
-                                if entity {
-                                    entity.generation_index = found.generation_index + 1;
-                                    array_add(*app.entities, entity);
-                                }
-                        }
-                    } else {
-                        entity := load_entity_from_file(dropped);
-                        if entity {
-                            array_add(*app.entities, entity);
-                        }
-                    }
-
-                    if app.settings.fit_to_screen_on_file_drop_event {
-                        fit_on_screen();
-                    }
-                }
-            }
-        }
+        handle_events();
 
         ImGui.GetStyle().WindowRounding = 0;
         ImGui_ImplSdl_NewFrame(app.window);
@@ -270,18 +136,7 @@ main :: () {
             show_camera_controls();
             show_help_ui();
             console_draw();
-
             // inspect("Debug", *app.camera, true);
-        }
-
-        if ImGui.GetMouseCursor() == {
-            case .Arrow;         SDL_SetCursor(cursor_arrow);
-            case .TextInput;     SDL_SetCursor(cursor_text_input);
-            case .Move;          SDL_SetCursor(cursor_move);
-            case .ResizeNS;      SDL_SetCursor(cursor_resize_ns);
-            case .ResizeEW;      SDL_SetCursor(cursor_resize_ew);
-            case .ResizeNESW;    SDL_SetCursor(cursor_resize_nesw);
-            case .ResizeNWSE;    SDL_SetCursor(cursor_resize_nwse);
         }
 
         #if false {
@@ -322,6 +177,141 @@ main :: () {
     SDL_GL_DeleteContext(gl_context);
     SDL_DestroyWindow(app.window);
     SDL_Quit();
+}
+
+load_from_command_line :: () {
+    args := get_command_line_arguments();
+    defer array_free(args);
+    for 1..args.count-1 {
+        found, _ := find_entity_with_max_generation_index(args[it]);
+        if found {
+            if #complete app.settings.duplicate_file_behaviour == {
+                case .OVERWRITE; #through;
+                case .IGNORE;
+                    // When loading files from the command line .OVERWRITE and .IGNORE have the same behaviour
+                    log("Skipped file: '%' (already loaded)\n", args[it]);
+                    break;
+                case .APPEND;
+                    entity := load_entity_from_file(args[it]);
+                    if entity {
+                        entity.generation_index = found.generation_index + 1;
+                        array_add(*app.entities, entity);
+                    }
+            }
+        } else {
+            entity := load_entity_from_file(args[it]);
+            if entity {
+                array_add(*app.entities, entity);
+            }
+        }
+    }
+    fit_on_screen();
+}
+
+handle_events :: () {
+    event: SDL_Event;
+    while SDL_PollEvent(*event) {
+        ImGui_ImplSdl_ProcessEvent(*event);
+
+        app.modifier_flags.shift_pressed   = xx (SDL_GetModState() & KMOD_SHIFT);
+        app.modifier_flags.control_pressed = xx (SDL_GetModState() & KMOD_CTRL);
+        app.modifier_flags.alt_pressed     = xx (SDL_GetModState() & KMOD_ALT);
+
+        if event.type == {
+            case SDL_QUIT; {
+                app.closing_application = true;
+            }
+            case SDL_WINDOWEVENT;
+                if event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED {
+
+                    width_scale  := cast(float) event.window.data1 / app.current_window_width;
+                    height_scale := cast(float) event.window.data2 / app.current_window_height;
+
+                    camera_delta_rl   := (1. -  width_scale) * (app.camera.right - app.camera.left) / 2;
+                    camera_delta_tb   := (1. - height_scale) * (app.camera.top   - app.camera.bottom) / 2;
+                    app.camera.right  -= camera_delta_rl;
+                    app.camera.left   += camera_delta_rl;
+                    app.camera.top    -= camera_delta_tb;
+                    app.camera.bottom += camera_delta_tb;
+
+                    app.current_window_width  = event.window.data1;
+                    app.current_window_height = event.window.data2;
+                }
+            case SDL_KEYDOWN; {
+                if io().WantCaptureKeyboard break;
+
+                // @Cleanup move to keymap file
+                if  event.key.keysym.sym == SDLK_F11 {
+                    app.fullscreen = !app.fullscreen;
+                    flags : u32 = ifx app.fullscreen then cast(u32) 0 else xx SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP;
+                    ok := SDL_SetWindowFullscreen(app.window, flags); // @Robustness handle error
+                }
+
+                for app.keymap_keydown.mappings {
+                    if to_sdl_keycode(it.key_code) == event.key.keysym.sym {
+                        if app.modifier_flags.shift_pressed   == it.modifier_flags.shift_pressed   &&
+                           app.modifier_flags.control_pressed == it.modifier_flags.control_pressed &&
+                           app.modifier_flags.alt_pressed     == it.modifier_flags.alt_pressed {
+                            app.keymap_keydown.procs[it.proc_info_index].proc();
+                            break;
+                        }
+                    }
+                }
+            }
+            case SDL_KEYUP; {
+                if io().WantCaptureKeyboard break;
+
+                for app.keymap.mappings {
+                    if to_sdl_keycode(it.key_code) == event.key.keysym.sym {
+                        if app.modifier_flags.shift_pressed   == it.modifier_flags.shift_pressed   &&
+                           app.modifier_flags.control_pressed == it.modifier_flags.control_pressed &&
+                           app.modifier_flags.alt_pressed     == it.modifier_flags.alt_pressed {
+                            app.keymap.procs[it.proc_info_index].proc();
+                            break;
+                        }
+                    }
+                }
+            }
+            case SDL_DROPFILE; {
+                // @Leak @Cleanup event.drop.file should be free'd using SDL_free
+                dropped := to_string(event.drop.file);
+                found, found_index := find_entity_with_max_generation_index(dropped);
+                if found {
+                    if #complete app.settings.duplicate_file_behaviour == {
+                        case .IGNORE;
+
+                            log("Skipped file: '%' (already loaded)\n", dropped);
+
+                        case .OVERWRITE;
+
+                            // Only affects the entity with maximum generation index
+                            entity := load_entity_from_file(dropped);
+                            if entity {
+                                entity.generation_index = found.generation_index;
+                                deinit(found);
+                                app.entities[found_index] = entity;
+                            }
+
+                        case .APPEND;
+                            entity := load_entity_from_file(dropped);
+                            if entity {
+                                entity.generation_index = found.generation_index + 1;
+                                array_add(*app.entities, entity);
+                            }
+                    }
+                } else {
+                    entity := load_entity_from_file(dropped);
+                    if entity {
+                        array_add(*app.entities, entity);
+                    }
+                }
+
+                if app.settings.fit_to_screen_on_file_drop_event {
+                    fit_on_screen();
+                }
+            }
+        }
+    }
 }
 
 // Returns the entity having the given `fully_pathed_filename` with maximum generation index, or null if no such entity exists
