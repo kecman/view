@@ -53,17 +53,6 @@ main :: () {
 
     init_camera();
 
-    // OGL Options
-    {
-    }
-
-    // Setup text shader
-    {
-        vert :: #run read_entire_file("src/shaders/text.vert");
-        frag :: #run read_entire_file("src/shaders/text.frag");
-        app.text_program = get_shader_program(vert, frag);
-    }
-
     // Prepare VAO for text quads.
     {
         glGenVertexArrays(1, *app.text_vao);
@@ -77,7 +66,12 @@ main :: () {
         glBindVertexArray(0);
     }
 
-    // Setup mesh shader
+    {
+        vert :: #run read_entire_file("src/shaders/text.vert");
+        frag :: #run read_entire_file("src/shaders/text.frag");
+        app.text_program = get_shader_program(vert, frag);
+    }
+
     {
         vert :: #run read_entire_file("src/shaders/mesh.vert");
         frag :: #run read_entire_file("src/shaders/mesh.frag");
@@ -85,7 +79,6 @@ main :: () {
         glGenVertexArrays(1, *app.mesh_vao);
     }
 
-    // Setup mesh normals shader
     {
         vert :: #run read_entire_file("src/shaders/normals.vert");
         geom :: #run read_entire_file("src/shaders/normals.geom");
@@ -94,7 +87,6 @@ main :: () {
         glGenVertexArrays(1, *app.normals_vao);
     }
 
-    // Setup background shader
     {
         vert :: #run read_entire_file("src/shaders/background.vert");
         frag :: #run read_entire_file("src/shaders/background.frag");
@@ -111,14 +103,6 @@ main :: () {
 
     ImGui.CreateContext();
     ImGui_ImplSdl_Init(app.window);
-
-    if false {
-        ImGui.SetWindowPos(pos=*V2_ZERO);
-    }
-
-    // Setup style
-    // ImGui.StyleColorsClassic();
-    // ImGui.StyleColorsLight();
     ImGui.StyleColorsDark();
 
     load_from_command_line();
@@ -144,7 +128,6 @@ main :: () {
             debug_print_active_uniforms(app.mesh_shader);
         }
 
-        // Rendering
         glViewport(0, 0, xx io().DisplaySize.x, xx io().DisplaySize.y); // @TODO Is DisplaySize updated with window resizing? Use current_window_height/width here?
         glEnable(GL_DEPTH_TEST);
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
@@ -172,7 +155,6 @@ main :: () {
         reset_temporary_storage();
     }
 
-    // Cleanup
     ImGui_ImplSdl_Shutdown();
     SDL_GL_DeleteContext(gl_context);
     SDL_DestroyWindow(app.window);
