@@ -133,6 +133,8 @@ Selected_Or_Hovered :: (entities : *[..]*Entity, body : Code, flags : For_Flags)
 #load "modules/ImGui_/examples/imgui_sdl_gl.jai";
 
 #import "geometry";
+#load "axes.jai";
+#load "selection_mode.jai";
 #load "numeric.jai";
 #load "geometric_operations.jai";
 #load "io_obj.jai";

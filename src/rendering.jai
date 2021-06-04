@@ -56,11 +56,11 @@ Display_Info :: struct {
     surface_visible := true;
     surface_color := Vector4.{1., 1., 1., 1.}; // RGBA
     display_mode := Display_Mode.BLINN_PHONG;
+
     Clip_Plane :: struct {
         plane : Vector4; // @Cleanup Hyperplane
         active : bool;
     }
-
     clip_planes : [6]Clip_Plane = .[.{plane=.{ 1,  0,  0,  0}}, .{plane=.{-1,  0,  0,  0}}, .{plane=.{ 0,  1,  0,  0}}, .{plane=.{ 0, -1,  0,  0}}, .{plane=.{ 0,  0,  1,  0}}, .{plane=.{ 0,  0, -1,  0}}];
 }
 
@@ -110,22 +110,7 @@ render_normals :: (mesh : *Mesh, using render_info : *Render_Info, using display
 
     glUseProgram(app.normals_program);
 
-    {
-        loc := glGetUniformLocation(app.normals_program, "world_from_model");
-        glUniformMatrix4fv(loc, 1, true, *mesh.world_from_model._11);
-    }
-
-    {
-        loc := glGetUniformLocation(app.normals_program, "view_from_world");
-        view_from_world := make_look_at_matrix(app.camera);
-        glUniformMatrix4fv(loc, 1, true, *view_from_world._11);
-    }
-
-    {
-        loc := glGetUniformLocation(app.normals_program, "clip_from_view");
-        clip_from_view := make_orthographic_projection_matrix(app.camera);
-        glUniformMatrix4fv(loc, 1, true, *clip_from_view._11);
-    }
+    set_model_view_projection_uniforms(app.normals_program, <<mesh);
 
     {
         loc := glGetUniformLocation(app.normals_program, "normals_color");
@@ -209,6 +194,25 @@ render_mesh_triangles :: (mesh : *Mesh, using render_info : *Render_Info, using 
     }
 }
 
+set_model_view_projection_uniforms :: (program : GLuint, mesh : Mesh) {
+    {
+        loc := glGetUniformLocation(program, "world_from_model");
+        glUniformMatrix4fv(loc, 1, true, *mesh.world_from_model._11);
+    }
+
+    {
+        loc := glGetUniformLocation(program, "view_from_world");
+        view_from_world := make_look_at_matrix(app.camera);
+        glUniformMatrix4fv(loc, 1, true, *view_from_world._11);
+    }
+
+    {
+        loc := glGetUniformLocation(program, "clip_from_view");
+        clip_from_view := make_orthographic_projection_matrix(app.camera);
+        glUniformMatrix4fv(loc, 1, true, *clip_from_view._11);
+    }
+}
+
 Render_Mesh_Common :: (mesh : *Mesh, using render_info : *Render_Info, using display_info : Display_Info) #expand {
 
     if render_info.is_dirty {
@@ -217,22 +221,7 @@ Render_Mesh_Common :: (mesh : *Mesh, using render_info : *Render_Info, using dis
 
     glUseProgram(app.mesh_program);
 
-    {
-        loc := glGetUniformLocation(app.mesh_program, "world_from_model");
-        glUniformMatrix4fv(loc, 1, true, *mesh.world_from_model._11);
-    }
-
-    {
-        loc := glGetUniformLocation(app.mesh_program, "view_from_world");
-        view_from_world := make_look_at_matrix(app.camera);
-        glUniformMatrix4fv(loc, 1, true, *view_from_world._11);
-    }
-
-    {
-        loc := glGetUniformLocation(app.mesh_program, "clip_from_view");
-        clip_from_view := make_orthographic_projection_matrix(app.camera);
-        glUniformMatrix4fv(loc, 1, true, *clip_from_view._11);
-    }
+    set_model_view_projection_uniforms(app.mesh_program, <<mesh);
 
     {
         loc := glGetUniformLocation(app.mesh_program, "wave");
@@ -254,8 +243,8 @@ Render_Mesh_Common :: (mesh : *Mesh, using render_info : *Render_Info, using dis
         for 0..5 {
             // @Cleanup We could use run directive here to get constant strings
             using clip_planes[it];
-            glUniform1i(glGetUniformLocation(app.mesh_program, to_c_string(tprint("clip_plane_active[%]", it))), xx active);
-            glUniform4f(glGetUniformLocation(app.mesh_program, to_c_string(tprint("clip_plane[%]", it))), plane.x, plane.y, plane.z, plane.w);
+            glUniform1i(glGetUniformLocation(app.mesh_program, to_c_string(tprint("clip_plane[%].active", it))), xx active);
+            glUniform4f(glGetUniformLocation(app.mesh_program, to_c_string(tprint("clip_plane[%].plane", it))), plane.x, plane.y, plane.z, plane.w);
         }
     }
 
