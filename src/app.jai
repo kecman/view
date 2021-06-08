@@ -19,6 +19,9 @@ app : struct {
     normals_program : GLuint;
     normals_vao : GLuint;
 
+    aabb_program : GLuint;
+    aabb_vao : GLuint;
+
     Background_Style :: enum #specified {
         SOLID_COLOR :: 0;
         CUSTOM_SHADER :: 1;
@@ -41,7 +44,7 @@ app : struct {
     user_selection : Mesh_Entity;
     user_selection_cursor_text_shown := false;
     user_selection_cursor_text_scale := .4;
-    user_selection_max_point_count_for_selectable_entity := 10_000;
+    user_selection_max_point_count_for_selectable_entity := 100_000;
 
     // Set the defaults for the user selection display
     user_selection.is_visible = false;

@@ -1,4 +1,3 @@
-/*
 FLOAT_MACHINE_EPSILON :: 0.0001; // @FIXME
 
 almost_equal :: (a : float, b : float, epsilon : float = 10 * FLOAT_MACHINE_EPSILON, scale : float = 1.0) -> bool
@@ -7,7 +6,6 @@ almost_equal :: (a : float, b : float, epsilon : float = 10 * FLOAT_MACHINE_EPSI
     exactly_equal := (a == b);
     return exactly_equal || (abs(a - b) < epsilon * (scale + abs(a) + abs(b)));
 }
-*/
 
 angle :: (a : Vector3, b : Vector3, normalize : bool = false) -> float
 {

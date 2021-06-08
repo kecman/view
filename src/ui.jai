@@ -141,6 +141,9 @@ show_item_list_ui :: () {
             it.display_info.flash_wave_dt = 0;
         }
 
+        // @Cleanup This is a horrible way to do this...
+        it.display_info.aabb_visible = false; // Turned on only while context menu > clipping is on
+
         if ImGui.BeginPopupContextItem(imgui_label("##context_menu", xx it_index)) {
             defer ImGui.EndPopup();
 
@@ -160,7 +163,17 @@ show_item_list_ui :: () {
                 normals_ui :=  it.type == .MESH;
                 lines_ui   := (it.type == .MESH && it.mesh.geometry_format != .POINTS) || it.type == .POLYLINE_SOUP2 || it.type == .POLYLINE_SOUP3;
                 faces_ui   := (it.type == .MESH && it.mesh.geometry_format == .TRIANGLES) || it.type == .POLYGON_SOUP;
-                set := display_info_ui(*it.display_info, normals_ui=normals_ui, lines_ui=lines_ui, faces_ui=faces_ui);
+                maybe_update_render_info(*it.render_info, *it.mesh);
+
+                transformed_aabb := it.render_info.bounding_aabb;
+                {
+                    // @Volatile @Cleanup only works for a shift
+                    using transformed_aabb;
+                    min_point = (it.mesh.world_from_model * make_vector4(min_point, 1)).xyz;
+                    max_point = (it.mesh.world_from_model * make_vector4(max_point, 1)).xyz;
+                }
+
+                set := display_info_ui(*it.display_info, transformed_aabb, normals_ui=normals_ui, lines_ui=lines_ui, faces_ui=faces_ui);
                 if set.color_reset it.display_info.surface_color = color_from_path(it.fully_pathed_filename);
 
                 ImGui.Separator();
@@ -237,7 +250,18 @@ show_item_list_ui :: () {
                 }
 
                 ImGui.Separator();
-                set := display_info_ui(*app.selection_display_info);
+
+                selection_aabb : AxisBox3;
+                for app.entities if it.is_selected {
+                    maybe_update_render_info(*it.render_info, *it.mesh);
+                    // @Volatile @Cleanup only works for a shift
+                    aabb := it.render_info.bounding_aabb;
+                    aabb.min_point = (it.mesh.world_from_model * make_vector4(aabb.min_point, 1)).xyz;
+                    aabb.max_point = (it.mesh.world_from_model * make_vector4(aabb.max_point, 1)).xyz;
+                    expand(*selection_aabb, aabb);
+                }
+
+                set := display_info_ui(*app.selection_display_info, selection_aabb);
 
                 for app.entities if it.is_selected {
                     other := *app.selection_display_info;
@@ -267,8 +291,8 @@ show_item_list_ui :: () {
                         <<color = color_from_path(it.fully_pathed_filename);
                     }
 
-                    for i : 0..5 {
-                        if set.clip_planes[i] clip_planes[i] = other.clip_planes[i];
+                    for i : 0..clip_ranges.count-1 {
+                        if set.clip_ranges[i] clip_ranges[i] = other.clip_ranges[i];
                     }
                 }
             }
@@ -571,10 +595,19 @@ Display_Info_Update :: struct {
     color_reset : bool;
     display_mode : bool;
 
-    clip_planes : [6]bool;
+    clip_ranges : [3]bool;
 }
 
-display_info_ui :: (display_info : *Display_Info, normals_ui : bool = true, lines_ui : bool = true, faces_ui : bool = true) -> Display_Info_Update {
+// @CompilerBug? Enable this check
+// #run {
+//     info :   Display_Info;
+//     update : Display_Info_Update;
+//     if info.clip_ranges.count == update.clip_ranges.count {
+//         compiler_report(#file, #line, 0, "Expected clip_ranges arrays to have matching sizes");
+//     }
+// }
+
+display_info_ui :: (display_info : *Display_Info, aabb : AxisBox3, normals_ui : bool = true, lines_ui : bool = true, faces_ui : bool = true) -> Display_Info_Update {
 
     set : Display_Info_Update;
 
@@ -634,27 +667,32 @@ display_info_ui :: (display_info : *Display_Info, normals_ui : bool = true, line
     set.color_reset = ImGui.Button(imgui_label("Reset Colors##color_reset", display_info), size=*V2_ZERO);
     Show_Tooltip("Deduce item primary colors from the file path");
 
-    if ImGui.TreeNode("%", "Clipping planes") {
+    if ImGui.TreeNode("%", "Clipping") {
         defer ImGui.TreePop();
         using display_info;
+        display_info.aabb_visible = true;
 
-        set.clip_planes[0] |= ImGui.Checkbox(imgui_label("##clipping_plane0", display_info), *clip_planes[0].active); ImGui.SameLine();
-        set.clip_planes[0] |= ImGui.DragFloat4("Plane 0", *clip_planes[0].plane.component, .1, 0., 0., display_format="%.3f");
+        ImGui.Text("Clip using distance from planes though the origin");
 
-        set.clip_planes[1] |= ImGui.Checkbox(imgui_label("##clipping_plane1", display_info), *clip_planes[1].active); ImGui.SameLine();
-        set.clip_planes[1] |= ImGui.DragFloat4("Plane 1", *clip_planes[1].plane.component, .1, 0., 0., display_format="%.3f");
+        set.clip_ranges[0] = clipping_ui(*clip_ranges[0], aabb);
+        set.clip_ranges[1] = clipping_ui(*clip_ranges[1], aabb);
+        set.clip_ranges[2] = clipping_ui(*clip_ranges[2], aabb);
 
-        set.clip_planes[2] |= ImGui.Checkbox(imgui_label("##clipping_plane2", display_info), *clip_planes[2].active); ImGui.SameLine();
-        set.clip_planes[2] |= ImGui.DragFloat4("Plane 2", *clip_planes[2].plane.component, .1, 0., 0., display_format="%.3f");
+        if almost_equal(length(clip_ranges[0].normal), 0.) clip_ranges[0].normal = .{1, 0, 0};
+        if almost_equal(length(clip_ranges[1].normal), 0.) clip_ranges[1].normal = .{0, 1, 0};
+        if almost_equal(length(clip_ranges[2].normal), 0.) clip_ranges[2].normal = .{0, 0, 1};
 
-        set.clip_planes[3] |= ImGui.Checkbox(imgui_label("##clipping_plane3", display_info), *clip_planes[3].active); ImGui.SameLine();
-        set.clip_planes[3] |= ImGui.DragFloat4("Plane 3", *clip_planes[3].plane.component, .1, 0., 0., display_format="%.3f");
-
-        set.clip_planes[4] |= ImGui.Checkbox(imgui_label("##clipping_plane4", display_info), *clip_planes[4].active); ImGui.SameLine();
-        set.clip_planes[4] |= ImGui.DragFloat4("Plane 4", *clip_planes[4].plane.component, .1, 0., 0., display_format="%.3f");
-
-        set.clip_planes[5] |= ImGui.Checkbox(imgui_label("##clipping_plane5", display_info), *clip_planes[5].active); ImGui.SameLine();
-        set.clip_planes[5] |= ImGui.DragFloat4("Plane 5", *clip_planes[5].plane.component, .1, 0., 0., display_format="%.3f");
+        if ImGui.Button(imgui_label("Normalize", display_info), size=*V2_ZERO) {
+            for *clip_ranges {
+                normal_length := length(it.normal);
+                if normal_length != 0 {
+                    it.min /= normal_length;
+                    it.max /= normal_length;
+                    it.normal /= normal_length;
+                }
+            }
+        }
+        Show_Tooltip("Make the normals unit and update the min/max for all ranges");
     }
 
     if ImGui.TreeNode("%", "Label Settings") {
@@ -679,6 +717,72 @@ display_info_ui :: (display_info : *Display_Info, normals_ui : bool = true, line
     }
 
     return set;
+}
+
+clipping_ui :: (p : *Clip_Range, aabb : AxisBox3) -> (changed : bool) {
+    changed := false;
+    W :: 60;
+    MIN_RANGE :: .1;
+
+    ImGui.Checkbox(imgui_label("##clip_plane", p), *p.active);
+    Show_Tooltip("Enable this clipping range");
+    ImGui.SameLine();
+
+    ImGui.PushItemWidth(W);
+    if ImGui.DragFloat(imgui_label("##range_min", p), *p.min, .1, 0., 0., display_format="%.3f") {
+        p.min = min(p.min, p.max - MIN_RANGE);
+        changed = true;
+    }
+    ImGui.PopItemWidth();
+    ImGui.SameLine();
+    ImGui.Text("<");
+    ImGui.SameLine();
+    ImGui.PushItemWidth(W);
+    changed |= ImGui.DragFloat(imgui_label("##normal.x", p), *p.normal.x, .01, 0., 0., display_format="%.3f");
+    ImGui.PopItemWidth();
+    ImGui.SameLine();
+    ImGui.Text("x +");
+    ImGui.SameLine();
+    ImGui.PushItemWidth(W);
+    changed |= ImGui.DragFloat(imgui_label("##normal.y", p), *p.normal.y, .01, 0., 0., display_format="%.3f");
+    ImGui.PopItemWidth();
+    ImGui.SameLine();
+    ImGui.Text("y +"); ImGui.SameLine();
+    ImGui.PushItemWidth(W);
+    changed |= ImGui.DragFloat(imgui_label("##normal.z", p), *p.normal.z, .01, 0., 0., display_format="%.3f");
+    ImGui.PopItemWidth();
+    ImGui.SameLine();
+    ImGui.Text("z");
+    ImGui.SameLine();
+    ImGui.Text("<");
+    ImGui.SameLine();
+    ImGui.PushItemWidth(W);
+    if ImGui.DragFloat(imgui_label("##range_max", p), *p.max, .1, 0., 0., display_format="%.3f") {
+        p.max = max(p.min + MIN_RANGE, p.max);
+        changed = true;
+    }
+    ImGui.PopItemWidth();
+
+    NEGATIVE_INF :: 0hFF800000;
+    POSITIVE_INF :: 0h7F800000;
+
+    ImGui.SameLine();
+    uninitialized := (p.min == NEGATIVE_INF) || (p.max == POSITIVE_INF);
+    if ImGui.Button(imgui_label("Reset", p), size=*V2_ZERO) || uninitialized {
+        p.min = POSITIVE_INF;
+        p.max = NEGATIVE_INF;
+        for :corners_iterator aabb {
+            plane := make_hyperplane3(p.normal, Vector3.{0, 0, 0});
+            dist := signed_distance_point3_plane3(it, plane);
+            p.min = min(p.min, dist);
+            p.max = max(p.max, dist);
+        }
+        p.min -= .0001;
+        p.max += .0001;
+    }
+    Show_Tooltip("Reset the range min/max to keep the entire aabb");
+
+    return changed;
 }
 
 imgui_label :: (label : string, ptr : *void) -> *u8 {

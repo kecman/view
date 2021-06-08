@@ -1,11 +1,12 @@
 ## Version: v0.1.1, Unreleased
 
-- Added clipping planes and UI for editing them in the item/selection context menu
+- Added clipping ranges and UI for editing them in the item/selection context menu
 - Added Selection Mode help to the help menu (press h for help)
 - Added binding to scroll into the camera look position (Ctrl+Scroll).
   - Note: This is handy in Selection Mode---place the camera orbit with Ctrl+RMB then zoom into this point with Ctrl+Scroll
 - Fixed jump in zoom level when repositioning the camera orbit
 - Changed the initial window size from 1280x720 to 1440x900
+- Changed the default user selection point threshold from 10k to 100k
 
 ## Version: v0.1.0, 31 May 2021
 

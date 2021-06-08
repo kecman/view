@@ -10,12 +10,14 @@ uniform int display_mode = 0;
 uniform vec4 color; // rgba
 uniform bool screentone_backfaces = true;
 
-// For clipping
-struct Clip_Plane {
-    vec4 plane;
+// @Volatile Keep synced with Jai
+struct Clip_Range {
+    vec3 normal;
     bool active;
+    float min;
+    float max;
 };
-uniform Clip_Plane clip_plane[6];
+uniform Clip_Range clip_range[3];
 
 in vec3 vertex_normal_ws;
 in vec3 fragment_position_ws;
@@ -67,10 +69,12 @@ vec3 blinn_phong_brdf(vec3 N, vec3 V, vec3 L, vec3 light_color, float light_powe
 }
 
 void main() {
-    for (int i = 0; i < 6; ++i) {
-        if (clip_plane[i].active) {
-            float d = dot(clip_plane[i].plane, vec4(fragment_position_ws, 1.));
-            if (d < 0.) {
+    for (int i = 0; i < 3; ++i) {
+        if (clip_range[i].active) {
+            float dist = dot(clip_range[i].normal, fragment_position_ws);
+            float min = clip_range[i].min;
+            float max = clip_range[i].max;
+            if (dist <= min || dist >= max) {
                 discard;
             }
         }

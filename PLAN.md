@@ -1,11 +1,12 @@
 ## Next Release
 
-- Clipping improvements:
-  - Add option to make the clipped geometry render with non-zero opacity
+- [UI/UX] Clipping improvements:
   - Make normals clip---refactor to use Render_Mesh_Common
   - Make selection mode ignore clipped vertices
-- Make long lists of items managable in the context menu
-
+  - Add plane visualisation, maybe also intersecting the planes
+  - Add option to make the clipped geometry render with non-zero opacity
+  - Make LMB be the only one to close popups, so you can rotate the view while a popup is open
+- [UI/UX] Make long lists of items managable in the context menu
 - [Rendering] Render plane using geometry shader and implement mesh clipping
 - [UI/UX] Support loading wkt file format to load Polygons in a reasonable way
 - [UI/UX] Mode line (bar along bottom) showing hovered mesh stats
@@ -13,11 +14,14 @@
 - [UI/UX] Implement wild cards for file loading
 - [UI/UX] Reload files only if they change, and adjust the fade color if the geometry is unchanged
 - [UI/UX] Implement an infinite grid, maybe http://asliceofrendering.com/scene%20helper/2020/01/05/InfiniteGrid/
+- [UI/UX] Add some options for backface shading, including an obnoxiously visible one for finding holes in meshes
+- [UI/UX] Fix issue with bindings where holding Ctrl to use the focussed zoom means if we right click to rotate we'll move the focus
 
 ## Backlog
 
+- [Rendering] Render aabbs when the box extents are hovered in the UI
 - [UI/UX] Use folding trees in help menu, default to unfolded
-- [Rendering] Render aabbs using geometry shader, show it when the box extents are hovered in the UI
+- [UI/UX] Add a circling feature pre-screenshot
 - [UI/UX] Add a hotloading mode to files (Hotloader module not implemented on linux)
 - [UI/UX] Implement simple undo for file loading, would be handy to be able to undo file clobbering...
 - [Rendering] Do a better job transparency
@@ -32,6 +36,7 @@
 - [Rendering] Render by index, or adjust colour by index, or make a ripple by point index
 - [UI/UX,Rendering] Add clipping plane widgets
 - [UI/UX,Camera] Add orbit placement
+- [UI/UX,Camera] Make a function to spiral on the bounding sphere and have it activated via a console command
 - [UI/UX] Frame rate independent game loop?
 - [UI/UX,Bug] Fix obj loading for quad faces
 - [UI/UX] :UserConfig Hotload user configurable parameters

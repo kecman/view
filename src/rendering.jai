@@ -10,8 +10,8 @@ Vertex_Label_Style :: struct {
     label_color : Vector4 = .{0., 0., .75, 1.}; // Blue, works well on both grey and white backgrounds
 }
 
-Display_Mode :: enum {
-    NORMALS :: 0;
+Display_Mode :: enum #specified {
+    NORMALS ::     0;
     SOLID_COLOR :: 1;
     BLINN_PHONG :: 2;
 }
@@ -33,6 +33,14 @@ Render_Info :: struct {
 
     bounding_sphere : Sphere; // In world space
     bounding_aabb : AxisBox3; // In world space
+}
+
+// @Volatile Keep synced with GLSL
+Clip_Range :: struct {
+    normal : Vector3;
+    active : bool;
+    min : float = 0hFF800000; // -inf
+    max : float = 0h7F800000; // +inf
 }
 
 // Things that should be preserved when the geometry changes
@@ -57,11 +65,12 @@ Display_Info :: struct {
     surface_color := Vector4.{1., 1., 1., 1.}; // RGBA
     display_mode := Display_Mode.BLINN_PHONG;
 
-    Clip_Plane :: struct {
-        plane : Vector4; // @Cleanup Hyperplane
-        active : bool;
-    }
-    clip_planes : [6]Clip_Plane = .[.{plane=.{ 1,  0,  0,  0}}, .{plane=.{-1,  0,  0,  0}}, .{plane=.{ 0,  1,  0,  0}}, .{plane=.{ 0, -1,  0,  0}}, .{plane=.{ 0,  0,  1,  0}}, .{plane=.{ 0,  0, -1,  0}}];
+    aabb_visible := false;
+
+    clip_ranges : [3]Clip_Range;
+    clip_ranges[0] = .{normal=.{1,0,0}};
+    clip_ranges[1] = .{normal=.{0,1,0}};
+    clip_ranges[2] = .{normal=.{0,0,1}};
 }
 
 maybe_update_render_info :: (info : *Render_Info, mesh : *Mesh) {
@@ -131,25 +140,41 @@ render_normals :: (mesh : *Mesh, using render_info : *Render_Info, using display
 
     glEnableVertexAttribArray(ATTRIB_POSITION);
     glEnableVertexAttribArray(ATTRIB_NORMAL);
-    defer glDisableVertexAttribArray(ATTRIB_POSITION);
-    defer glDisableVertexAttribArray(ATTRIB_NORMAL);
 
     NP := size_of(Vector3) * mesh.positions.count;
 
     glVertexAttribPointer(ATTRIB_POSITION, 3, GL_FLOAT, false, size_of(Vector3), null);
     glVertexAttribPointer(ATTRIB_NORMAL, 3, GL_FLOAT, false, size_of(Vector3), cast(*void)(NP));
 
-    last_line_width: float;
-    glGetFloatv(GL_LINE_WIDTH, xx *last_line_width);
-    defer glLineWidth(last_line_width);
     glLineWidth(2); // 1, 2, 3... See also glEnable(GL_LINE_SMOOTH);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBlendEquation(GL_FUNC_ADD);
-    defer glDisable(GL_BLEND);
 
     glDrawArrays(GL_POINTS, 0, xx mesh.positions.count);
+}
+
+render_aabb :: (mesh : *Mesh, using render_info : *Render_Info, using display_info : Display_Info) {
+    if !aabb_visible {
+        return;
+    }
+
+    if render_info.is_dirty {
+        maybe_update_render_info(render_info, mesh);
+    }
+
+    glUseProgram(app.aabb_program);
+    set_model_view_projection_uniforms(app.aabb_program, <<mesh);
+
+    r, g, b, a : float = 0, 0, 1, 1;
+    glUniform4f(glGetUniformLocation(app.aabb_program, "color"), r, g, b, a);
+    min := bounding_aabb.min_point;
+    max := bounding_aabb.max_point;
+    glUniform3f(glGetUniformLocation(app.aabb_program, "min"), min.x, min.y, min.z);
+    glUniform3f(glGetUniformLocation(app.aabb_program, "max"), max.x, max.y, max.z);
+
+    glDrawArrays(GL_LINES, 0, 24);
 }
 
 render_mesh_points :: (mesh : *Mesh, using render_info : *Render_Info, using display_info : Display_Info) {
@@ -172,7 +197,7 @@ render_mesh_lines :: (mesh : *Mesh, using render_info : *Render_Info, using disp
     glUniform4f(glGetUniformLocation(app.mesh_program, "color"), wireframe_color.x, wireframe_color.y, wireframe_color.z, wireframe_color.w);
 
     if mesh.geometry_format == .LINES {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // @Cleanup doesn this affect a GL_LINES call?
         glDrawElements(GL_LINES, xx mesh.indices.count, GL_UNSIGNED_INT, null);
     } else if mesh.geometry_format == .TRIANGLES {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -242,9 +267,11 @@ Render_Mesh_Common :: (mesh : *Mesh, using render_info : *Render_Info, using dis
     {
         for 0..5 {
             // @Cleanup We could use run directive here to get constant strings
-            using clip_planes[it];
-            glUniform1i(glGetUniformLocation(app.mesh_program, to_c_string(tprint("clip_plane[%].active", it))), xx active);
-            glUniform4f(glGetUniformLocation(app.mesh_program, to_c_string(tprint("clip_plane[%].plane", it))), plane.x, plane.y, plane.z, plane.w);
+            using clip_ranges[it];
+            glUniform3f(glGetUniformLocation(app.mesh_program, to_c_string(tprint("clip_range[%].normal", it))), normal.x, normal.y, normal.z);
+            glUniform1f(glGetUniformLocation(app.mesh_program, to_c_string(tprint("clip_range[%].min", it))), xx min);
+            glUniform1f(glGetUniformLocation(app.mesh_program, to_c_string(tprint("clip_range[%].max", it))), xx max);
+            glUniform1f(glGetUniformLocation(app.mesh_program, to_c_string(tprint("clip_range[%].active", it))), xx active);
         }
     }
 
@@ -257,8 +284,6 @@ Render_Mesh_Common :: (mesh : *Mesh, using render_info : *Render_Info, using dis
 
     glEnableVertexAttribArray(ATTRIB_POSITION);
     glEnableVertexAttribArray(ATTRIB_NORMAL);
-    `defer glDisableVertexAttribArray(ATTRIB_POSITION);
-    `defer glDisableVertexAttribArray(ATTRIB_NORMAL);
 
     // ATTRIB_TEXCOORDS :: 1;
     // ATTRIB_COLOR     :: 2;
@@ -271,17 +296,14 @@ Render_Mesh_Common :: (mesh : *Mesh, using render_info : *Render_Info, using dis
     // @Cleanup only set when mode==.LINE
     last_line_width: float;
     glGetFloatv(GL_LINE_WIDTH, xx *last_line_width);
-    `defer glLineWidth(last_line_width);
     glLineWidth(xx wireframe_width); // See also glEnable(GL_LINE_SMOOTH);
 
     last_polygon_mode: [2]GLuint;
     glGetIntegerv(GL_POLYGON_MODE, xx last_polygon_mode.data);
-    `defer glPolygonMode(GL_FRONT_AND_BACK, last_polygon_mode[0]);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBlendEquation(GL_FUNC_ADD);
-    `defer glDisable(GL_BLEND);
 
     glEnable(GL_PROGRAM_POINT_SIZE);
 }
@@ -361,6 +383,7 @@ render_entities :: () {
                 soup := cast(*Polyline_Soup3_Entity) entity;
                 render_mesh_points(*soup.mesh, *entity.render_info, entity.display_info);
                 render_mesh_lines(*soup.mesh, *entity.render_info, entity.display_info);
+                render_aabb(*soup.mesh, *entity.render_info, entity.display_info);
                 for polyline : soup.shape.polylines {
                     Reserve_Labels(polyline.points.count);
                     if label_limit >= 0 {
@@ -390,6 +413,7 @@ render_entities :: () {
                 render_mesh_lines(*mesh.mesh, *entity.render_info, entity.display_info);
                 render_mesh_triangles(*mesh.mesh, *entity.render_info, entity.display_info);
                 render_normals(*mesh.mesh, *entity.render_info, entity.display_info);
+                render_aabb(*mesh.mesh, *entity.render_info, entity.display_info);
                 // @Cleanup so the transform is also available for text rendering
                 Reserve_Labels(mesh.mesh.positions.count);
                 if label_limit >= 0 || (entity == *app.user_selection) {

@@ -88,6 +88,13 @@ main :: () {
     }
 
     {
+        vert :: #run read_entire_file("src/shaders/aabb.vert");
+        frag :: #run read_entire_file("src/shaders/aabb.frag");
+        app.aabb_program = get_shader_program(vert, frag);
+        glGenVertexArrays(1, *app.aabb_vao);
+    }
+
+    {
         vert :: #run read_entire_file("src/shaders/background.vert");
         frag :: #run read_entire_file("src/shaders/background.frag");
         app.background_program = get_shader_program(vert, frag);
