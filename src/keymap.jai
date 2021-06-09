@@ -84,7 +84,7 @@ init_keymap :: ()
     add_key(*app.keymap, cycle_point_size, "Cycle point size for selected items", xx #char "p");
     add_key(*app.keymap, cycle_point_index_labels, "Cycle point index labels for selected items", xx #char "p", .{shift_pressed=true});
     add_key(*app.keymap, cycle_point_position_labels, "Cycle point position labels for selected items", xx #char "p", .{alt_pressed=true});
-    add_key(*app.keymap, clear_labels, "Clear labels", xx #char "x");
+    add_key(*app.keymap, clear_labels, "Clear labels for selected items", xx #char "x");
 
     // @Volatile button text in camera control pane should be kept in sync with keymap!
     add_key(*app.keymap, rotate_look_direction_5_cw,   "Rotate  15 deg about selected rotation axis", xx #char "]");

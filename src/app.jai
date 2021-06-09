@@ -40,6 +40,11 @@ app : struct {
 
     // @Cleanup rename to reference_display_info?
     selection_display_info : Display_Info; // UI will edit this value and apply it to all selected entities
+    selection_display_info.points_visible = false;
+    selection_display_info.normals_visible = false;
+    selection_display_info.wireframe_visible = false;
+    selection_display_info.surface_visible = false;
+    selection_display_info.aabb_visible = false;
 
     user_selection : Mesh_Entity;
     user_selection_cursor_text_shown := false;

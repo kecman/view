@@ -2,7 +2,6 @@
 
 - [UI/UX] Clipping improvements:
   - Make normals clip---refactor to use Render_Mesh_Common
-  - Make selection mode ignore clipped vertices
   - Add plane visualisation, maybe also intersecting the planes
   - Add option to make the clipped geometry render with non-zero opacity
   - Make LMB be the only one to close popups, so you can rotate the view while a popup is open

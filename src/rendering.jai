@@ -265,7 +265,7 @@ Render_Mesh_Common :: (mesh : *Mesh, using render_info : *Render_Info, using dis
     }
 
     {
-        for 0..5 {
+        for 0..clip_ranges.count-1 {
             // @Cleanup We could use run directive here to get constant strings
             using clip_ranges[it];
             glUniform3f(glGetUniformLocation(app.mesh_program, to_c_string(tprint("clip_range[%].normal", it))), normal.x, normal.y, normal.z);
@@ -371,6 +371,7 @@ render_entities :: () {
                 soup := cast(*Polyline_Soup2_Entity) entity;
                 render_mesh_points(*soup.mesh, *entity.render_info, entity.display_info);
                 render_mesh_lines(*soup.mesh, *entity.render_info, entity.display_info);
+                render_aabb(*soup.mesh, *entity.render_info, entity.display_info);
                 for polyline : soup.shape.polylines {
                     Reserve_Labels(polyline.points.count);
                     if label_limit >= 0 {
@@ -396,6 +397,7 @@ render_entities :: () {
                 soup := cast(*Polygon_Soup_Entity) entity;
                 render_mesh_points(*soup.mesh, *entity.render_info, entity.display_info);
                 render_mesh_triangles(*soup.mesh, *entity.render_info, entity.display_info);
+                render_aabb(*soup.mesh, *entity.render_info, entity.display_info);
                 for polygon : soup.shape.polygons {
                     Reserve_Labels(point_count(polygon));
                     if label_limit >= 0 {

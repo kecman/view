@@ -598,14 +598,13 @@ Display_Info_Update :: struct {
     clip_ranges : [3]bool;
 }
 
-// @CompilerBug? Enable this check
-// #run {
-//     info :   Display_Info;
-//     update : Display_Info_Update;
-//     if info.clip_ranges.count == update.clip_ranges.count {
-//         compiler_report(#file, #line, 0, "Expected clip_ranges arrays to have matching sizes");
-//     }
-// }
+#run {
+    info :   Display_Info;
+    update : Display_Info_Update;
+    if info.clip_ranges.count != update.clip_ranges.count {
+        compiler_report(#file, #line, 0, "Expected clip_ranges arrays to have matching sizes");
+    }
+}
 
 display_info_ui :: (display_info : *Display_Info, aabb : AxisBox3, normals_ui : bool = true, lines_ui : bool = true, faces_ui : bool = true) -> Display_Info_Update {
 
