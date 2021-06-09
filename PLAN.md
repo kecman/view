@@ -1,24 +1,28 @@
 ## Next Release
 
-- [UI/UX] Clipping improvements:
-  - Make normals clip---refactor to use Render_Mesh_Common
-  - Add plane visualisation, maybe also intersecting the planes
-  - Add option to make the clipped geometry render with non-zero opacity
-  - Make LMB be the only one to close popups, so you can rotate the view while a popup is open
-- [UI/UX] Make long lists of items managable in the context menu
-- [Rendering] Render plane using geometry shader and implement mesh clipping
+- [Commands] Add a syntax for specifying what command to run when the app starts
+- [Commands] Command to select/sort items by type, size, filename etc
+- [Commands] Command to compute parameterisation?
 - [UI/UX] Support loading wkt file format to load Polygons in a reasonable way
-- [UI/UX] Mode line (bar along bottom) showing hovered mesh stats
-- [UI/UX] Fix camera panning
 - [UI/UX] Implement wild cards for file loading
-- [UI/UX] Reload files only if they change, and adjust the fade color if the geometry is unchanged
 - [UI/UX] Implement an infinite grid, maybe http://asliceofrendering.com/scene%20helper/2020/01/05/InfiniteGrid/
 - [UI/UX] Add some options for backface shading, including an obnoxiously visible one for finding holes in meshes
-- [UI/UX] Fix issue with bindings where holding Ctrl to use the focussed zoom means if we right click to rotate we'll move the focus
+- [UI/UX] Fix issue where holding Ctrl to use the focussed zoom means if we right click to rotate we'll move the focus
+- [UI/UX] Don't close the item context menu unless we LMB into viewport
+- [UI/UX] Make long lists of items managable in the context menu
+- [UI/UX] Improve camera panning
+- [UI/UX] Make normals clip
 
 ## Backlog
 
+- [UI/UX] Clipping improvements
+  - Add plane visualisation, maybe also intersecting the planes
+  - Add option to make the clipped geometry render with non-zero opacity
+  - Make LMB be the only one to close popups, so you can rotate the view while a popup is open
+- [UI/UX] Reload files only if they change, and adjust the fade color if the geometry is unchanged
+- [UI/UX] Mode line (bar along bottom) showing hovered mesh stats
 - [Rendering] Render aabbs when the box extents are hovered in the UI
+- [Rendering] Add option to render normals using only one component
 - [UI/UX] Use folding trees in help menu, default to unfolded
 - [UI/UX] Add a circling feature pre-screenshot
 - [UI/UX] Add a hotloading mode to files (Hotloader module not implemented on linux)
@@ -98,7 +102,6 @@
 - [Bindings] Add libIGL bindings?
 - [UI/UX] Render the axes origin in different color when it's a model origin
 - [Bug] ImGui bindings for unix don't write declare CreateContext arguments #c_call
-- [Bug] Fix normal transformation in shapes.jai and port the fix to par_shapes
 - [Build] Bake fonts into the executable
 - [XXL] Build and add bindings for gmp
 - [XXL] Hotload the C++ bindings, and console commands, so you can keep same UI state while you iterate on your code

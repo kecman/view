@@ -1,10 +1,15 @@
-## Version: v0.1.1, Unreleased
+## Version: v0.1.1, 9 June 2021
 
-- Added clipping ranges and UI for editing them in the item/selection context menu
+- Added a binding to toggle visibility on selected items (v)
+- Added a binding to remove selected items (Del)
+- Added geometry clipping in the item/selection context menu
 - Added Selection Mode help to the help menu (press h for help)
-- Added binding to scroll into the camera look position (Ctrl+Scroll).
-  - Note: This is handy in Selection Mode---place the camera orbit with Ctrl+RMB then zoom into this point with Ctrl+Scroll
+- Added binding to scroll into the camera look position (Ctrl+Scroll)
+  - Note: This is handy in Selection Mode: position the orbit with Ctrl+RMB and zoom into it with Ctrl+Scroll
+- Added data/icon.png which can be used as an icon if you configure it in your window manager
 - Fixed jump in zoom level when repositioning the camera orbit
+- Fixed issue where normals on selected items were toggled rather than cycled
+  - Note: Cycling keeps the item selection state in sync as a group, toggling changes the state per-item
 - Changed the initial window size from 1280x720 to 1440x900
 - Changed the default user selection point threshold from 10k to 100k
 

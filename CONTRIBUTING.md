@@ -21,3 +21,5 @@ From the top-level project directory do the following:
 6. Copy artefacts to this folder: `cp -r *.md src/modules/BoostPolygon/linux/libinterface.so garage data/ garage-vNNN/`
 7. Zip the release folder: `tar -cvzf garage-vNNN.tar.gz garage-vNNN`
 8. Tag the release commit: `git tag vNNN && git push --tags`
+
+Note: Delete tags using: `git tag --delete vNNN && git push --delete origin vNNN`

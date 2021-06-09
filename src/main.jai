@@ -327,6 +327,7 @@ to_sdl_keycode :: (key_code : u32) -> SDL_Keycode {
         case Special_Key_Code.ESCAPE; return SDLK_ESCAPE;
         case Special_Key_Code.ENTER;  return SDLK_RETURN;
         case Special_Key_Code.TAB;    return SDLK_TAB;
+        case Special_Key_Code.DELETE; return SDLK_DELETE;
         case Special_Key_Code.F1;     return SDLK_F1;
         case Special_Key_Code.F2;     return SDLK_F2;
         case Special_Key_Code.F3;     return SDLK_F3;

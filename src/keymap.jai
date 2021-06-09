@@ -19,11 +19,12 @@ Special_Key_Code :: enum u32 #specified {
     ESCAPE :: 1;
     ENTER  :: 2; // unused
     TAB    :: 3; // unused
-    F1     :: 4; // unused
-    F2     :: 5; // unused
-    F3     :: 6; // unused
-    F4     :: 7; // unused
-    F5     :: 8;
+    DELETE :: 4;
+    F1     :: 11; // unused
+    F2     :: 12; // unused
+    F3     :: 13; // unused
+    F4     :: 14; // unused
+    F5     :: 15;
 }
 
 to_string :: (using mapping : Single_Key_Mapping) -> string
@@ -44,6 +45,7 @@ to_string :: (using mapping : Single_Key_Mapping) -> string
         case .ESCAPE; print_to_builder(*builder, "Esc");
         case .ENTER;  print_to_builder(*builder, "Enter");
         case .TAB;    print_to_builder(*builder, "Tab");
+        case .DELETE; print_to_builder(*builder, "Del");
         case .F1;     print_to_builder(*builder, "F1");
         case .F2;     print_to_builder(*builder, "F2");
         case .F3;     print_to_builder(*builder, "F3");
@@ -78,12 +80,14 @@ init_keymap :: ()
     add_key(*app.keymap, toggle_current_selection, "Toggle/complement current item selection", xx #char "a", .{alt_pressed=true});
 
     add_key(*app.keymap, reload_entities, "Reload selected items", xx Special_Key_Code.F5);
+    add_key(*app.keymap, remove_selected_items, "Remove selected items", xx Special_Key_Code.DELETE);
     add_key(*app.keymap, cycle_opacity, "Cycle opacity 20%%/50%%/100%% for selected items", xx #char "o");
     add_key(*app.keymap, cycle_normals_visibility, "Cycle normals visibility for selected items", xx #char "n");
     add_key(*app.keymap, cycle_wireframe_width, "Cycle line width for selected items", xx #char "l");
     add_key(*app.keymap, cycle_point_size, "Cycle point size for selected items", xx #char "p");
     add_key(*app.keymap, cycle_point_index_labels, "Cycle point index labels for selected items", xx #char "p", .{shift_pressed=true});
     add_key(*app.keymap, cycle_point_position_labels, "Cycle point position labels for selected items", xx #char "p", .{alt_pressed=true});
+    add_key(*app.keymap, toggle_is_visible, "Toggle visibility on selected items", xx #char "v");
     add_key(*app.keymap, clear_labels, "Clear labels for selected items", xx #char "x");
 
     // @Volatile button text in camera control pane should be kept in sync with keymap!
@@ -192,27 +196,54 @@ cycle_wireframe_width :: () {
     }
 }
 
-select_or_deselect_all :: () {
-    if !app.entities.count return;
-    mode := false;
-    for app.entities if it.is_selected mode = true;
-    for app.entities it.is_selected = !mode;
+toggle_is_visible :: () {
+    for app.entities if it.is_selected {
+        it.is_visible = !it.is_visible;
+    }
 }
 
-toggle_current_selection :: () { for app.entities it.is_selected = !it.is_selected; }
+remove_selected_items :: () {
+    for app.entities if it.is_selected {
+        deinit(it);
+        free(it);
+        remove it;
+    }
+}
+
+select_or_deselect_all :: () {
+    mode := false;
+    for app.entities if it.is_selected mode = true;
+    for app.entities    it.is_selected = !mode;
+}
+
+toggle_current_selection :: () {
+    for app.entities {
+        it.is_selected = !it.is_selected;
+    }
+}
+
 reset_camera :: () { init_camera(); }
+
 // debug_junk :: () { c:= app.camera; printv(#code c); }
 
 cycle_opacity :: () {
+
+    app_info := *app.selection_display_info;
+    if      app_info.surface_color.w == 1.  app_info.surface_color.w = .5;
+    else if app_info.surface_color.w == .5  app_info.surface_color.w = .2;
+    else    app_info.surface_color.w =  1.;
+
     for app.entities if it.is_selected {
-        if      it.display_info.surface_color.w == 1.  it.display_info.surface_color.w = .5;
-        else if it.display_info.surface_color.w == .5  it.display_info.surface_color.w = .2;
-        else    it.display_info.surface_color.w =  1.;
+        it.display_info.surface_color.w = app_info.surface_color.w;
     }
 }
 
 cycle_normals_visibility :: () {
+
+    app_info := *app.selection_display_info;
+    app_info.normals_visible = !app_info.normals_visible;
+
     for app.entities if it.is_selected {
-        it.display_info.normals_visible = !it.display_info.normals_visible;
+        it.display_info.normals_visible = app_info.normals_visible;
     }
 }

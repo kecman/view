@@ -505,6 +505,7 @@ show_help_ui :: () {
     ImGui.NewLine();
 
     ImGui.Text("In the Item List");
+    Show_Tooltip("The Item List is visible in the top right\nwhen at least one item has been loaded");
     ImGui.Separator();
     ImGui.Columns(2);
     ImGui.SetColumnWidth(-1, 80);
@@ -524,6 +525,7 @@ show_help_ui :: () {
     ImGui.NewLine();
 
     ImGui.Text("In Selection Mode");
+    Show_Tooltip("Enable selection mode by toggling visibility\non the 'Selection' item");
     ImGui.Separator();
     ImGui.Columns(2);
     ImGui.SetColumnWidth(-1, 80);
