@@ -277,6 +277,7 @@ handle_events :: () {
                             entity := load_entity_from_file(dropped);
                             if entity {
                                 entity.generation_index = found.generation_index;
+                                entity.display_info = found.display_info;
                                 deinit(found);
                                 app.entities[found_index] = entity;
                             }

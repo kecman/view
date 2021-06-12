@@ -23,6 +23,7 @@
 - [UI/UX] Mode line (bar along bottom) showing hovered mesh stats
 - [Rendering] Render aabbs when the box extents are hovered in the UI
 - [Rendering] Add option to render normals using only one component
+- [Rendering] Think about how normal rendering should interact with opacity, do we want to see normals through the part?
 - [UI/UX] Use folding trees in help menu, default to unfolded
 - [UI/UX] Add a circling feature pre-screenshot
 - [UI/UX] Add a hotloading mode to files (Hotloader module not implemented on linux)
