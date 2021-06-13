@@ -33,3 +33,19 @@ die :: (loc := #caller_location) {
     print("exit(1) at %:%\n", loc.fully_pathed_filename, loc.line_number);
     exit(1);
 }
+
+make_vector2 :: (v : ImGui.ImVec2) -> Vector2 {
+    result : Vector2 = ---;
+    result.x = v.x;
+    result.y = v.y;
+    return result;
+}
+
+make_ImVec4 :: inline (v : Vector4) -> ImGui.ImVec4 {
+    result : ImGui.ImVec4 = ---;
+    result.x = v.x;
+    result.y = v.y;
+    result.z = v.z;
+    result.w = v.w;
+    return result;
+}

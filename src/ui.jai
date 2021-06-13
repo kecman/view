@@ -1,5 +1,4 @@
-V2_ZERO :: Vector2.{0, 0};
-WINDOW_BORDER_UI_OFFSET :: Vector2.{10, 10};
+WINDOW_BORDER_UI_OFFSET :: ImGui.ImVec2.{10, 10};
 
 show_global_settings_ui :: (world_axes : *Axes_Triad)
 {
@@ -7,7 +6,7 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
 
     using app;
 
-    ImGui.SetNextWindowPos(pos=*WINDOW_BORDER_UI_OFFSET, pivot=*V2_ZERO);
+    ImGui.SetNextWindowPos(pos=WINDOW_BORDER_UI_OFFSET);
     ImGui.Begin("Main Panel", flags = ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar);
     defer ImGui.End();
     defer if entities.count ImGui.Separator();
@@ -23,8 +22,8 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
 
         ImGui.InputInt("Label limit", *app.label_limit);
         if app.label_limit > 2000 {
-            color := ImVec4.{1., .4, .4, 1.};
-            ImGui.TextColored(*color, "%s", "Warning: label limit > 2000 may be slow");
+            color := ImGui.ImVec4.{1., .4, .4, 1.};
+            ImGui.TextColored(color, "%s", "Warning: label limit > 2000 may be slow");
         }
     }
 
@@ -33,13 +32,13 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
     clamp_user_settings();
 
     if current_window_width != INITIAL_WINDOW_WIDTH && current_window_height != INITIAL_WINDOW_HEIGHT {
-        if ImGui.Button("Reset Window", size=*V2_ZERO) {
+        if ImGui.Button("Reset Window") {
             SDL_SetWindowSize(window, app.INITIAL_WINDOW_WIDTH, app.INITIAL_WINDOW_HEIGHT);
         }
     }
 
     #if false {
-    ImGui.SetNextWindowPos(*make_vector2(650, 20), ImGui.Cond.FirstUseEver, *V2_ZERO);
+    ImGui.SetNextWindowPos(make_ImVec2(650, 20), .FirstUseEver);
     SHOW_DEMO_WINDOW :: true;
     ImGui.ShowDemoWindow(*SHOW_DEMO_WINDOW);
     }
@@ -50,7 +49,7 @@ show_item_list_ui :: () {
 
     if !entities.count return;
 
-    ImGui.SetNextWindowPos(pos=*WINDOW_BORDER_UI_OFFSET, pivot=*V2_ZERO);
+    ImGui.SetNextWindowPos(pos=WINDOW_BORDER_UI_OFFSET);
     ImGui.Begin("Main Panel", flags = ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar);
     defer ImGui.End();
 
@@ -59,7 +58,7 @@ show_item_list_ui :: () {
     entity_to_remove := -1;
     for entities {
         // Remove button
-        if ImGui.Button(imgui_label("Remove", it), size=*V2_ZERO) {
+        if ImGui.Button(imgui_label("Remove", it)) {
             entity_to_remove = it_index;
         }
 
@@ -86,9 +85,9 @@ show_item_list_ui :: () {
                 ImGui.ColorEdit4(imgui_label("##color", it), *color.component, ImGui.ColorEditFlags.NoInputs);
             }
         }
-        if ImGui.IsItemClicked(1) {
+        if ImGui.IsItemClicked(.Right) {
             cycle_display_mode(*it.display_info.display_mode);
-        } else if ImGui.IsItemClicked(2) {
+        } else if ImGui.IsItemClicked(.Middle) {
             if it.display_info.display_mode != .NORMALS {
                 color := get_primary_color(it);
                 <<color = color_from_path(it.fully_pathed_filename);
@@ -122,13 +121,13 @@ show_item_list_ui :: () {
                 color = lerp(Vector4.{0, 1, 0, 1}, Vector4.{1, 1, 1, 1}, alpha);
             }
 
-            ImGui.PushStyleColor(xx ImGui.Col.Text, *color);
-            if ImGui.Selectable(to_c_string(join(text, tprint("##%", it))), *it.is_selected, size=*V2_ZERO) { // @Leak? free the join'd string?
+            ImGui.PushStyleColor(xx ImGui.Col.Text, make_ImVec4(color));
+            if ImGui.Selectable(to_c_string(join(text, tprint("##%", it))), *it.is_selected) { // @Leak? free the join'd string?
                 if !io().KeyCtrl it.is_selected = !it.is_selected;
             }
             ImGui.PopStyleColor();
         } else {
-            ImGui.Selectable("---", *it.is_selected, size=*V2_ZERO);
+            ImGui.Selectable("---", *it.is_selected);
         }
         if ImGui.IsItemClicked() {
             if !io().KeyCtrl fit_on_screen(it);
@@ -149,13 +148,13 @@ show_item_list_ui :: () {
 
             if !it.is_selected {
                 if it.fully_pathed_filename.count {
-                    if ImGui.Button(imgui_label("Reload", it), size=*V2_ZERO) {
+                    if ImGui.Button(imgui_label("Reload", it)) {
                         entity := load_entity_from_file(it.fully_pathed_filename);
                         replace_entity(it, it_index, entity);
                     }
                     ImGui.SameLine();
                     text := entity_filename(<<it, with_generation_index=true, with_short_filename=false, with_loaded_time=true);
-                    ImGui.Text(cast(string)"%", text);
+                    ImGui.TextUnformatted(text);
                 }
 
                 ImGui.Separator();
@@ -226,23 +225,23 @@ show_item_list_ui :: () {
             } else {
                 for app.entities if it.is_selected {
                     if it.fully_pathed_filename.count {
-                        if ImGui.Button(imgui_label("Reload", it), size=*V2_ZERO) {
+                        if ImGui.Button(imgui_label("Reload", it)) {
                             entity := load_entity_from_file(it.fully_pathed_filename);
                             replace_entity(it, it_index, entity);
                         }
                         ImGui.SameLine();
                         text := entity_filename(<<it, with_generation_index=true, with_short_filename=false, with_loaded_time=true);
-                        ImGui.Text(cast(string)"%", text);
+                        ImGui.TextUnformatted(text);
                     }
                 }
 
-                if ImGui.Button("Reload Selection", size=*V2_ZERO) {
+                if ImGui.Button("Reload Selection") {
                     reload_entities();
                     // ImGui.CloseCurrentPopup();
                 }
 
                 ImGui.SameLine();
-                if ImGui.Button("Clear Selection", size=*V2_ZERO) {
+                if ImGui.Button("Clear Selection") {
                     for app.entities if it.is_selected {
                         it.is_selected = false;
                     }
@@ -305,7 +304,7 @@ show_item_list_ui :: () {
         it := *app.user_selection;
 
         // Remove button
-        if ImGui.Button(imgui_label("Clear ", it), size=*V2_ZERO) {
+        if ImGui.Button(imgui_label("Clear ", it)) {
             deinit(it);
         }
 
@@ -364,11 +363,11 @@ show_item_list_ui :: () {
             Show_Tooltip("Number of digits following the decimal point");
 
             combo_box("Float format", *vertex_label_style.format_float.mode, type_info(FormatFloat.Mode));
-            ImGui.DragFloat("Label scale", *vertex_label_style.label_scale, .005, .2, 1., display_format="%.3f");
+            ImGui.DragFloat("Label scale", *vertex_label_style.label_scale, .005, .2, 1., format="%.3f");
 
             ImGui.Checkbox("Dynamic closest vertex result at cursor", *app.user_selection_cursor_text_shown);
             Show_Tooltip("Format is '#E,I {X,Y,Z}'\n X,Y,Z are the coordinates of the closest vertex\n E is entity index to which it belongs\n I is the vertex index within the entity");
-            ImGui.DragFloat("Cursor text scale", *app.user_selection_cursor_text_scale, .005, .2, 1., display_format="%.3f");
+            ImGui.DragFloat("Cursor text scale", *app.user_selection_cursor_text_scale, .005, .2, 1., format="%.3f");
             ImGui.InputInt("Max #points for selectable entities", xx *app.user_selection_max_point_count_for_selectable_entity);
         }
     }
@@ -385,15 +384,14 @@ show_item_list_ui :: () {
 }
 
 show_camera_controls :: () {
-    window_pos := make_vector2(ImGui.GetIO().DisplaySize.x - WINDOW_BORDER_UI_OFFSET.x, WINDOW_BORDER_UI_OFFSET.y);
-    window_pivot := make_vector2(1, 0);
+    window_pos := ImGui.make_ImVec2(ImGui.GetIO().DisplaySize.x - WINDOW_BORDER_UI_OFFSET.x, WINDOW_BORDER_UI_OFFSET.y);
 
     using ImGui.WindowFlags;
 
-    ImGui.SetNextWindowPos(*window_pos, .Always, *window_pivot);
+    ImGui.SetNextWindowPos(window_pos, .Always, pivot=.{1, 0});
     // SetNextWindowSize(ImVec2(400,400), ImGuiCond_FirstUseEver);
     // ImGui.SetNextWindowSize(*ImVec2.{150., 0.});
-    ImGui.SetNextWindowContentSize(*ImVec2.{110., 0.});
+    ImGui.SetNextWindowContentSize(ImGui.ImVec2.{110., 0.});
     // ImGui.SetNextWindowBgAlpha(.3);
     ImGui.Begin("Camera shortcuts", flags = NoTitleBar | AlwaysAutoResize | NoMove /*| NoNav*/);
     defer ImGui.End();
@@ -407,28 +405,28 @@ show_camera_controls :: () {
     // @Incomplete Interpolate the motion
 
     ImGui.Columns(3, border=false);
-    if ImGui.Button("+X ", size=*V2_ZERO) {
+    if ImGui.Button("+X ") {
         set_look_direction(direction=X_AXIS, up=ifx keep_up then app.camera.up_direction else Z_AXIS);
     }
     ImGui.NextColumn();
-    if ImGui.Button("+Y ", size=*V2_ZERO) {
+    if ImGui.Button("+Y ") {
         set_look_direction(direction=Y_AXIS, up=ifx keep_up then app.camera.up_direction else Z_AXIS);
     }
     ImGui.NextColumn();
-    if ImGui.Button("+Z ", size=*V2_ZERO) {
+    if ImGui.Button("+Z ") {
         set_look_direction(direction=Z_AXIS, up=ifx keep_up then app.camera.up_direction else Y_AXIS);
     }
     ImGui.NextColumn();
 
-    if ImGui.Button("-X ", size=*V2_ZERO) {
+    if ImGui.Button("-X ") {
         set_look_direction(direction=-X_AXIS, up=ifx keep_up then app.camera.up_direction else Z_AXIS);
     }
     ImGui.NextColumn();
-    if ImGui.Button("-Y ", size=*V2_ZERO) {
+    if ImGui.Button("-Y ") {
         set_look_direction(direction=-Y_AXIS, up=ifx keep_up then app.camera.up_direction else Z_AXIS);
     }
     ImGui.NextColumn();
-    if ImGui.Button("-Z ", size=*V2_ZERO) {
+    if ImGui.Button("-Z ") {
         set_look_direction(direction=-Z_AXIS, up=ifx keep_up then app.camera.up_direction else Y_AXIS);
     }
     ImGui.NextColumn();
@@ -441,17 +439,17 @@ show_camera_controls :: () {
         right_label, left_label, amount = " < ", " > ", 1.;
     }
 
-    if ImGui.Button(to_c_string(right_label), size=*V2_ZERO) {
+    if ImGui.Button(to_c_string(right_label)) {
         axis := camera_rotation_axis();
         rotate_look_direction(axis, amount);
     }
     ImGui.NextColumn();
-    if ImGui.Button("XYZ", size=*V2_ZERO) {
+    if ImGui.Button("XYZ") {
         up := normalize(cross(.{-1, 1, 0}, .{-1, -1, -1}));
         set_look_direction(direction=.{-1, -1, -1}, up=up);
     }
     ImGui.NextColumn();
-    if ImGui.Button(to_c_string(left_label), size=*V2_ZERO) {
+    if ImGui.Button(to_c_string(left_label)) {
         axis := camera_rotation_axis();
         rotate_look_direction(axis, -amount);
     }
@@ -464,7 +462,7 @@ show_camera_controls :: () {
     Show_Tooltip("Camera Rotation Axis");
 
     if app.camera.look_position != Vector3.{0, 0, 0} {
-        if ImGui.Button(" Reset Orbit ", size=*V2_ZERO) {
+        if ImGui.Button(" Reset Orbit ") {
             look_direction := current_look_direction();
             app.camera.look_position = .{0, 0, 0};
             app.camera.eye_position = app.camera.look_position - look_direction;
@@ -478,10 +476,9 @@ show_camera_controls :: () {
 show_help_ui :: () {
     if !app.show_help_ui return;
 
-    window_pos := make_vector2(ImGui.GetIO().DisplaySize.x - WINDOW_BORDER_UI_OFFSET.x, WINDOW_BORDER_UI_OFFSET.y);
-    window_pivot := make_vector2(1, 0);
+    window_pos := ImGui.make_ImVec2(ImGui.GetIO().DisplaySize.x - WINDOW_BORDER_UI_OFFSET.x, WINDOW_BORDER_UI_OFFSET.y);
 
-    ImGui.SetNextWindowPos(pos=*window_pos, pivot=*window_pivot);
+    ImGui.SetNextWindowPos(pos=window_pos, pivot=.{1, 0});
     ImGui.Begin("##show_help_ui", flags = ImGui.WindowFlags.NoTitleBar | .AlwaysAutoResize | .NoMove /*| .NoNav*/);
     defer ImGui.End();
 
@@ -665,7 +662,7 @@ display_info_ui :: (display_info : *Display_Info, aabb : AxisBox3, normals_ui : 
         ImGui.Text("Triangles Visible|Color");
     }
 
-    set.color_reset = ImGui.Button(imgui_label("Reset Colors##color_reset", display_info), size=*V2_ZERO);
+    set.color_reset = ImGui.Button(imgui_label("Reset Colors##color_reset", display_info));
     Show_Tooltip("Deduce item primary colors from the file path");
 
     if ImGui.TreeNode("%", "Clipping") {
@@ -683,7 +680,7 @@ display_info_ui :: (display_info : *Display_Info, aabb : AxisBox3, normals_ui : 
         if almost_equal(length(clip_ranges[1].normal), 0.) clip_ranges[1].normal = .{0, 1, 0};
         if almost_equal(length(clip_ranges[2].normal), 0.) clip_ranges[2].normal = .{0, 0, 1};
 
-        if ImGui.Button(imgui_label("Normalize", display_info), size=*V2_ZERO) {
+        if ImGui.Button(imgui_label("Normalize", display_info)) {
             for *clip_ranges {
                 normal_length := length(it.normal);
                 if normal_length != 0 {
@@ -713,7 +710,7 @@ display_info_ui :: (display_info : *Display_Info, aabb : AxisBox3, normals_ui : 
         Show_Tooltip("Number of digits following the decimal point");
 
         set.vertex_label_style_update.format_float = combo_box("Float format", *vertex_label_style.format_float.mode, type_info(FormatFloat.Mode));
-        set.vertex_label_style_update.label_scale  = ImGui.DragFloat("Label scale", *vertex_label_style.label_scale, .005, .2, 1., display_format="%.3f");
+        set.vertex_label_style_update.label_scale  = ImGui.DragFloat("Label scale", *vertex_label_style.label_scale, .005, .2, 1., format="%.3f");
         set.vertex_label_style_update.label_color  = ImGui.ColorEdit4("Label color", *vertex_label_style.label_color.component, ImGui.ColorEditFlags.NoInputs);
     }
 
@@ -730,7 +727,7 @@ clipping_ui :: (p : *Clip_Range, aabb : AxisBox3) -> (changed : bool) {
     ImGui.SameLine();
 
     ImGui.PushItemWidth(W);
-    if ImGui.DragFloat(imgui_label("##range_min", p), *p.min, .1, 0., 0., display_format="%.3f") {
+    if ImGui.DragFloat(imgui_label("##range_min", p), *p.min, .1, 0., 0., format="%.3f") {
         p.min = min(p.min, p.max - MIN_RANGE);
         changed = true;
     }
@@ -739,18 +736,18 @@ clipping_ui :: (p : *Clip_Range, aabb : AxisBox3) -> (changed : bool) {
     ImGui.Text("<");
     ImGui.SameLine();
     ImGui.PushItemWidth(W);
-    changed |= ImGui.DragFloat(imgui_label("##normal.x", p), *p.normal.x, .01, 0., 0., display_format="%.3f");
+    changed |= ImGui.DragFloat(imgui_label("##normal.x", p), *p.normal.x, .01, 0., 0., format="%.3f");
     ImGui.PopItemWidth();
     ImGui.SameLine();
     ImGui.Text("x +");
     ImGui.SameLine();
     ImGui.PushItemWidth(W);
-    changed |= ImGui.DragFloat(imgui_label("##normal.y", p), *p.normal.y, .01, 0., 0., display_format="%.3f");
+    changed |= ImGui.DragFloat(imgui_label("##normal.y", p), *p.normal.y, .01, 0., 0., format="%.3f");
     ImGui.PopItemWidth();
     ImGui.SameLine();
     ImGui.Text("y +"); ImGui.SameLine();
     ImGui.PushItemWidth(W);
-    changed |= ImGui.DragFloat(imgui_label("##normal.z", p), *p.normal.z, .01, 0., 0., display_format="%.3f");
+    changed |= ImGui.DragFloat(imgui_label("##normal.z", p), *p.normal.z, .01, 0., 0., format="%.3f");
     ImGui.PopItemWidth();
     ImGui.SameLine();
     ImGui.Text("z");
@@ -758,7 +755,7 @@ clipping_ui :: (p : *Clip_Range, aabb : AxisBox3) -> (changed : bool) {
     ImGui.Text("<");
     ImGui.SameLine();
     ImGui.PushItemWidth(W);
-    if ImGui.DragFloat(imgui_label("##range_max", p), *p.max, .1, 0., 0., display_format="%.3f") {
+    if ImGui.DragFloat(imgui_label("##range_max", p), *p.max, .1, 0., 0., format="%.3f") {
         p.max = max(p.min + MIN_RANGE, p.max);
         changed = true;
     }
@@ -769,7 +766,7 @@ clipping_ui :: (p : *Clip_Range, aabb : AxisBox3) -> (changed : bool) {
 
     ImGui.SameLine();
     uninitialized := (p.min == NEGATIVE_INF) || (p.max == POSITIVE_INF);
-    if ImGui.Button(imgui_label("Reset", p), size=*V2_ZERO) || uninitialized {
+    if ImGui.Button(imgui_label("Reset", p)) || uninitialized {
         p.min = POSITIVE_INF;
         p.max = NEGATIVE_INF;
         for :corners_iterator aabb {
@@ -802,7 +799,7 @@ combo_box :: (label : string, data: *void, info_enum: *Type_Info_Enum) -> bool {
     if ImGui.BeginCombo(to_c_string(label), temp_c_string(value_name)) {
         for info_enum.names {
             is_selected := value == info_enum.values[it_index];
-            if ImGui.Selectable(temp_c_string(it), is_selected, size=*V2_ZERO) {
+            if ImGui.Selectable(temp_c_string(it), is_selected) {
                 set_enum_value(data, info_enum, info_enum.values[it_index]);
                 changed = true;
             }

@@ -126,7 +126,6 @@ Selected_Or_Hovered :: (entities : *[..]*Entity, body : Code, flags : For_Flags)
 #import "Reflection";
 #import "Math";
 #import "SDL";
-#import "ImGui_";
 #import "GL";
 #import "Deep_Copy";
 #import "Time";
@@ -140,7 +139,8 @@ Selected_Or_Hovered :: (entities : *[..]*Entity, body : Code, flags : For_Flags)
 
 #import "geometry";
 
-#load "modules/ImGui_/examples/imgui_sdl_gl.jai";
+ImGui :: #import "jai-imgui";
+// #load "modules/ImGui_/examples/imgui_sdl_gl.jai";
 
 #import "geometry";
 #load "axes.jai";

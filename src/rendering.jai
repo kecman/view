@@ -453,7 +453,7 @@ render_background :: () {
             glUseProgram(app.background_program);
             x, y, z : float = xx app.current_window_width, xx app.current_window_height, 1.;
             glUniform3f(glGetUniformLocation(app.background_program, "iResolution"), x, y, z);
-            glUniform1f(glGetUniformLocation(app.background_program, "iTime"), ImGui.GetTime());
+            glUniform1f(glGetUniformLocation(app.background_program, "iTime"), xx ImGui.GetTime());
             glBindVertexArray(app.background_vao);
             glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }
