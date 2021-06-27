@@ -1,5 +1,9 @@
 ## Next Release
 
+- [Bug] Clear button should reset the bounding sphere in the selection mesh
+- [Bug] Changing the enabled checkbox on the clipping planes when having an item selection doesn't apply the changes to the item. Found this with only a single item in the list.
+- [Bug] Fix the labels appearing outside the clipping box
+
 - [Commands] Add a syntax for specifying what command to run when the app starts
 - [Commands] Command to select/sort items by type, size, filename etc
 - [Commands] Command to compute parameterisation?
