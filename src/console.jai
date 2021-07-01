@@ -99,8 +99,8 @@ console_draw :: () {
     if !app.show_console_ui return;
 
     console_top_y := app.current_window_height * .6;
-    ImGui.SetNextWindowPos(pos=*make_vector2(0, xx console_top_y), pivot=*make_vector2(0,0));
-    ImGui.SetNextWindowSize(*make_vector2(xx app.current_window_width, xx (app.current_window_height - console_top_y)), .Always);
+    ImGui.SetNextWindowPos(pos=ImGui.make_ImVec2(0, xx console_top_y));
+    ImGui.SetNextWindowSize(ImGui.make_ImVec2(xx app.current_window_width, xx (app.current_window_height - console_top_y)), .Always);
     ImGui.Begin("console", flags = ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar); // TODO if !Begin should close
 
     ImGui.TextWrapped("Enter 'help' for help, press TAB for text completion, press UP/DOWN to navigate history.");
@@ -113,30 +113,29 @@ console_draw :: () {
 
     footer_height_to_reserve := ImGui.GetStyle().ItemSpacing.y + ImGui.GetFrameHeightWithSpacing(); // 1 separator, 1 input text
 
-    scrolling_region_size : ImVec2;
+    scrolling_region_size : ImGui.ImVec2;
     scrolling_region_size.x = -footer_height_to_reserve;
     scrolling_region_size.y = -footer_height_to_reserve;
-    ImGui.BeginChild("ScrollingRegion", *scrolling_region_size, false, .HorizontalScrollbar); // Leave room for 1 separator + 1 InputText
+    ImGui.BeginChild("ScrollingRegion", scrolling_region_size, false, .HorizontalScrollbar); // Leave room for 1 separator + 1 InputText
     if (ImGui.BeginPopupContextWindow()) {
         // @CompilerBug: The Selectable overload fails unless 
-        bug_workaround_default_size:ImVec2;
-        bug_workaround_selected:bool = false;
-        if (ImGui.Selectable(temp_c_string("Clear"), bug_workaround_selected, size=*bug_workaround_default_size)) {
+        bug_workaround_selected : bool = false;
+        if (ImGui.Selectable(temp_c_string("Clear"), bug_workaround_selected)) {
             console_clear_log();
         }
         ImGui.EndPopup();
     }
 
-    ImGui.PushStyleVar(.ItemSpacing, *ImVec2.{4,1}); // Tighten spacing
+    ImGui.PushStyleVar(.ItemSpacing, ImGui.ImVec2.{4,1}); // Tighten spacing
     for item : app.console.log {
         assert(item.count != 0);
-        col := ImVec4.{1., 1., 1., 1.};
+        col := ImGui.ImVec4.{1., 1., 1., 1.};
         if begins_with(item, "#") {
-            col = ImVec4.{1., .78, .58, 1.};
+            col = ImGui.ImVec4.{1., .78, .58, 1.};
         } else if begins_with(item, "[error]") {
-            col = ImVec4.{1., .4, .4, 1.};
+            col = ImGui.ImVec4.{1., .4, .4, 1.};
         }
-        ImGui.TextColored(*col, "%s", temp_c_string(item));
+        ImGui.TextColored(col, "%s", temp_c_string(item));
     }
     ImGui.PopStyleVar();
     ImGui.EndChild();
@@ -179,7 +178,7 @@ print_location :: (loc := #caller_location) {
     print("%:%\n", loc.fully_pathed_filename, loc.line_number);
 }
 
-text_edit_callback :: (data : *ImGui.TextEditCallbackData) -> s32 #c_call {
+text_edit_callback :: (data : *ImGui.InputTextCallbackData) -> s32 #c_call {
 
     new_context : Context;
     push_context new_context {
@@ -211,7 +210,7 @@ text_edit_callback :: (data : *ImGui.TextEditCallbackData) -> s32 #c_call {
                 } else if candidates.count == 1 {
                     // Single match. Delete the beginning of the word and replace it entirely so we've got nice casing
                     data.DeleteChars(data, xx (word_start - data.Buf), xx (word_end - word_start));
-                    data.InsertChars(data, data.CursorPos, temp_c_string(candidates[0]));
+                    data.InsertChars(data, data.CursorPos, candidates[0]);
                     data.InsertChars(data, data.CursorPos, " ");
                 } else {
                     // Multiple matches. Complete as much as we can
@@ -240,8 +239,8 @@ text_edit_callback :: (data : *ImGui.TextEditCallbackData) -> s32 #c_call {
 
                     if cursor > 0 {
                         data.DeleteChars(data, xx (word_start - data.Buf), xx (word_end - word_start));
-                        tmp := temp_c_string(candidates[0]);
-                        data.InsertChars(data, data.CursorPos, tmp, tmp + cursor);
+                        tmp := slice(candidates[0], 0, cursor);
+                        data.InsertChars(data, data.CursorPos, tmp);
                     }
 
                     // List matches

@@ -17,6 +17,16 @@
 - [UI/UX] Improve camera panning
 - [UI/UX] Make normals clip
 
+- Windows build devlog
+  - Make sure to run the developer console with 64bit settings (x64 Native Tools Command Prompt for VS2019)
+  - Run the update_imgui_subrepo_and_rebuild_libs.bat from that console, it generates some changes wrt to what is in the repo
+  - Note the warning about deprecated concatenate, should be replaced with join soon
+  - Tested that build_examples.jai works in jai-imgui repo
+  - Copied imgui.jai and the win/ folder into Garage/src/modules/jai-imgui
+  - TODO Make sure to add instructions for updating somewhere
+
+
+
 ## Backlog
 
 - [UI/UX] Clipping improvements

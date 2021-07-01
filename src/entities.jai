@@ -235,7 +235,7 @@ find_closest_vertex_on_visible_entities :: () -> Closest_Vertex_On_Entity {
     inverse_transpose := transpose(inverse(transform));
 
     ray : Ray3 = ---;
-    ray.origin = (transform * make_vector4(to_ndc(io().MousePos), -1., 1.)).xyz;
+    ray.origin = (transform * make_vector4(to_ndc(make_vector2(io().MousePos.x, io().MousePos.y)), -1., 1.)).xyz;
     ray.direction = (inverse_transpose * make_vector4(0., 0., 1., 0.)).xyz;
     check := normalize_or_zero(*ray.direction);
     assert(check != 0.); // @Robustness: handle this error
