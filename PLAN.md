@@ -7,6 +7,8 @@
 - [Commands] Add a syntax for specifying what command to run when the app starts
 - [Commands] Command to select/sort items by type, size, filename etc
 - [Commands] Command to compute parameterisation?
+- [UI/UX] When sweeping checkboxes constrain the mouse to the vertical region of the boxes
+- [UI/UX] Add a mode to sweeping checkboxes (enabled by holding a modifier?) to toggle the box on entry and exit. User story: animate geometry as you sweep
 - [UI/UX] Support loading wkt file format to load Polygons in a reasonable way
 - [UI/UX] Implement wild cards for file loading
 - [UI/UX] Implement an infinite grid, maybe http://asliceofrendering.com/scene%20helper/2020/01/05/InfiniteGrid/
@@ -108,6 +110,7 @@
 - [UI/UX] Render the axes origin in different color when it's a model origin
 - [Bug] ImGui bindings for unix don't write declare CreateContext arguments #c_call
 - [Build] Bake fonts into the executable
+- [XXL,UI/UX] Buttons with icons which animate when you hover them
 - [XXL] Build and add bindings for gmp
 - [XXL] Hotload the C++ bindings, and console commands, so you can keep same UI state while you iterate on your code
 - [XXL] Hotload jai code so that you can keep state while you change your algorithm
