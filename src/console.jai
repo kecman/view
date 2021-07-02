@@ -148,9 +148,6 @@ console_draw :: () {
         ImGui.PushItemWidth(-1);
         text_input_flags :=  ImGui.InputTextFlags.EnterReturnsTrue | .CallbackCompletion | .CallbackHistory;
         if (ImGui.InputText("", app.console.input_buffer.data, app.console.input_buffer.count, text_input_flags, text_edit_callback, *app.console)) {
-            console := app.console;
-            printv(#code console);
-
             defer app.console.input_buffer[0] = 0; // Wipe input after processing
             console_execute_command(to_string(app.console.input_buffer.data, str_length(app.console.input_buffer.data)));
         }
@@ -185,7 +182,7 @@ text_edit_callback :: (data : *ImGui.InputTextCallbackData) -> s32 #c_call {
     new_context : Context;
     push_context new_context {
 
-        // nocommit Why does this fail?? since app is global I expected we could pass null and just read it directly...
+        // @Cleanup Why does this fail? app is global so I expected we could pass null and just read it directly.
         // assert(cast(*void) data == cast(*void) *app.console);
 
         if data.EventFlag == {
