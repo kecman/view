@@ -99,7 +99,7 @@ console_draw :: () {
     if !app.show_console_ui return;
 
     console_top_y := app.current_window_height * .6;
-    ImGui.SetNextWindowPos(pos=ImGui.make_ImVec2(0, xx console_top_y));
+    ImGui.SetNextWindowPos(ImGui.make_ImVec2(0, xx console_top_y));
     ImGui.SetNextWindowSize(ImGui.make_ImVec2(xx app.current_window_width, xx (app.current_window_height - console_top_y)), .Always);
     ImGui.Begin("console", flags = ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar); // TODO if !Begin should close
 
@@ -118,9 +118,7 @@ console_draw :: () {
     scrolling_region_size.y = -footer_height_to_reserve;
     ImGui.BeginChild("ScrollingRegion", scrolling_region_size, false, .HorizontalScrollbar); // Leave room for 1 separator + 1 InputText
     if (ImGui.BeginPopupContextWindow()) {
-        // @CompilerBug: The Selectable overload fails unless 
-        bug_workaround_selected : bool = false;
-        if (ImGui.Selectable(temp_c_string("Clear"), bug_workaround_selected)) {
+        if ImGui.Selectable("Clear") {
             console_clear_log();
         }
         ImGui.EndPopup();
@@ -135,7 +133,7 @@ console_draw :: () {
         } else if begins_with(item, "[error]") {
             col = ImGui.ImVec4.{1., .4, .4, 1.};
         }
-        ImGui.TextColored(col, "%s", temp_c_string(item));
+        ImGui.TextColored(col, "%", item);
     }
     ImGui.PopStyleVar();
     ImGui.EndChild();
@@ -148,7 +146,11 @@ console_draw :: () {
         // if (ImGui.InputText("", console.input_buffer.data, console.input_buffer.count, EnterReturnsTrue | AlwaysInsertMode)) {
 
         ImGui.PushItemWidth(-1);
-        if (ImGui.InputText("", app.console.input_buffer.data, app.console.input_buffer.count, EnterReturnsTrue | CallbackCompletion | CallbackHistory, text_edit_callback, *app.console)) {
+        text_input_flags :=  ImGui.InputTextFlags.EnterReturnsTrue | .CallbackCompletion | .CallbackHistory;
+        if (ImGui.InputText("", app.console.input_buffer.data, app.console.input_buffer.count, text_input_flags, text_edit_callback, *app.console)) {
+            console := app.console;
+            printv(#code console);
+
             defer app.console.input_buffer[0] = 0; // Wipe input after processing
             console_execute_command(to_string(app.console.input_buffer.data, str_length(app.console.input_buffer.data)));
         }
@@ -183,8 +185,12 @@ text_edit_callback :: (data : *ImGui.InputTextCallbackData) -> s32 #c_call {
     new_context : Context;
     push_context new_context {
 
+        // nocommit Why does this fail?? since app is global I expected we could pass null and just read it directly...
+        // assert(cast(*void) data == cast(*void) *app.console);
+
         if data.EventFlag == {
             case .CallbackCompletion; {
+
                 // Locate beginning of current word
                 word_end := data.Buf + data.CursorPos;
                 word_start := word_end;
@@ -196,6 +202,10 @@ text_edit_callback :: (data : *ImGui.InputTextCallbackData) -> s32 #c_call {
                 }
 
                 current_word := to_string(word_start, word_end - word_start);
+
+                // @CompilerBug: Even though we have pushed a context we get an error about calling a native procedure
+                // printv(#code current_word);
+                // print("current_word = %\n", current_word);
 
                 // Build a list of candidates // @TODO Use temporary allocator here
                 candidates : [..]string;

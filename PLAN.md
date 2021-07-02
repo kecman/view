@@ -1,12 +1,19 @@
 ## Next Release
 
+Make imgui.jai handle unix and windows better
+Does comma work in the console? What is the enum out of range thing??
+The TextColored function in jai-imgui is broken, it doesn't even pass the varargs but also, the api is inconvenient because it uses *u8
+
+- [Bug] Fix the keyboard input capture which blocks the key bindings in an annoying way
 - [Bug] Clear button should reset the bounding sphere in the selection mesh
 - [Bug] Changing the enabled checkbox on the clipping planes when having an item selection doesn't apply the changes to the item. Found this with only a single item in the list.
 - [Bug] Fix the labels appearing outside the clipping box
+- [Bug] Fix the occassional deltatime is zero bug
 
 - [Commands] Add a syntax for specifying what command to run when the app starts
 - [Commands] Command to select/sort items by type, size, filename etc
 - [Commands] Command to compute parameterisation?
+- [UI/UX] Sweep drag should work with scroll wheel in item list, to make this feel really nice I guess we should be updating all the checkboxes intersecting the segment connecting the previous and current position accounting for the scroll wheel
 - [UI/UX] Support loading wkt file format to load Polygons in a reasonable way
 - [UI/UX] Implement wild cards for file loading
 - [UI/UX] Implement an infinite grid, maybe http://asliceofrendering.com/scene%20helper/2020/01/05/InfiniteGrid/
@@ -47,6 +54,7 @@
 - [UI/UX] Load files in a separate thread and report loading progress in the mode line
 - [UI/UX] Feedback when refreshing a file gives the same result
 - [UI/UX] Define a plane and write the world coordinates of the intersection point by the mouse cursor. Use lmb click drag for measuring
+- [UI/UX,Bug] Print boost polygon unsupported message to the console, log more stuff to the console in general
 - [Robustness] Add tests for obj loading
 - [Camera,Bug] Fix erratic rotation when rotating about the selected axes
 - [UI/UX,Camera] Implement perspective projection

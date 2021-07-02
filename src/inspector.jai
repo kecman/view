@@ -9,7 +9,6 @@ inspect :: (name: *u8, t : *$T, new_window : bool = false) {
 #scope_file
 
 inspect :: (name: *u8, data: *void, info:*Type_Info) {
-    default_size : ImGui.ImVec2;
 
     if #complete info.type == {
         case .INTEGER;
@@ -91,7 +90,7 @@ inspect :: (name: *u8, data: *void, info:*Type_Info) {
                 if ImGui.BeginCombo(name, temp_c_string(value_name)) {
                     for info_enum.names {
                         is_selected := value == info_enum.values[it_index];
-                        if ImGui.Selectable(temp_c_string(it), *is_selected, size=default_size) {
+                        if ImGui.Selectable(temp_c_string(it), is_selected) {
                             Reflection.set_enum_value(data, info_enum, info_enum.values[it_index]);
                         }
                         if is_selected ImGui.SetItemDefaultFocus();

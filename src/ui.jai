@@ -6,7 +6,7 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
 
     using app;
 
-    ImGui.SetNextWindowPos(pos=WINDOW_BORDER_UI_OFFSET);
+    ImGui.SetNextWindowPos(WINDOW_BORDER_UI_OFFSET);
     ImGui.Begin("Main Panel", flags = ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar);
     defer ImGui.End();
     defer if entities.count ImGui.Separator();
@@ -23,7 +23,7 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
         ImGui.InputInt("Label limit", *app.label_limit);
         if app.label_limit > 2000 {
             color := ImGui.ImVec4.{1., .4, .4, 1.};
-            ImGui.TextColored(color, "%s", "Warning: label limit > 2000 may be slow");
+            ImGui.TextColored(color, "%", "Warning: label limit > 2000 may be slow");
         }
     }
 
@@ -49,7 +49,7 @@ show_item_list_ui :: () {
 
     if !entities.count return;
 
-    ImGui.SetNextWindowPos(pos=WINDOW_BORDER_UI_OFFSET);
+    ImGui.SetNextWindowPos(WINDOW_BORDER_UI_OFFSET);
     ImGui.Begin("Main Panel", flags = ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar);
     defer ImGui.End();
 
@@ -115,13 +115,14 @@ show_item_list_ui :: () {
 
             delta_time := get_current_file_time() - it.loaded_filetime;
             FADE_TIME_SECS := 1;
-            color := Vector4.{1, 1, 1, 1};
+            color := ImGui.ImVec4.{1, 1, 1, 1};
             if delta_time < xx (FADE_TIME_SECS * 10_000_000.) {
                 alpha := clamp(delta_time / (FADE_TIME_SECS * 10_000_000.), 0., 1.);
-                color = lerp(Vector4.{0, 1, 0, 1}, Vector4.{1, 1, 1, 1}, alpha);
+                color4 := lerp(Vector4.{0, 1, 0, 1}, Vector4.{1, 1, 1, 1}, alpha);
+                color = ImGui.make_ImVec4(color4.x, color4.y, color4.z, color4.w);
             }
 
-            ImGui.PushStyleColor(xx ImGui.Col.Text, make_ImVec4(color));
+            ImGui.PushStyleColor(xx ImGui.Col.Text, color);
             if ImGui.Selectable(to_c_string(join(text, tprint("##%", it))), *it.is_selected) { // @Leak? free the join'd string?
                 if !io().KeyCtrl it.is_selected = !it.is_selected;
             }
@@ -385,10 +386,11 @@ show_item_list_ui :: () {
 
 show_camera_controls :: () {
     window_pos := ImGui.make_ImVec2(ImGui.GetIO().DisplaySize.x - WINDOW_BORDER_UI_OFFSET.x, WINDOW_BORDER_UI_OFFSET.y);
+    window_pivot := ImGui.make_ImVec2(1, 0);
 
     using ImGui.WindowFlags;
 
-    ImGui.SetNextWindowPos(window_pos, .Always, pivot=.{1, 0});
+    ImGui.SetNextWindowPos(window_pos, .Always, window_pivot);
     // SetNextWindowSize(ImVec2(400,400), ImGuiCond_FirstUseEver);
     // ImGui.SetNextWindowSize(*ImVec2.{150., 0.});
     ImGui.SetNextWindowContentSize(ImGui.ImVec2.{110., 0.});
@@ -477,8 +479,9 @@ show_help_ui :: () {
     if !app.show_help_ui return;
 
     window_pos := ImGui.make_ImVec2(ImGui.GetIO().DisplaySize.x - WINDOW_BORDER_UI_OFFSET.x, WINDOW_BORDER_UI_OFFSET.y);
+    window_pivot := ImGui.make_ImVec2(1, 0);
 
-    ImGui.SetNextWindowPos(pos=window_pos, pivot=.{1, 0});
+    ImGui.SetNextWindowPos(pos=window_pos, pivot=window_pivot);
     ImGui.Begin("##show_help_ui", flags = ImGui.WindowFlags.NoTitleBar | .AlwaysAutoResize | .NoMove /*| .NoNav*/);
     defer ImGui.End();
 

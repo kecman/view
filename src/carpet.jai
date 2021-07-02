@@ -34,18 +34,9 @@ die :: (loc := #caller_location) {
     exit(1);
 }
 
-make_vector2 :: (v : ImGui.ImVec2) -> Vector2 {
+make_Vector2 :: inline (v : ImGui.ImVec2) -> Vector2 {
     result : Vector2 = ---;
     result.x = v.x;
     result.y = v.y;
-    return result;
-}
-
-make_ImVec4 :: inline (v : Vector4) -> ImGui.ImVec4 {
-    result : ImGui.ImVec4 = ---;
-    result.x = v.x;
-    result.y = v.y;
-    result.z = v.z;
-    result.w = v.w;
     return result;
 }

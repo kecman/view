@@ -139,8 +139,9 @@ Selected_Or_Hovered :: (entities : *[..]*Entity, body : Code, flags : For_Flags)
 
 #import "geometry";
 
-ImGui :: #import "jai-imgui";
-// #load "modules/ImGui_/examples/imgui_sdl_gl.jai";
+ImGui :: #import "JaiImGui"(LINK_STATIC=true);
+#load "modules/JaiImGui/backends/imgui_impl_sdl.jai"; // SDL platform backend
+#load "modules/JaiImGui/backends/imgui_impl_opengl3.jai"; // OpenGL renderer backend
 
 #import "geometry";
 #load "axes.jai";
