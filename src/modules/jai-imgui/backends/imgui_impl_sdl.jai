@@ -8,7 +8,7 @@
 
 // Data
 g_Window : *SDL_Window = null;
-g_Time : float64;
+g_Time : u64;
 g_MousePressed : [3]bool = .[false, false, false];
 g_MouseCursors : [ImGui.MouseCursor.COUNT]*SDL_Cursor;
 g_ClipboardTextData : *u8 = null;
@@ -254,16 +254,10 @@ ImGui_ImplSDL2_NewFrame :: (window : *SDL_Window) {
     if (w > 0 && h > 0)
         io.DisplayFramebufferScale = ImGui.make_ImVec2(cast(float) display_w / w, cast(float)display_h / h);
 
-    // // Setup time step (we don't use SDL_GetTicks() because it is using millisecond resolution)
-    // static Uint64 frequency = SDL_GetPerformanceFrequency();
-    // Uint64 current_time = SDL_GetPerformanceCounter();
-    // io.DeltaTime = g_Time > 0 ? (float)((double)(current_time - g_Time) / frequency) : (float)(1.0f / 60.0f);
-    // g_Time = current_time;
-    // Setup time step
-    time := SDL_GetTicks();
-    current_time : float64 = time / 1000.0;
-    if g_Time > 0.0 io.DeltaTime = xx (current_time - g_Time);
-    else io.DeltaTime = (1.0/60.0);
+    // Setup time step (we don't use SDL_GetTicks() because it is using millisecond resolution)
+    frequency := SDL_GetPerformanceFrequency();
+    current_time := SDL_GetPerformanceCounter();
+    io.DeltaTime = ifx g_Time > 0 then cast(float)(cast(float64)(current_time - g_Time) / xx frequency) else 1.0 / 60.0;
     g_Time = current_time;
 
     ImGui_ImplSDL2_UpdateMousePosAndButtons();
