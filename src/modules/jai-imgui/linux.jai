@@ -2222,6 +2222,7 @@ ImFont :: struct {
     ConfigDataCount: s16;
     FallbackChar: ImWchar;
     EllipsisChar: ImWchar;
+    DotChar: ImWchar;
     DirtyLookupTables: bool;
     Scale: float;
     Ascent: float;
@@ -2265,7 +2266,6 @@ ImFont :: struct {
     AddGlyph :: (this: *ImFont, src_cfg: *ImFontConfig, c: ImWchar, x0: float, y0: float, x1: float, y1: float, u0: float, v0: float, u1: float, v1: float, advance_x: float) -> void #cpp_method #foreign imgui "_ZN6ImFont8AddGlyphEPK12ImFontConfigtfffffffff";
     AddRemapChar :: (this: *ImFont, dst: ImWchar, src: ImWchar, overwrite_dst: bool = true) -> void #cpp_method #foreign imgui "_ZN6ImFont12AddRemapCharEttb";
     SetGlyphVisible :: (this: *ImFont, c: ImWchar, visible: bool) -> void #cpp_method #foreign imgui "_ZN6ImFont15SetGlyphVisibleEtb";
-    SetFallbackChar :: (this: *ImFont, c: ImWchar) -> void #cpp_method #foreign imgui "_ZN6ImFont15SetFallbackCharEt";
     IsGlyphRangeUnused :: (this: *ImFont, c_begin: u32, c_last: u32) -> bool #cpp_method #foreign imgui "_ZN6ImFont18IsGlyphRangeUnusedEjj";
 }
 // #run check_size(ImFont, 112);
