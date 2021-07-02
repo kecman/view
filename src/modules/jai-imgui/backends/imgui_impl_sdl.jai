@@ -274,7 +274,7 @@ ImGui_ImplSDL2_NewFrame :: (window : *SDL_Window) {
 }
 
 #scope_file
-ImGui :: #import "JaiImGui"(LINK_STATIC=true);
+ImGui :: #import "jai-imgui"(LINK_STATIC=true);
 
 #import "SDL";
 #import "Math";

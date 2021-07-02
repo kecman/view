@@ -429,5 +429,5 @@ ImGui_ImplOpenGL3_ShutdownPlatformInterface :: () {
 
 #scope_file
 
-ImGui :: #import "JaiImGui"(LINK_STATIC=true);
+ImGui :: #import "jai-imgui"(LINK_STATIC=true);
 #import "GL";
