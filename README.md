@@ -6,7 +6,7 @@ A simple geometry processing tool for developing geometric algorithms and having
 - Press `h` for help
 - See CHANGELOG.md for a feature list
 - See PLAN.md for a feature roadmap
-- Currently linux only
+- Works on linux and windows (windows is currently less well tested)
 
 ![Screenshot](https://github.com/kecman/Garage/blob/master/data/screenshot.png)
 

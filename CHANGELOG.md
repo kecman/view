@@ -1,5 +1,6 @@
 ## Version: v0.1.2, Unreleased
 
+- Added initial support for windows, things seem to work but it isn't well tested yet
 - Fixed a bug where overwrite option for handling dropped files would not preserve display settings e.g., rendering mode
 
 ## Version: v0.1.1, 9 June 2021
