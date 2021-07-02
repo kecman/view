@@ -99,13 +99,13 @@ update_camera :: (delta_time : float) {
 
     if io().WantCaptureMouse return;
 
-    if ImGui.IsMouseClicked(1) {
-        rmb_down_pos = io().MousePos;
+    if ImGui.IsMouseClicked(.Right) {
+        rmb_down_pos = make_Vector2(io().MousePos);
         camera_at_mouse_down = app.camera;
     }
 
-    if ImGui.IsMouseClicked(2) {
-        mmb_down_pos = io().MousePos;
+    if ImGui.IsMouseClicked(.Middle) {
+        mmb_down_pos = make_Vector2(io().MousePos);
     }
 
     // Mouse delta is zero when current or previous mouse positions were invalid
@@ -135,8 +135,8 @@ update_camera :: (delta_time : float) {
         }
 
         // Shoot ray through pixel along the look vector to hit a plane through the look position with the same normal
-        curr_pan_point, curr_ok := get_pan_position(io().MousePos, world_from_projection, <<camera);
-        prev_pan_point, prev_ok := get_pan_position(io().MousePos - io().MouseDelta, world_from_projection, <<camera);
+        curr_pan_point, curr_ok := get_pan_position(make_Vector2(io().MousePos), world_from_projection, <<camera);
+        prev_pan_point, prev_ok := get_pan_position(make_Vector2(io().MousePos) - make_Vector2(io().MouseDelta), world_from_projection, <<camera);
         if curr_ok && prev_ok {
             increment := -(curr_pan_point - prev_pan_point) / 2; // @Cleanup WHY this divide by 2, there is probably a bug elsewhere... ?
 
@@ -144,12 +144,12 @@ update_camera :: (delta_time : float) {
             camera.look_position += increment;
         }
 
-    } else if ImGui.IsMouseDragging(1, 0.) && mouse_move_valid { // Orbit about the look position using right button
+    } else if ImGui.IsMouseDragging(.Right, 0.) && mouse_move_valid { // Orbit about the look position using right button
 
         world_from_projection_at_mouse_down := inverse(make_projection_from_world(camera_at_mouse_down));
 
         prev_arcball_vector := arcball_vector(rmb_down_pos);
-        curr_arcball_vector := arcball_vector(io().MousePos);
+        curr_arcball_vector := arcball_vector(make_Vector2(io().MousePos));
         arcball_axis_ndc := cross_product(curr_arcball_vector, prev_arcball_vector);
 
         view_from_world := make_look_at_matrix(camera_at_mouse_down);
@@ -211,7 +211,7 @@ update_camera :: (delta_time : float) {
         zoom_factor := 1.;
         if      (io().MouseWheel > 0) zoom_factor *= ratio;
         else if (io().MouseWheel < 0) zoom_factor /= ratio;
-        handle_zoom(zoom_factor, io().MousePos, !io().KeyCtrl);
+        handle_zoom(zoom_factor, make_Vector2(io().MousePos), !io().KeyCtrl);
     }
 
     // print("update_camera: %\n", <<camera);

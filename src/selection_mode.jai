@@ -21,8 +21,8 @@ do_selection_mode :: () {
     // @TODO Add an enum representing the type of cursor text being displayed: INTERSECT_PLANE, CLOSEST_POINT, CLOSEST_VERTEX
     // @TODO Hide the cursor and display a line from the cursor to the point
 
-    use_result_for_adding_to_selection := ImGui.IsMouseClicked(0) && io().KeyCtrl;
-    use_result_for_repositioning_camera := ImGui.IsMouseClicked(1) && io().KeyCtrl;
+    use_result_for_adding_to_selection := ImGui.IsMouseClicked(.Left) && io().KeyCtrl;
+    use_result_for_repositioning_camera := ImGui.IsMouseClicked(.Right) && io().KeyCtrl;
     use_result_for_rendering_cursor_text := app.user_selection_cursor_text_shown;
 
     if use_result_for_adding_to_selection || use_result_for_repositioning_camera || use_result_for_rendering_cursor_text {

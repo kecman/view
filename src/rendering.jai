@@ -38,7 +38,7 @@ Render_Info :: struct {
 // @Volatile Keep synced with GLSL
 Clip_Range :: struct {
     normal : Vector3;
-    active : bool;
+    is_active : bool;
     min : float = 0hFF800000; // -inf
     max : float = 0h7F800000; // +inf
 }
@@ -271,7 +271,7 @@ Render_Mesh_Common :: (mesh : *Mesh, using render_info : *Render_Info, using dis
             glUniform3f(glGetUniformLocation(app.mesh_program, to_c_string(tprint("clip_range[%].normal", it))), normal.x, normal.y, normal.z);
             glUniform1f(glGetUniformLocation(app.mesh_program, to_c_string(tprint("clip_range[%].min", it))), xx min);
             glUniform1f(glGetUniformLocation(app.mesh_program, to_c_string(tprint("clip_range[%].max", it))), xx max);
-            glUniform1f(glGetUniformLocation(app.mesh_program, to_c_string(tprint("clip_range[%].active", it))), xx active);
+            glUniform1f(glGetUniformLocation(app.mesh_program, to_c_string(tprint("clip_range[%].is_active", it))), xx is_active);
         }
     }
 
@@ -453,7 +453,7 @@ render_background :: () {
             glUseProgram(app.background_program);
             x, y, z : float = xx app.current_window_width, xx app.current_window_height, 1.;
             glUniform3f(glGetUniformLocation(app.background_program, "iResolution"), x, y, z);
-            glUniform1f(glGetUniformLocation(app.background_program, "iTime"), ImGui.GetTime());
+            glUniform1f(glGetUniformLocation(app.background_program, "iTime"), xx ImGui.GetTime());
             glBindVertexArray(app.background_vao);
             glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }

@@ -42,7 +42,7 @@ render_axes_triad :: (triad : *Axes_Triad) {
     look_position = make_vector3(0., 0., 0.);
     eye_position = look_position - unit_look_direction;
 
-    offset_vs := make_vector3(s, s, 0.) + make_vector3(WINDOW_BORDER_UI_OFFSET, 0);
+    offset_vs := make_vector3(s, s, 0.) + make_vector3(WINDOW_BORDER_UI_OFFSET.x, WINDOW_BORDER_UI_OFFSET.y, 0);
     world_from_view := inverse(make_look_at_matrix(app.camera));
     offset_ws := (world_from_view * make_vector4(offset_vs, 0.)).xyz;
 
