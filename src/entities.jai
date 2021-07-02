@@ -257,7 +257,7 @@ find_closest_vertex_on_visible_entities :: () -> Closest_Vertex_On_Entity {
                     }
                 }
 
-                if result.vertex_index != -1 for clip : entity.display_info.clip_ranges if clip.active {
+                if result.vertex_index != -1 for clip : entity.display_info.clip_ranges if clip.is_active {
                     plane := make_hyperplane3(clip.normal, Vector3.{0, 0, 0});
                     dist := signed_distance_point3_plane3(result.vertex_position, plane);
                     if (dist <= clip.min || dist >= clip.max) {

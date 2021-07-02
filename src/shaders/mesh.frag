@@ -13,7 +13,7 @@ uniform bool screentone_backfaces = true;
 // @Volatile Keep synced with Jai
 struct Clip_Range {
     vec3 normal;
-    bool active;
+    bool is_active;
     float min;
     float max;
 };
@@ -70,7 +70,7 @@ vec3 blinn_phong_brdf(vec3 N, vec3 V, vec3 L, vec3 light_color, float light_powe
 
 void main() {
     for (int i = 0; i < 3; ++i) {
-        if (clip_range[i].active) {
+        if (clip_range[i].is_active) {
             float dist = dot(clip_range[i].normal, fragment_position_ws);
             float min = clip_range[i].min;
             float max = clip_range[i].max;

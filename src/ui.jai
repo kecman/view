@@ -725,7 +725,7 @@ clipping_ui :: (p : *Clip_Range, aabb : AxisBox3) -> (changed : bool) {
     W :: 60;
     MIN_RANGE :: .1;
 
-    ImGui.Checkbox(imgui_label("##clip_plane", p), *p.active);
+    ImGui.Checkbox(imgui_label("##clip_plane", p), *p.is_active);
     Show_Tooltip("Enable this clipping range");
     ImGui.SameLine();
 
