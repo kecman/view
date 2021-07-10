@@ -59,6 +59,11 @@ app : struct {
     user_selection.display_info.vertex_label_style.show_position = true;
     user_selection.display_info.vertex_label_style.label_color = .{0, 0, 0, 1};
 
+    // Checkbox sweep mode is enabled while LMB is held down if it was clicked on a sweepable checkbox, the mouse will be constrained to move only up and down and the inverse of the state of the checkbox just before the click will be set on all the checkboxes that get swept
+    checkbox_sweep_mode := false;
+    checkbox_sweep_mode_mouse_x_position : s32;
+    checkbox_sweep_mode_state_to_set := false;
+
     camera : Camera;
     console : Console;
     entities : [..]*Entity;

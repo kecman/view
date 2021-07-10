@@ -37,10 +37,9 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
         }
     }
 
-    #if false {
-    ImGui.SetNextWindowPos(make_ImVec2(650, 20), .FirstUseEver);
-    SHOW_DEMO_WINDOW :: true;
-    ImGui.ShowDemoWindow(*SHOW_DEMO_WINDOW);
+    #if true {
+    ImGui.SetNextWindowPos(ImGui.make_ImVec2(650, 20), .FirstUseEver);
+    ImGui.ShowDemoWindow(*app.show_imgui_demo_window);
     }
 }
 
@@ -68,7 +67,7 @@ show_item_list_ui :: () {
         visibility_toggled := checkbox_press_or_sweep_to_toggle(*it.is_visible, *it.is_visible_sweep_hovered, imgui_label("##Visible", it));
         // Show_Tooltip("Visible");
 
-        if !was_visible && visibility_toggled {
+        if !was_visible && it.is_visible {
             // Make sure we see something when turning on visibility
             if !it.display_info.surface_visible && !it.display_info.wireframe_visible {
                 it.display_info.surface_visible = true;
@@ -817,27 +816,58 @@ combo_box :: (label : string, data: *void, info_enum: *Type_Info_Enum) -> bool {
 // Toggle visibility if the checkbox was pressed or if we swept over it with the LMB down
 checkbox_press_or_sweep_to_toggle :: (state : *bool, hovered : *bool, label : *u8) -> bool {
 
-    state_copy := <<state;
-    checkbox_pressed := ImGui.Checkbox(label, *state_copy);
-
-    previous_frame_hovered := <<hovered;
-    current_frame_hovered := ImGui.IsItemHovered(.RectOnly);
-
-    swept_into := !previous_frame_hovered && current_frame_hovered;
-    left_mouse_button_down := io().MouseDown[0];
-
-    clicked := ImGui.IsMouseClicked(0) && current_frame_hovered;
-    pressed := checkbox_pressed && !current_frame_hovered;
-    swept   := swept_into && left_mouse_button_down;
-
-    changed := false;
-    if (clicked || pressed || swept) {
-        <<state = !<<state;
-        changed = true;
+    old_state := <<state; // @Hack Needed since we can't have a PressedOnClick checkbox? Explain this better/reimplement it
+    if ImGui.Checkbox(label, *old_state) {
+        // Get here when the LMB is released after going down while hovering the checkbox
+        return true;
     }
 
-    <<hovered = current_frame_hovered;
-    return changed;
+    // <<hovered = ImGui.IsItemHovered(.RectOnly);
+
+    // ImGui Rects position min in upper left and max in lower right
+    checkbox_upper_left := make_Vector2(ImGui.GetItemRectMin());
+    checkbox_lower_right := make_Vector2(ImGui.GetItemRectMax());
+
+    // This handles the case when we start the sweep drag by clicking on a checkbox
+    // clicked_on_checkbox := ImGui.IsMouseClicked(.Left) && <<hovered;
+    clicked_on_checkbox := ImGui.IsItemClicked(.Left);
+
+    if clicked_on_checkbox {
+        app.checkbox_sweep_mode = true;
+        app.checkbox_sweep_mode_state_to_set = <<state;
+        app.checkbox_sweep_mode_mouse_x_position = xx ((checkbox_upper_left.x + checkbox_lower_right.x) / 2);
+    }
+    
+    if ImGui.IsMouseReleased(.Left) {
+        app.checkbox_sweep_mode = false;
+    }
+
+    // To provide a nice UX when sweeping over checkboxes:
+    // 1. Issue an SDL event which warps the mouse cursor position to keep it fixed over the center of the checkbox column
+    // 2. Don't miss checkboxes when the mouse is moved quickly a single frame by updating any checkbox touching the swept move
+    swept_over := false;
+    if app.checkbox_sweep_mode {
+        assert(ImGui.IsMouseDown(.Left), "Expected checkbox sweep mode only when lmb is down");
+        SDL_WarpMouseInWindow(app.window, app.checkbox_sweep_mode_mouse_x_position, xx io().MousePos.y);
+        sweep_start, sweep_end := io().MousePos, make_Vector2(io().MousePos) - make_Vector2(io().MouseDelta);
+        swept_over = ((sweep_start.y < checkbox_lower_right.y && sweep_end.y > checkbox_upper_left.y) || (sweep_start.y > checkbox_upper_left.y && sweep_end.y < checkbox_lower_right.y));
+    }
+
+    // TODO fix sweep isolating the current checkbox checking the box
+    // TODO Implement highlight 
+    // TODO return if old_state != state
+
+    if (clicked_on_checkbox || swept_over) {
+        if io().KeyCtrl {
+            <<state = !<<state;
+            return true;
+        } else if app.checkbox_sweep_mode {
+            <<state = !app.checkbox_sweep_mode_state_to_set;
+            return true;
+        }
+    }
+
+    return false;
 }
 
 // @Incomplete add a delay before popup
