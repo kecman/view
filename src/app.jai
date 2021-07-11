@@ -1,5 +1,5 @@
 // Shared global state is stored here
-app : struct {
+App :: struct {
     window : *SDL_Window = null;
 
     INITIAL_WINDOW_WIDTH  : s32 : 1440;
@@ -61,7 +61,8 @@ app : struct {
 
     // Checkbox sweep mode is enabled while LMB is held down if it was clicked on a sweepable checkbox, the mouse will be constrained to move only up and down and the inverse of the state of the checkbox just before the click will be set on all the checkboxes that get swept
     checkbox_sweep_mode := false;
-    checkbox_sweep_mode_mouse_x_position : s32;
+    checkbox_sweep_mode_mouse_min_x : s32;
+    checkbox_sweep_mode_mouse_max_x : s32;
     checkbox_sweep_mode_state_to_set := false;
 
     camera : Camera;
@@ -76,7 +77,10 @@ app : struct {
     settings : User_Settings;
 
     closing_application := false; // Set this to true to close the application
+    show_imgui_demo_window := true;
 }
+
+app : App;
 
 current_window_aspect_ratio_width_over_height :: () -> float {
     return cast(float) app.current_window_width / cast(float) app.current_window_height;

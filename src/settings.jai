@@ -1,6 +1,6 @@
 // :UserConfig hotload changes to this file
 User_Settings :: struct {
-    fit_to_screen_on_visibility_toggle := false;
+    fit_to_screen_on_visibility_change := false;
     fit_to_screen_on_file_drop_event   := true;
 
     camera_controls_keep_up_when_setting_look_along := false;

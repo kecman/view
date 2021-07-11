@@ -394,5 +394,5 @@ ImGui_Impl_CreateContext :: ($set_default_allocators := true) {
     ctx = ImGui.CreateContext();
     io := ImGui.GetIO();
     io.ConfigFlags_ |= .DockingEnable;
-    io.ConfigFlags_ |= .NavEnableKeyboard;
+    // io.ConfigFlags_ |= .NavEnableKeyboard; // This interacts in an annoying way with keyboard shortcuts, fix that before enabling
 }

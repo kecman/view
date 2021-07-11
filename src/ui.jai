@@ -37,7 +37,7 @@ show_global_settings_ui :: (world_axes : *Axes_Triad)
         }
     }
 
-    #if true {
+    #if false {
     ImGui.SetNextWindowPos(ImGui.make_ImVec2(650, 20), .FirstUseEver);
     ImGui.ShowDemoWindow(*app.show_imgui_demo_window);
     }
@@ -52,7 +52,7 @@ show_item_list_ui :: () {
     ImGui.Begin("Main Panel", flags = ImGui.WindowFlags.AlwaysAutoResize | ImGui.WindowFlags.NoTitleBar);
     defer ImGui.End();
 
-    any_visibility_toggled := false;
+    any_visibility_changed := false;
 
     entity_to_remove := -1;
     for entities {
@@ -64,7 +64,7 @@ show_item_list_ui :: () {
         // Toggle visibility and set color
         ImGui.SameLine();
         was_visible := it.is_visible;
-        visibility_toggled := checkbox_press_or_sweep_to_toggle(*it.is_visible, *it.is_visible_sweep_hovered, imgui_label("##Visible", it));
+        visibility_changed := checkbox_press_or_sweep_to_toggle(*it.is_visible, *it.is_visible_sweep_hovered, imgui_label("##Visible", it));
         // Show_Tooltip("Visible");
 
         if !was_visible && it.is_visible {
@@ -74,7 +74,7 @@ show_item_list_ui :: () {
             }
         }
 
-        any_visibility_toggled = any_visibility_toggled || visibility_toggled;
+        any_visibility_changed = any_visibility_changed || visibility_changed;
         ImGui.SameLine();
         if it.display_info.display_mode == .NORMALS {
             ImGui.TextDisabled("NR.");
@@ -310,9 +310,9 @@ show_item_list_ui :: () {
 
         // Toggle visibility checkbox
         ImGui.SameLine();
-        visibility_toggled := checkbox_press_or_sweep_to_toggle(*it.is_visible, *it.is_visible_sweep_hovered, imgui_label("##Visible", it));
+        visibility_changed := ImGui.Checkbox(imgui_label("##Visible", it), *it.is_visible);
         Show_Tooltip("Enable Selection Mode");
-        any_visibility_toggled = any_visibility_toggled || visibility_toggled;
+        any_visibility_changed = any_visibility_changed || visibility_changed;
         ImGui.SameLine();
         ImGui.ColorEdit4(imgui_label("##color", it), *it.display_info.points_color.component, ImGui.ColorEditFlags.NoInputs);
 
@@ -372,7 +372,7 @@ show_item_list_ui :: () {
         }
     }
 
-    if app.settings.fit_to_screen_on_visibility_toggle && any_visibility_toggled {
+    if app.settings.fit_to_screen_on_visibility_change && any_visibility_changed {
         fit_on_screen();
     }
 
@@ -520,6 +520,12 @@ show_help_ui :: () {
     ImGui.Text("(on a color) Cycle shading styles"); ImGui.NextColumn();
     ImGui.Text("MMB"); ImGui.NextColumn();
     ImGui.Text("(on a color) Reset color from the filename"); ImGui.NextColumn();
+    ImGui.Text("LMB"); ImGui.NextColumn();
+    ImGui.Text("(sweep over visibility checkbox) Update item visibility"); ImGui.NextColumn();
+    ImGui.Text("C-LMB"); ImGui.NextColumn();
+    ImGui.Text("(sweep over visibility checkbox) Focus hovered item"); ImGui.NextColumn();
+    ImGui.Text("S-LMB"); ImGui.NextColumn();
+    ImGui.Text("(sweep over visibility checkbox) Focus hovered item and update camera"); ImGui.NextColumn();
     ImGui.Columns(1);
     ImGui.NewLine();
 
@@ -560,7 +566,7 @@ show_help_ui :: () {
     ImGui.Columns(1);
 
     // ImGui.NewLine();
-    ImGui.Text("                                                                 ");
+    ImGui.Text("                                                                                ");
     ImGui.Text("Note: S=Shift, C=Ctrl, A=Alt");
 
     // @Incomplete add a message about where the keymap is for editing
@@ -816,58 +822,66 @@ combo_box :: (label : string, data: *void, info_enum: *Type_Info_Enum) -> bool {
 // Toggle visibility if the checkbox was pressed or if we swept over it with the LMB down
 checkbox_press_or_sweep_to_toggle :: (state : *bool, hovered : *bool, label : *u8) -> bool {
 
-    old_state := <<state; // @Hack Needed since we can't have a PressedOnClick checkbox? Explain this better/reimplement it
-    if ImGui.Checkbox(label, *old_state) {
+    old_state := <<state;
+    if ImGui.Checkbox(label, *old_state) { // @Hack Why do we need to pass old_state? To mimic a PressedOnClick checkbox? Explain this better/reimplement it
         // Get here when the LMB is released after going down while hovering the checkbox
         return true;
     }
-
-    // <<hovered = ImGui.IsItemHovered(.RectOnly);
 
     // ImGui Rects position min in upper left and max in lower right
     checkbox_upper_left := make_Vector2(ImGui.GetItemRectMin());
     checkbox_lower_right := make_Vector2(ImGui.GetItemRectMax());
 
-    // This handles the case when we start the sweep drag by clicking on a checkbox
-    // clicked_on_checkbox := ImGui.IsMouseClicked(.Left) && <<hovered;
-    clicked_on_checkbox := ImGui.IsItemClicked(.Left);
+    previous_frame_hovered := <<hovered;
+    <<hovered = ImGui.IsItemHovered(.RectOnly);
+    current_frame_hovered := <<hovered;
 
-    if clicked_on_checkbox {
+    // Enter checkbox sweep mode on lmb down
+    if ImGui.IsItemClicked(.Left) {
         app.checkbox_sweep_mode = true;
         app.checkbox_sweep_mode_state_to_set = <<state;
-        app.checkbox_sweep_mode_mouse_x_position = xx ((checkbox_upper_left.x + checkbox_lower_right.x) / 2);
+        app.checkbox_sweep_mode_mouse_min_x = xx checkbox_upper_left.x;
+        app.checkbox_sweep_mode_mouse_max_x = xx checkbox_lower_right.x;
     }
-    
+
+    // Exit checkbox sweep mode on lmb release
     if ImGui.IsMouseReleased(.Left) {
         app.checkbox_sweep_mode = false;
     }
 
-    // To provide a nice UX when sweeping over checkboxes:
-    // 1. Issue an SDL event which warps the mouse cursor position to keep it fixed over the center of the checkbox column
-    // 2. Don't miss checkboxes when the mouse is moved quickly a single frame by updating any checkbox touching the swept move
-    swept_over := false;
     if app.checkbox_sweep_mode {
+        // When in checkbox sweep mode, provide a nice UX
+
         assert(ImGui.IsMouseDown(.Left), "Expected checkbox sweep mode only when lmb is down");
-        SDL_WarpMouseInWindow(app.window, app.checkbox_sweep_mode_mouse_x_position, xx io().MousePos.y);
-        sweep_start, sweep_end := io().MousePos, make_Vector2(io().MousePos) - make_Vector2(io().MouseDelta);
-        swept_over = ((sweep_start.y < checkbox_lower_right.y && sweep_end.y > checkbox_upper_left.y) || (sweep_start.y > checkbox_upper_left.y && sweep_end.y < checkbox_lower_right.y));
-    }
 
-    // TODO fix sweep isolating the current checkbox checking the box
-    // TODO Implement highlight 
-    // TODO return if old_state != state
+        // Issue an SDL event to warps the mouse cursor position to keep it from drifting outside the checkbox column
+        if io().MousePos.x < xx app.checkbox_sweep_mode_mouse_min_x {
+            SDL_WarpMouseInWindow(app.window, app.checkbox_sweep_mode_mouse_min_x, xx io().MousePos.y);
+        }
+        if io().MousePos.x > xx app.checkbox_sweep_mode_mouse_max_x {
+            SDL_WarpMouseInWindow(app.window, app.checkbox_sweep_mode_mouse_max_x, xx io().MousePos.y);
+        }
 
-    if (clicked_on_checkbox || swept_over) {
-        if io().KeyCtrl {
-            <<state = !<<state;
-            return true;
-        } else if app.checkbox_sweep_mode {
-            <<state = !app.checkbox_sweep_mode_state_to_set;
-            return true;
+        if io().KeyCtrl || io().KeyShift {
+            // When control/shift are pressed make the focus the hovered item, hiding others that are swept through
+            if !previous_frame_hovered && current_frame_hovered {
+                <<state = true;
+            } else if previous_frame_hovered && !current_frame_hovered {
+                <<state = false;
+            }
+            if io().KeyShift fit_on_screen(); // Also update the camera when shift is pressed
+        } else {
+            // Update any checkbox intersecting the mouse sweep so none are missed if the mouse is moved a lot in a single frame
+            frame_sweep_start, frame_sweep_end := make_Vector2(io().MousePos) - make_Vector2(io().MouseDelta), io().MousePos;
+            swept_up   := frame_sweep_start.y < checkbox_lower_right.y && frame_sweep_end.y > checkbox_upper_left.y;
+            swept_down := frame_sweep_start.y > checkbox_upper_left.y  && frame_sweep_end.y < checkbox_lower_right.y;
+            if swept_up || swept_down {
+                <<state = !app.checkbox_sweep_mode_state_to_set;
+            }
         }
     }
 
-    return false;
+    return old_state != <<state;
 }
 
 // @Incomplete add a delay before popup
